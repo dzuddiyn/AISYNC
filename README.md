@@ -1,145 +1,191 @@
 # AISYNC
 
-> Portable AI conversation continuity for personal context — without assuming every AI can directly access the same backend.
+> Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** Discovery  
-**Architecture:** Not confirmed  
-**Method:** ZASSIMPLE v0.1.6  
-**Working name:** AISYNC
+**Status:** Boundary locked; implementation architecture pending  
+**Method used to develop this project:** ZASSIMPLE v0.1.6  
+**Repository:** AISYNC
 
-AISYNC explores a simple problem: important conversations about life, work, family, planning, research, decisions, and other long-term context often become trapped inside individual AI platforms.
+AISYNC separates **how information is reasoned about** from **how that information is transported and persisted**.
 
-The goal is to make useful context portable so that a person can move between AI systems without repeatedly explaining everything from the beginning.
+It is designed as common infrastructure that can be reused by ZASS Full, ZASSIMPLE, ZASSELECTION, Dzuddiyn Library, and other projects.
 
 ---
 
-## The problem
-
-Different AI applications may be useful for different reasons, but they do not necessarily share memory, integrations, APIs, export formats, or storage access.
-
-AISYNC is exploring a provider-agnostic way to support a flow such as:
+## Official boundary
 
 ```text
-AI conversation
-      ↓
-identify useful context
-      ↓
-prepare a portable sync record
-      ↓
-owner review / confirmation
-      ↓
-authoritative personal information environment
-      ↓
-retrieve only relevant context
-      ↓
-another AI continues from there
+ZASS Full
+ZASSIMPLE
+ZASSELECTION
+        │
+        ▼
+  Method / reasoning layer
+  ────────────────────────
+  structures & records:
+  • reasoning logs
+  • selection logs
+  • evidence
+  • rationale
+  • decision lineage
+  • architecture provenance
+        │
+        ▼
+      AI-SYNC
+  transport / write layer
+        │
+   ┌────┼───────────────┐
+   ▼    ▼               ▼
+GitHub Google Sheets  AI-SYNC DB
+        │
+        ▼
+ Source of Truth records
 ```
 
-The system must not depend on the assumption that every AI can directly read from or write to GitHub.
+### Method / reasoning layer
 
-A copy/paste fallback should remain possible.
+**ZASS Full / ZASSIMPLE / ZASSELECTION** are methods for structuring and recording thinking and selection.
 
----
+They deal with meaning:
 
-## Relationship with Dzuddiyn Library
+- reasoning logs
+- selection logs
+- evidence
+- rationale
+- decision lineage
+- architecture provenance
 
-The current **LOCKED** working boundary is:
+They should not need to understand the mechanics of GitHub, Google Sheets, or a database.
+
+### AI-SYNC
+
+**AI-SYNC is the transport / write layer.**
+
+It handles:
 
 ```text
-Dzuddiyn Library
-= stores / captures life information
-
-AISYNC
-= transports / synchronizes relevant AI context
-  between AI platforms and that information environment
+meaningful structured information
+        ↓
+move
+        ↓
+translate to destination format
+        ↓
+write
+        ↓
+verify
 ```
 
-For now, **AISYNC and Dzuddiyn Library remain separate projects**.
+AI-SYNC is **not part of ZASS or ZASSELECTION**.
 
-They are not being merged at repository or architecture level.
+It is shared infrastructure.
 
-AISYNC may later become:
+### Source of Truth records
 
-- a subsystem inside Dzuddiyn Library, or
-- a separate protocol/project that uses Dzuddiyn Library as its information store.
+The current boundary recognizes these destination classes:
 
-That choice is intentionally still open until there is evidence from real use.
+- GitHub
+- Google Sheets
+- AI-SYNC Database
+
+They may hold Source of Truth records for the origin and lineage of reasoning, selection, decisions, and architecture.
+
+The exact authority rules for each record class are still an architecture question.
 
 ---
 
-## Current experiment
+## Why this separation matters
 
-The smallest proposed experiment is deliberately manual:
+Without this boundary, every method could end up learning how to write to every destination:
 
 ```text
-one important AI conversation
-        ↓
-generate an AISYNC structured sync block
-        ↓
-place it into DL_INBOX
-        ↓
-retrieve it manually
-        ↓
-give it to another AI
-        ↓
-check whether useful continuity is preserved
+ZASS → GitHub logic
+ZASS → Sheets logic
+ZASSIMPLE → GitHub logic
+ZASSELECTION → Sheets logic
+...
 ```
 
-This experiment is intended to test the core idea before introducing infrastructure.
+The locked model is instead:
 
-It does **not** imply that automation is required.
+```text
+METHOD
+   │
+   ▼
+meaningful structured record
+   │
+   ▼
+AI-SYNC
+   │
+   ├──► GitHub
+   ├──► Google Sheets
+   └──► AI-SYNC DB
+```
 
----
+The method owns the **meaning**.
 
-## What AISYNC is not yet
+AI-SYNC owns the **movement, destination translation, write, and verification**.
 
-No confirmed architecture exists.
-
-The project has **not** selected or committed to:
-
-- a database
-- a vector database
-- a knowledge graph
-- Raspberry Pi services
-- MCP
-- Home Assistant routing
-- Google Apps Script
-- Google Sheets or Docs as the primary store
-- automatic WhatsApp or Telegram ingestion
-- a universal sync gateway implementation
-- any single AI provider
-- automatic merging with Dzuddiyn Library
-
-Those may be explored later if evidence supports them.
+The destination owns the persisted **Source of Truth record** according to the authority model defined later.
 
 ---
 
-## Design direction
+## Shared consumers
 
-Current exploration favors these qualities:
+AISYNC may be used by:
 
-- platform-agnostic
-- model-agnostic
-- portable
-- human-controlled
-- privacy-aware
-- maintainable by one person
-- graceful fallback to manual copy/paste
-- clear authority and provenance
-- no silent persistence of sensitive information
-- minimal duplicated manual work
+- **ZASS Full**
+- **ZASSIMPLE**
+- **ZASSELECTION**
+- **Dzuddiyn Library**
+- **other projects**
 
-These are design directions, not a confirmed architecture.
+This makes AISYNC reusable infrastructure rather than a feature embedded inside one method.
 
 ---
 
-## Privacy
+## Dzuddiyn Library relationship
 
-AISYNC may eventually handle highly personal information.
+Dzuddiyn Library can use AISYNC as a consumer of the shared infrastructure.
 
-A future design must distinguish between information that is safe to persist and information that should be private, sensitive, highly sensitive, temporary, or not stored at all.
+The earlier idea that AISYNC might become a DL-specific subsystem is no longer the primary boundary. AISYNC is now defined more generally as shared transport/write infrastructure.
 
-“Sync everything” is **not** an assumed goal.
+This does not force DL to automate anything in its current phase.
+
+---
+
+## What is LOCKED
+
+**D-002 — Official Method → AI-SYNC → Source of Truth boundary**
+
+> ZASS Full / ZASSIMPLE / ZASSELECTION = the way reasoning and selection are structured and recorded.
+
+> Google Sheets / GitHub / AI-SYNC Database = Source of Truth record destinations for the origin and lineage of reasoning, selection, decisions, and architecture.
+
+> AI-SYNC = the way information moves, is translated to the destination format, is written, and is verified.
+
+> AI-SYNC is not part of ZASS or ZASSELECTION. It is shared infrastructure.
+
+---
+
+## What is not decided yet
+
+The boundary is locked. The implementation architecture is not.
+
+Not yet selected:
+
+- AISYNC common record/protocol format
+- AISYNC Database technology
+- authentication
+- APIs or webhooks
+- queues
+- retry behavior
+- conflict handling
+- exact write-receipt format
+- which destination is authoritative for each record type
+- sync direction/topology
+- automation level
+
+These should be decided from evidence, not assumed.
 
 ---
 
@@ -149,38 +195,22 @@ The working project record is:
 
 **[ZASSIM-AISYNC.md](./ZASSIM-AISYNC.md)**
 
-It contains the current ideas, risks, open questions, experiments, and owner-locked decisions.
-
-Important project decisions should come from that record rather than from AI memory or chat history alone.
+It contains the current decisions, risks, open questions, and project history.
 
 ---
 
-## Current locked decision
-
-**D-001 — AISYNC × Dzuddiyn Library boundary**
-
-Keep AISYNC and Dzuddiyn Library separate for now.
-
-Dzuddiyn Library captures/stores life information. AISYNC focuses on moving relevant AI context between AI platforms and that information environment.
-
-Whether AISYNC later becomes part of Dzuddiyn Library or remains independent is still an open question.
-
----
-
-## Project state
+## Current project state
 
 ```text
-DISCOVERY
-   ↓
-small real-world experiment
-   ↓
-evidence
-   ↓
-refine decisions
-   ↓
-architecture later
+BOUNDARY LOCKED
+      ↓
+define minimum information contract
+      ↓
+test transport + write behavior
+      ↓
+collect evidence
+      ↓
+select implementation architecture later
 ```
 
-The project intentionally starts small.
-
-The immediate goal is to prove that portable AI context is useful before building the machinery around it.
+AISYNC should remain small, reusable, and independent of any one reasoning method or persistence destination.
