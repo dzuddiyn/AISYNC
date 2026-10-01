@@ -59,8 +59,10 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | GitHub canonical artifacts + Sheets operational DB | PASS | Avoids dual-master drift | Sync/index rules need implementation | Authority model locked | D-014 LOCKED |
 | Google Sites shell + Apps Script engine + redirect | PASS | Simple UI with programmable confirmation flow | App Script implementation remains | Interaction pattern locked | D-015 LOCKED |
 | Fine-grained PAT v0.1 → GitHub App later | PASS | Low v0.1 burden with migration path | Secret handling must be correct | Auth path locked | D-016 LOCKED |
+| Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
+| ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: prepare final architecture confirmation using the now-locked JSON contract/envelope, GitHub-vs-Sheets authority model, Google Sites + Apps Script UI pattern with post-sync redirect, and v0.1 GitHub PAT write path.
+Current direction: architecture v1.0 is CONFIRMED. Proceed to DO IT by re-planning the confirmed architecture into executable tasks; implementation has not started.
 
 ---
 
