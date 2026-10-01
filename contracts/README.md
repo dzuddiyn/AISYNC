@@ -1,0 +1,58 @@
+# ASC Write Contract v0.1
+
+Status: IMPLEMENTED FOR T-001  
+Architecture lineage: D-011, D-013, ARCHITECTURE v1.0
+
+## Purpose
+
+This contract is the canonical semantic handoff between a method/project and ASC.
+
+It contains exactly eight top-level semantic fields:
+
+1. Project
+2. Source method
+3. Operation
+4. Record type
+5. Record ID
+6. Content/change
+7. Lineage
+8. Destination
+
+Transport/security metadata does not belong here. Contract version, request identity, expiry, nonce/replay data, integrity/hash data, compression, and link encoding belong to the separate ASC envelope handled by T-002.
+
+## Field contract
+
+| Field | Type | Required | Rule |
+|---|---|---:|---|
+| Project | string | YES | Non-empty project identifier/name |
+| Source method | string | YES | Non-empty source method/project producer |
+| Operation | string | YES | Non-empty semantic operation; no destination-specific enum in v0.1 |
+| Record type | string | YES | Non-empty semantic record type |
+| Record ID | string | YES | Non-empty record identifier |
+| Content/change | object OR array OR non-empty string | YES | Proposed semantic record/change |
+| Lineage | array<string> | YES | May be empty; items unique and non-empty |
+| Destination | array<string> | YES | At least one unique non-empty destination |
+
+Top-level extra fields are rejected. This is intentional: envelope metadata must not leak into the semantic contract.
+
+## Method-agnostic rule
+
+The contract must not encode GitHub file SHAs, Google Sheets row numbers, OAuth state, tokens, retry metadata, timestamps, request IDs, or other destination/transport mechanics.
+
+Destination-specific translation happens after ASC Core accepts the semantic contract.
+
+## Examples
+
+- `examples/valid-zassimple-save.json` — valid real-world ZASSIMPLE SAVE-shaped payload.
+- `examples/valid-text-change.json` — valid text-form content/change.
+- `examples/invalid-missing-record-id.json` — invalid because a required semantic field is missing.
+- `examples/invalid-envelope-leak.json` — invalid because transport metadata appears at semantic top level.
+- `examples/invalid-destination.json` — invalid because Destination is empty.
+
+## T-001 pass condition
+
+PASS when:
+- a real ZASSIMPLE SAVE is representable with these eight fields;
+- required-field failure is mechanically detectable;
+- extra transport/destination mechanics are rejected at the semantic boundary;
+- no GitHub- or Sheets-specific write logic is required to understand the contract.
