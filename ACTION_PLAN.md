@@ -136,7 +136,7 @@ Finding: ZASS Core owns validation semantics; local CLI and future GitHub CI are
 
 
 PF-007 | RESOLVED BY T-003  
-Finding: ASC DB v0.1 now exists as a native Google Sheet with PROJECTS, RECORDS, ACTION_PLAN, and HISTORY. The bootstrap row model carries GitHub source artifact/commit and explicit authority fields, so Sheets functions as operational/index storage without becoming the canonical Markdown master. Native Sheet URL is documented in `db/README.md`.
+Finding: ASC DB v0.1 exists as a native Google Sheet with PROJECTS, RECORDS, ACTION_PLAN, and HISTORY. The active Sheet was migrated on 2026-10-02 to the intended Google owner profile `dzuddiyn Google`. The bootstrap row model carries GitHub source artifact/commit and explicit authority fields, so Sheets functions as operational/index storage without becoming the canonical Markdown master. Native Sheet URL is documented in `db/README.md`.
 
 
 PF-008 | OPEN — T-004 DEPLOYMENT VERIFICATION  
