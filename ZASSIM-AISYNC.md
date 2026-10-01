@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.3.1  
+**Project record version:** 0.4.0  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DESIGN  
@@ -45,10 +45,18 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 
 | Option / Candidate | Must-have fit | Strength | Risk / Weakness | Evidence / Unknown | Status |
 |---|---|---|---|---|---|
-| Shared Method → ASC → SoT boundary | PASS | Clean separation of reasoning from persistence | Destination semantics still need design | Implementation contract not defined | D-002 LOCKED |
+| Shared Method → ASC → SoT boundary | PASS | Clean separation of reasoning from persistence | Destination semantics still need design | Core boundary locked | D-002 LOCKED |
 | ASC Link universal write fallback | PASS | Works even when an AI app cannot write directly | Payload/auth/large-data mechanics still open | Needs implementation experiment | D-003 LOCKED |
+| ASC v0.1 core framework | PASS | Contract → Link → UI → Core → Adapter → Receipt | Implementation details remain | Action Plan created | D-004 LOCKED |
+| Google Sheets as ASC DB | PASS | Simple Google-native operational store | Scale/schema limits later | v0.1 not field-tested | D-005 LOCKED |
+| Google Sites as ASC UI | PASS | Familiar lightweight front-end | Dynamic implementation still open | UI information architecture locked | D-006 LOCKED |
+| GitHub first adapter | PASS | Markdown + Git lineage | Auth/write handling remains | First persistence proof | D-007 LOCKED |
+| Primary integrations: Obsidian, Notion, OneNote, Logseq, Joplin | PASS | Covers major local/cloud note ecosystems | Different adapter mechanics | Integration order not yet set | D-010 LOCKED |
+| Airtable | UNKNOWN | Structured SaaS destination | Overlaps with Sheets | Keep for later review | CANDIDATE |
+| ASC Write Contract v0.1 fields | PASS | Common language across methods/destinations | Encoding/schema types still open | Field set locked | D-011 LOCKED |
+| DECIDE / BUILD UI information architecture | PASS | Clear landing and project drill-down | Visual implementation open | Section set locked | D-012 LOCKED |
 
-Current direction: define the minimum ASC information/write contract before selecting implementation technology.
+Current direction: build and validate the minimum ASC v0.1 flow using the locked contract, Google Sites UI, Google Sheets ASC DB, and GitHub first adapter.
 
 ---
 
@@ -80,7 +88,8 @@ ZASSELECTION
         │
    ┌────┼───────────────┐
    ▼    ▼               ▼
-GitHub Google Sheets  AI-SYNC DB
+GitHub   Google Sheets
+           (= ASC DB)
         │
         ▼
  Source of Truth records
@@ -211,6 +220,105 @@ Reason: This avoids maintaining a native integration for every AI app while stil
 Locked by: Project Owner  
 Date: 2026-10-01
 
+
+D-004 | LOCKED  
+Decision: Lock the **ASC v0.1 core framework** as six logical parts:
+
+1. ASC Write Contract
+2. ASC Link
+3. ASC Web / UI
+4. ASC Core
+5. Destination Adapters
+6. Write Receipt
+
+The initial Action Plan AP-001 through AP-007 is accepted as the working DESIGN plan.  
+Reason: This preserves a small reusable core while keeping method semantics separate from transport and destination mechanics.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-005 | LOCKED  
+Decision: **Google Sheets = ASC DB** for the initial ASC implementation. Do not introduce a separate ASC database for v0.1 unless later evidence requires it.  
+Reason: Use the smallest maintainable structured store in the existing Google ecosystem.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-006 | LOCKED  
+Decision: **Google Sites = ASC UI** for the initial ASC implementation.  
+Reason: Provide a lightweight user-facing surface while keeping backend/transport logic separate.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-007 | LOCKED  
+Decision: **GitHub is the first persistence adapter / proof destination** for ASC v0.1. The proof flow should support Markdown update → commit → verification → factual receipt.  
+Reason: ZASS-family records already use Markdown/Git lineage, making GitHub the most direct first persistence proof.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-008 | REFINED BY D-010  
+Previous decision: Obsidian and Notion were accepted as initial external knowledge-integration targets.  
+Status note: D-010 expands and replaces this target set while preserving these two integrations.
+
+D-009 | REFINED BY D-012  
+Previous decision: The Google Sites UI should start with two main entry points, **DECIDE** and **BUILD**, and surface History, project progress, summaries, and Action Plan information.  
+Status note: D-012 locks the complete navigation and project-detail information architecture.
+
+D-010 | LOCKED  
+Decision: Lock these as the **primary external integration targets**:
+
+- Obsidian
+- Notion
+- OneNote
+- Logseq
+- Joplin
+
+Keep **Airtable** as a candidate for later review, not a locked primary integration.  
+Reason: Preserve a focused initial integration set across local-first and cloud note/knowledge ecosystems without expanding the core architecture.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-011 | LOCKED  
+Decision: Lock the minimum **ASC Write Contract v0.1** field set:
+
+- Project
+- Source method
+- Operation
+- Record type
+- Record ID
+- Content/change
+- Lineage
+- Destination
+
+The contract is the common semantic handoff between a method/project and ASC. Destination-specific formatting remains the responsibility of ASC/adapters.  
+Reason: Provide one common write language without coupling methods to GitHub, Sheets, or other destination implementations.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-012 | LOCKED  
+Decision: Lock the initial **Google Sites ASC UI information architecture**.
+
+Landing page:
+- two main entry points: **DECIDE** and **BUILD**
+
+After choosing DECIDE or BUILD:
+- show a **project list**
+- each project row/card shows:
+  - project progress bar
+  - latest update
+
+After opening a project:
+1. **Project progress bar**
+2. **Progress summary**
+3. **Next Action Plan summary**
+4. **Next stage summary**
+5. **Action Plan table**
+6. **ZASS table** — full table/list of all relevant ZASS-family record components for that source method (for example I, C, D, AC, and other applicable record types)
+7. **History**
+
+Reason: Keep the top-level UX simple while exposing full project lineage only after the user enters a specific project.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+
 ---
 
 ## LOGICAL BOUNDARY
@@ -226,7 +334,7 @@ AI-SYNC
         │
         ▼
 DESTINATION
-(GitHub / Google Sheets / AI-SYNC DB)
+(GitHub / Google Sheets = ASC DB)
         │
         ▼
 SOURCE OF TRUTH RECORDS
@@ -258,8 +366,7 @@ The boundary is LOCKED, but implementation architecture remains open.
 
 This decision does **not** yet select:
 
-- the AISYNC protocol/schema
-- the AISYNC Database technology
+- exact data types / encoding rules inside the locked ASC Write Contract fields
 - authentication mechanism
 - write API
 - queue/event model
@@ -270,7 +377,9 @@ This decision does **not** yet select:
 - synchronization direction or topology
 - exact ASC Link payload schema / encoding
 - large-payload fallback mechanism
-- ASC Web implementation technology
+- Google Sites dynamic implementation mechanism
+- adapter implementation order after GitHub
+- ASC Web implementation details beyond the locked Google Sites UI boundary
 
 Those require later evidence and explicit decisions.
 
@@ -280,6 +389,7 @@ Those require later evidence and explicit decisions.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.4.0 | 2026-10-01 | LOCKED D-004–D-012: ASC v0.1 framework, Google Sheets as ASC DB, Google Sites as ASC UI, GitHub first adapter, primary integrations, ASC Write Contract v0.1 fields, and DECIDE/BUILD project UI information architecture. Added first-class ACTION_PLAN.md. |
 | 0.3.1 | 2026-10-01 | Synced project method from ZASSIMPLE v0.1.6 to official v0.2.4; adopted 6D lifecycle, Stage Pulse/selection-matrix behavior, PROCEED/LOCK + SAVE command surfaces, hidden action-plan lineage, and current DESIGN stage without changing D-002/D-003. |
 | 0.3.0 | 2026-10-01 | LOCKED D-003: ASC Link established as the universal write fallback; native integrations remain optional fast paths; user-confirmed web preview/sync flow defined. |
 | 0.2.0 | 2026-10-01 | LOCKED D-002: official Method → AI-SYNC → Source of Truth boundary; AISYNC defined as shared transport/write infrastructure reusable by ZASS Full, ZASSIMPLE, ZASSELECTION, Dzuddiyn Library, and other projects. |

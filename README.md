@@ -59,7 +59,8 @@ ZASSELECTION
         │
    ┌────┼───────────────┐
    ▼    ▼               ▼
-GitHub Google Sheets  AI-SYNC DB
+GitHub   Google Sheets
+           (= ASC DB)
         │
         ▼
  Source of Truth records
@@ -107,8 +108,7 @@ It is shared infrastructure.
 The current boundary recognizes these destination classes:
 
 - GitHub
-- Google Sheets
-- AI-SYNC Database
+- Google Sheets (**ASC DB** for v0.1)
 
 They may hold Source of Truth records for the origin and lineage of reasoning, selection, decisions, and architecture.
 
@@ -140,8 +140,7 @@ meaningful structured record
 AI-SYNC
    │
    ├──► GitHub
-   ├──► Google Sheets
-   └──► AI-SYNC DB
+   └──► Google Sheets (= ASC DB)
 ```
 
 The method owns the **meaning**.
@@ -276,14 +275,104 @@ Exact payload encoding, encryption, authentication, and large-payload handling r
 
 ---
 
+
+## ASC v0.1 locked framework
+
+```text
+METHOD / PROJECT
+      ↓
+ASC Write Contract
+      ↓
+ASC Link
+      ↓
+Google Sites (ASC UI)
+      ↓
+ASC Core
+      ↓
+Destination Adapter
+      ↓
+GitHub / Google Sheets (= ASC DB)
+      ↓
+Write Receipt
+```
+
+### ASC Write Contract v0.1
+
+Locked minimum fields:
+
+- Project
+- Source method
+- Operation
+- Record type
+- Record ID
+- Content/change
+- Lineage
+- Destination
+
+### Google Sites UI
+
+Landing:
+
+```text
+ASC
+├── DECIDE
+└── BUILD
+```
+
+After entering **DECIDE** or **BUILD**, show the project list with:
+
+- project progress bar
+- latest update
+
+After opening a project, show:
+
+1. Project progress bar
+2. Progress summary
+3. Next Action Plan summary
+4. Next stage summary
+5. Action Plan table
+6. ZASS table — all applicable ZASS-family record components for that project/method
+7. History
+
+### Primary external integrations
+
+Locked primary targets:
+
+- Obsidian
+- Notion
+- OneNote
+- Logseq
+- Joplin
+
+Airtable remains a later **candidate**, not a locked primary integration.
+
+### First persistence proof
+
+GitHub is the first persistence adapter for v0.1:
+
+```text
+ASC Contract
+   ↓
+GitHub Adapter
+   ↓
+Markdown update
+   ↓
+Commit
+   ↓
+Verify
+   ↓
+Receipt
+```
+
+---
+
 ## What is not decided yet
 
 The boundary is locked. The implementation architecture is not.
 
 Not yet selected:
 
-- AISYNC common record/protocol format
-- AISYNC Database technology
+- exact data types / encoding rules inside the locked ASC Write Contract fields
 - authentication
 - APIs or webhooks
 - queues
@@ -295,7 +384,9 @@ Not yet selected:
 - automation level
 - exact ASC Link payload schema / encoding
 - large-payload fallback mechanism
-- ASC Web implementation technology
+- Google Sites dynamic implementation mechanism
+- adapter implementation order after GitHub
+- implementation details beyond the locked UI boundary
 
 These should be decided from evidence, not assumed.
 
@@ -314,9 +405,9 @@ It contains the current decisions, risks, open questions, and project history.
 ## Current project state
 
 ```text
-BOUNDARY + ASC LINK FALLBACK LOCKED
+BOUNDARY + ASC LINK + V0.1 FRAMEWORK LOCKED
       ↓
-define minimum information contract
+implement and validate locked ASC Write Contract
       ↓
 test transport + write behavior
       ↓
