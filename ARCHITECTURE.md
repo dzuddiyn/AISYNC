@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0  
+**Version:** 1.0.1  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-018 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-019 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 
@@ -101,7 +101,7 @@ Main dashboard/navigation shell.
 
 Top-level routes:
 - DECIDE
-- BUILD
+- DESIGN
 
 Project list shows:
 - project progress bar
@@ -296,7 +296,8 @@ Core decisions:
 - D-007 — GitHub first adapter
 - D-010 — external integration targets
 - D-011 — Write Contract field set
-- D-012 — UI information architecture
+- D-012 — original UI information architecture
+- D-019 — DECIDE / DESIGN terminology refinement
 - D-013 — canonical JSON + transport envelope
 - D-014 — GitHub/Sheets authority model
 - D-015 — Sites + Apps Script + post-sync redirect
@@ -306,6 +307,12 @@ Core decisions:
 
 Action Plan lineage:
 - AP-001 through AP-007
+
+## Confirmed patch record
+
+Architecture patch version: **1.0.1**  
+Patch: top-level ASC UI wording changed from **DECIDE / BUILD** to **DECIDE / DESIGN**.  
+Classification: terminology/UX refinement only; architecture semantics unchanged.
 
 ## Confirmation record
 
