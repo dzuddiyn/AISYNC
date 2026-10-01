@@ -3,7 +3,8 @@
 **Status:** IMPLEMENTED FOR T-003  
 **Role:** Google Sheets operational/index database  
 **Canonical project artifacts:** GitHub  
-**Native Google Sheet:** https://docs.google.com/spreadsheets/d/1x_VS4ddakojIO6h48HjBmNY66UFKU0PbUvXVarnduiI/edit
+**Native Google Sheet:** https://docs.google.com/spreadsheets/d/11pWE0E-jEZhigVAYGcsfVXW0TODRcNMgOZHFfUQIHKw/edit  
+**Google owner profile:** dzuddiyn Google
 
 ## Authority boundary
 
@@ -115,3 +116,10 @@ Verified on the native Google Sheet:
 - bootstrap rows include GitHub source artifact / commit lineage and explicit authority labels.
 
 Result: PASS — one AISYNC project is representable in Sheets without making Sheets the canonical project-artifact master.
+
+
+## Account migration note
+
+On 2026-10-02 the ASC DB was recreated under the intended Google owner profile **dzuddiyn Google** before live Apps Script deployment. The previous Sheet created under the other connected Google account is no longer the active ASC DB reference.
+
+The migration preserved the T-003 schema and authority model. GitHub remains canonical; the active Sheet remains operational/index storage only.
