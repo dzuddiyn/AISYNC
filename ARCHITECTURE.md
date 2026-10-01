@@ -1,12 +1,12 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** Draft 0.1  
-**Status:** READY FOR CONFIRMATION — NOT YET CONFIRMED  
+**Version:** 1.0  
+**Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-017 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-018 and recorded Action Plan findings.
 
-> This file is a working architecture draft. It becomes confirmed only after the owner replies exactly: `YA, CONFIRM ARCHITECTURE`.
+> Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 
 ## Purpose
 
@@ -209,6 +209,37 @@ Airtable remains a candidate.
 
 These integrations are adapters/consumers around ASC Core, not part of method semantics.
 
+
+## Cross-system validation boundary
+
+```text
+                    ZASS SYSTEM
+                         │
+                    ZASS Core
+              parser / validator / rules
+                    ┌────┴────┐
+                    │         │
+               Local CLI   GitHub CI
+               zass check   future runner
+                    │         │
+                    └────┬────┘
+                         │
+                      GitHub
+                  canonical project SoT
+                         │
+                         ▼
+                       ASC
+              consume / display results
+```
+
+Rules:
+- ZASS Core owns validation semantics and rule codes.
+- Local CLI and future GitHub CI must use the same core semantics.
+- ASC must not implement a second validator.
+- ASC may consume/display validation results associated with Git commits.
+- ZASS remains usable without ASC.
+- GitHub CI is a locked architecture direction, not a claim of current implementation.
+
 ## Source-of-Truth authority
 
 ### GitHub
@@ -271,14 +302,16 @@ Core decisions:
 - D-015 — Sites + Apps Script + post-sync redirect
 - D-016 — fine-grained PAT v0.1 → GitHub App later
 - D-017 — Google Account owner-only authentication
+- D-018 — ZASS Core / CLI / CI / ASC cross-system validation boundary
 
 Action Plan lineage:
 - AP-001 through AP-007
 
-## Confirmation gate
+## Confirmation record
 
-Architecture is ready for owner confirmation.
+Confirmed architecture version: **1.0**  
+Confirmed by: **Project Owner**  
+Date: **2026-10-01**  
+Confirmation phrase: `YA, CONFIRM ARCHITECTURE`
 
-Required exact owner reply:
-
-`YA, CONFIRM ARCHITECTURE`
+Implementation status: **NOT STARTED**. Next lifecycle stage: **DO IT**.
