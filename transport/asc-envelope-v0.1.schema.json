@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aisync.local/transport/asc-envelope-v0.1.schema.json",
+  "title": "ASC Transport Envelope v0.1",
+  "description": "Transport wrapper for an ASC Write Contract v0.1. Security enforcement is completed later; this schema reserves request identity, expiry, and integrity metadata without changing semantic contract meaning.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "envelope_version",
+    "request_id",
+    "expires_at",
+    "integrity",
+    "contract"
+  ],
+  "properties": {
+    "envelope_version": {
+      "const": "0.1"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest"],
+      "properties": {
+        "algorithm": {
+          "const": "SHA-256"
+        },
+        "digest": {
+          "type": ["string", "null"],
+          "minLength": 1
+        }
+      }
+    },
+    "contract": {
+      "type": "object"
+    }
+  }
+}
