@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.2  
+**Project record version:** 0.6.3  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -62,7 +62,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0 is CONFIRMED. T-001 has PASSED with the ASC Write Contract v0.1 artifact implemented and verified. T-002 is now the only current READY task.
+Current direction: architecture v1.0 is CONFIRMED. T-001 and T-002 have PASSED. ASC Link fragment transport is implemented and verified; T-003 (Google Sheets ASC DB structure) is now the only current READY task.
 
 ---
 
@@ -486,6 +486,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.3 | 2026-10-01 | DO IT T-002 PASS: implemented ASC envelope v0.1 and fragment-only Base64URL link encode/decode; verified Unicode semantic round-trip and no payload exposure in ordinary query parameters. T-003 promoted to READY; expiry/integrity/replay enforcement remains deferred to T-010. |
 | 0.6.2 | 2026-10-01 | DO IT T-001 PASS: implemented canonical ASC Write Contract v0.1 JSON Schema and valid/invalid examples; verified required-field, extra-field, and destination constraints. T-002 promoted to READY; no T-002 implementation started. |
 | 0.6.1 | 2026-10-01 | DO IT task slicing completed: created `TASKS.md` with T-001 current READY, T-002–T-011 queued by dependency, and T-012 blocked/later pending real ZASS GitHub CI. No implementation executed yet. |
 | 0.6.0 | 2026-10-01 | LOCKED D-018 cross-system boundary: ZASS Core owns validation semantics; CLI/CI are shared-core runners; ASC consumes/displays results without duplicating rules. Architecture v1.0 CONFIRMED by exact owner command `YA, CONFIRM ARCHITECTURE`; lifecycle moved to DO IT, implementation not started. |
