@@ -50,6 +50,7 @@ Verification:
 - HISTORY `SUCCESS / FAILED` validation active
 - timezone set to `Asia/Kuala_Lumpur`
 - GitHub source artifact/commit and authority fields explicitly preserve canonical-vs-operational boundary
+- Ownership migration verified: active ASC DB now belongs to the intended `dzuddiyn Google` profile; repo URL updated
 Result: PASS — one AISYNC project is represented operationally without making Sheets a competing canonical master.
 
 
