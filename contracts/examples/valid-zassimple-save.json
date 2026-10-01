@@ -1,0 +1,13 @@
+{
+  "Project": "AISYNC",
+  "Source method": "ZASSIMPLE",
+  "Operation": "SAVE",
+  "Record type": "decision",
+  "Record ID": "D-018",
+  "Content/change": {
+    "status": "LOCKED",
+    "decision": "ZASS Core owns validation semantics; CLI and future CI are runners over the same core; ASC consumes results without duplicating validator logic."
+  },
+  "Lineage": ["D-002", "D-014"],
+  "Destination": ["GitHub", "ASC_DB"]
+}
