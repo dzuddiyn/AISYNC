@@ -22,12 +22,13 @@ Pass / stop condition: One generic contract can express a real ZASSIMPLE SAVE wi
 Result: PASS — canonical JSON Schema + valid/invalid examples implemented under `contracts/`; T-001 verified.  
 Feeds architecture: YES
 
-AP-002 | OPEN  
+AP-002 | DONE  
 Source: D-003, D-004, D-011  
 Action: Define the ASC Link representation for a small write request.  
 Dependencies: AP-001.  
 Constraint / feasibility note: Prefer client-side fragment transport for small payloads; exact encoding remains open.  
 Pass / stop condition: An ordinary AI app with no write integration can generate a valid ASC Link from method instructions.  
+Result: PASS — envelope schema + fragment-only Base64URL link encoder/decoder implemented and verified in T-002; security enforcement remains in AP-007/T-010.  
 Feeds architecture: YES
 
 AP-003 | OPEN  
