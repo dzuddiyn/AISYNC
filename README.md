@@ -2,7 +2,7 @@
 
 > Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** DESIGN — boundary locked; implementation architecture pending  
+**Status:** ARCHITECTURE CONFIRMED — DO IT ready; implementation not started  
 **Method used to develop this project:** ZASSIMPLE v0.2.4  
 **Repository:** AISYNC
 
@@ -21,7 +21,7 @@ AISYNC is currently developed with **ZASSIMPLE v0.2.4**.
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DESIGN**.
+Current stage: **DO IT** — architecture v1.0 is confirmed; implementation has not started.
 
 The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, architecture, executable tasks, verification, and delivery.
 
@@ -466,6 +466,28 @@ These should be decided from evidence, not assumed.
 
 ---
 
+## ZASS SYSTEM cross-system boundary
+
+```text
+ZASS Core
+   ├── Local CLI (zass check)
+   └── GitHub CI (future runner)
+            ↓
+          GitHub
+            ↓
+           ASC
+   consume / display results
+```
+
+- ZASS Core owns parser/validator/rule semantics.
+- CLI and future GitHub CI must run the same core logic.
+- ASC must not implement a second copy of ZASS validation rules.
+- ASC may consume and display commit-linked validation results.
+- ZASS remains fully usable without ASC.
+- GitHub CI is not yet implemented; it is an architecture direction, not a current capability.
+
+---
+
 ## Project Source of Truth
 
 The working project record is:
@@ -479,9 +501,9 @@ It contains the current decisions, risks, open questions, and project history.
 ## Current project state
 
 ```text
-V0.1 ARCHITECTURE DRAFT READY FOR CONFIRMATION
+ARCHITECTURE v1.0 CONFIRMED
       ↓
-owner architecture confirmation
+DO IT — slice Action Plan into executable tasks
       ↓
 implement and validate locked ASC Write Contract
       ↓
