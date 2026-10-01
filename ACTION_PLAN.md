@@ -123,3 +123,7 @@ Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is
 ## Architecture feedback
 
 The core DESIGN blockers are now resolved by D-013 through D-016. Remaining implementation details include exact JSON data types/validation rules, ASC envelope encoding, receipt schema details, progress calculation fields emitted by each method, retry/conflict handling, and privacy/replay implementation. The architecture draft is ready for the owner confirmation gate; do not mark it confirmed until the owner replies exactly `YA, CONFIRM ARCHITECTURE`.
+
+
+PF-005 | RESOLVED BY D-017  
+Finding: Google Account is the v0.1 identity gate with owner-only access; pending ASC Link requests survive sign-in, preview precedes persistence, and successful sync returns to the main ASC UI.
