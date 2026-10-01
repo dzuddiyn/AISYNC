@@ -1,0 +1,84 @@
+const ASC_PENDING_KEY = 'asc.pending.fragment.v0.1';
+
+function getAscFragment(hashValue) {
+  const hash = String(hashValue || '').replace(/^#/, '');
+  if (!hash.startsWith('asc=')) return null;
+  const payload = hash.slice(4);
+  return payload ? '#asc=' + payload : null;
+}
+
+function preservePendingRequest(locationLike, storage) {
+  const current = getAscFragment(locationLike.hash);
+
+  if (current) {
+    storage.setItem(ASC_PENDING_KEY, current);
+    return { fragment: current, source: 'url' };
+  }
+
+  const saved = storage.getItem(ASC_PENDING_KEY);
+  const restored = getAscFragment(saved);
+
+  if (restored) {
+    return { fragment: restored, source: 'session' };
+  }
+
+  return { fragment: null, source: 'none' };
+}
+
+function base64UrlToUtf8(value) {
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+    throw new Error('ASC fragment payload is not valid Base64URL.');
+  }
+  const padded = value.replace(/-/g, '+').replace(/_/g, '/')
+    .padEnd(Math.ceil(value.length / 4) * 4, '=');
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function decodePendingEnvelope(fragment) {
+  const normalized = getAscFragment(fragment);
+  if (!normalized) throw new Error('ASC pending fragment is missing.');
+  const encoded = normalized.slice('#asc='.length);
+  const envelope = JSON.parse(base64UrlToUtf8(encoded));
+  if (envelope?.envelope_version !== '0.1') {
+    throw new Error('Unsupported ASC envelope version.');
+  }
+  return envelope;
+}
+
+function renderPendingPreview(envelope) {
+  const preview = document.getElementById('preview');
+  const payload = document.getElementById('payload');
+  payload.textContent = JSON.stringify(envelope.contract, null, 2);
+  preview.hidden = false;
+}
+
+function setStatus(message, isError) {
+  const status = document.getElementById('status');
+  status.textContent = message;
+  status.className = 'card' + (isError ? ' error' : '');
+}
+
+function bootAscPreview() {
+  const pending = preservePendingRequest(window.location, window.sessionStorage);
+
+  if (!pending.fragment) {
+    setStatus('Signed in. No pending ASC request found.', false);
+    return;
+  }
+
+  try {
+    const envelope = decodePendingEnvelope(pending.fragment);
+    renderPendingPreview(envelope);
+    setStatus(
+      'Signed in with Google. Pending request restored from ' + pending.source +
+      '. Preview only — no write has occurred.',
+      false
+    );
+  } catch (error) {
+    setStatus('Pending request could not be decoded: ' + error.message, true);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', bootAscPreview);
