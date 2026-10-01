@@ -13,12 +13,13 @@ Turn the locked ASC boundaries into a minimum testable v0.1 without coupling ZAS
 
 ## Current plan
 
-AP-001 | OPEN  
+AP-001 | DONE  
 Source: D-002, D-004, D-011  
 Action: Implement the locked ASC Write Contract v0.1 representation as canonical JSON using: Project, Source method, Operation, Record type, Record ID, Content/change, Lineage, Destination; keep transport/security metadata in a separate ASC envelope (D-013).  
 Dependencies: None beyond the locked field set.  
 Constraint / feasibility note: Keep destination-specific mechanics out of the method contract.  
 Pass / stop condition: One generic contract can express a real ZASSIMPLE SAVE without embedding GitHub- or Sheets-specific write logic.  
+Result: PASS — canonical JSON Schema + valid/invalid examples implemented under `contracts/`; T-001 verified.  
 Feeds architecture: YES
 
 AP-002 | OPEN  
