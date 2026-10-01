@@ -1,6 +1,6 @@
 # ASC Apps Script Web App — T-004
 
-Status: IMPLEMENTED SKELETON — LIVE DEPLOYMENT TEST PENDING
+Status: IMPLEMENTED SKELETON — LOCAL TEST PASS — LIVE DEPLOYMENT TEST PENDING
 
 ## Purpose
 
@@ -63,3 +63,15 @@ NO WRITE
 ```
 
 Until that live check is performed, T-004 remains implementation-complete but verification-pending.
+
+
+## Local verification result
+
+`test-pending-request.mjs` result:
+
+- fragment capture: PASS
+- sessionStorage restore after simulated fragmentless return: PASS
+- envelope decode after restore: PASS
+- persistence/write functions exposed: NONE
+
+This does not replace the required real Google Account web-app deployment test.
