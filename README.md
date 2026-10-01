@@ -423,6 +423,10 @@ Google Sites remains the main dashboard/navigation shell. The Apps Script Web Ap
 
 After a **successful** CONFIRM & SYNC, the user returns to the main ASC UI. Failed writes must surface failure and must not masquerade as success.
 
+### Google Account login
+
+ASC v0.1 uses Google Account sign-in with owner-only access. Pending ASC Link requests must survive sign-in, preview must appear before persistence, successful sync returns to the main ASC UI, and failed writes stay visibly failed.
+
 ### GitHub v0.1 authentication
 
 For the personal v0.1 prototype:
