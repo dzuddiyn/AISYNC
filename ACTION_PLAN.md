@@ -137,3 +137,7 @@ Finding: ZASS Core owns validation semantics; local CLI and future GitHub CI are
 
 PF-007 | RESOLVED BY T-003  
 Finding: ASC DB v0.1 now exists as a native Google Sheet with PROJECTS, RECORDS, ACTION_PLAN, and HISTORY. The bootstrap row model carries GitHub source artifact/commit and explicit authority fields, so Sheets functions as operational/index storage without becoming the canonical Markdown master. Native Sheet URL is documented in `db/README.md`.
+
+
+PF-008 | OPEN — T-004 DEPLOYMENT VERIFICATION  
+Finding: The Apps Script Web App skeleton is implemented using owner-only Google Account deployment semantics (`MYSELF` / `USER_DEPLOYING`). Pending `#asc` state restoration and preview-only behavior pass local tests. T-004 cannot be closed until the real deployed Google authentication redirect is verified with an actual ASC Link; no write handler exists yet.
