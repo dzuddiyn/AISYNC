@@ -10,13 +10,28 @@
 
 ## Current task
 
-T-004 | READY  
+T-004 | IN PROGRESS — LIVE DEPLOYMENT TEST PENDING  
 Source: AP-003, AP-007, PF-005  
 Decision / Architecture lineage: D-006, D-015, D-017, ARCH v1.0.1 § Apps Script Web App + Google Account authentication  
 Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
 Depends on: T-002  
 Pass: An unauthenticated ASC Link request survives sign-in and reaches a post-login preview state without any write occurring.  
-Result: NOT STARTED
+Built:
+- `apps-script/appsscript.json` — owner-only `MYSELF`, execute as deployer
+- `apps-script/Code.gs` — preview-only web-app server
+- `apps-script/Index.html`
+- `apps-script/Client.html` — fragment/session preservation + preview
+- `apps-script/test-pending-request.mjs`
+Verification completed:
+- simulated fragment → sessionStorage → fragmentless-return restoration: PASS
+- T-002 envelope decode after restore: PASS
+- no client write function exposed: PASS
+Remaining verification:
+- deploy as real Apps Script Web App
+- open a real ASC Link while unauthenticated
+- complete Google Account sign-in
+- confirm pending request reaches preview with no write
+Result: PARTIAL PASS — implementation complete, real Google auth/deployment pass condition not yet proven.
 
 ## Completed
 
