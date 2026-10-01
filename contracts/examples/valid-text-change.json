@@ -1,0 +1,10 @@
+{
+  "Project": "Example Project",
+  "Source method": "ZASSIMPLE",
+  "Operation": "SAVE",
+  "Record type": "note",
+  "Record ID": "I-001",
+  "Content/change": "Preserve this owner-approved project note.",
+  "Lineage": [],
+  "Destination": ["GitHub"]
+}
