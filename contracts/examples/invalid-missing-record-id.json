@@ -1,0 +1,11 @@
+{
+  "Project": "AISYNC",
+  "Source method": "ZASSIMPLE",
+  "Operation": "SAVE",
+  "Record type": "decision",
+  "Content/change": {
+    "status": "LOCKED"
+  },
+  "Lineage": [],
+  "Destination": ["GitHub"]
+}
