@@ -316,10 +316,10 @@ Landing:
 ```text
 ASC
 ├── DECIDE
-└── BUILD
+└── DESIGN
 ```
 
-After entering **DECIDE** or **BUILD**, show the project list with:
+After entering **DECIDE** or **DESIGN**, show the project list with:
 
 - project progress bar
 - latest update
