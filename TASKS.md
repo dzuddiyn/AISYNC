@@ -10,19 +10,33 @@
 
 ## Current task
 
-T-001 | READY  
+T-002 | READY  
+Source: AP-002, AP-007  
+Decision / Architecture lineage: D-003, D-013, ARCH v1.0 § ASC transport/security envelope + ASC Link  
+Do: Define and implement the v0.1 ASC envelope plus small-payload link encode/decode path, including request identity, expiry/integrity placeholders, and fragment-based transport.  
+Depends on: T-001  
+Pass: A valid T-001 contract round-trips through an ASC Link without semantic loss, and ordinary query parameters do not expose the record payload.  
+Result: NOT STARTED
+
+## Completed
+
+T-001 | PASS  
 Source: AP-001  
 Decision / Architecture lineage: D-011, D-013, ARCH v1.0 § ASC Write Contract  
-Do: Define the concrete ASC Write Contract v0.1 artifact as canonical JSON, including field types/requiredness and a small set of valid/invalid example payloads. Keep transport/security metadata outside the semantic contract.  
-Why: Every later component — ASC Link, Core, Sheets mapping, GitHub adapter, receipt, and UI preview — depends on a stable contract shape.  
-Pass: A real ZASSIMPLE SAVE can be represented using only the locked semantic fields (Project, Source method, Operation, Record type, Record ID, Content/change, Lineage, Destination), and invalid/missing required fields are unambiguously detectable without GitHub- or Sheets-specific logic.  
-If blocked: Record the exact ambiguity as an implementation finding; do not add new semantic fields unless architecture/decision feedback requires owner review.  
-Then: T-002  
-Result: NOT STARTED
+Built:
+- `contracts/asc-write-contract-v0.1.schema.json`
+- `contracts/README.md`
+- valid/invalid contract examples under `contracts/examples/`
+Verification:
+- two valid examples passed semantic validation
+- missing `Record ID` rejected
+- leaked top-level transport metadata rejected
+- empty `Destination` rejected
+Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
 
-T-002 | QUEUED  
+T-002 | MOVED TO CURRENT  
 Source: AP-002, AP-007  
 Decision / Architecture lineage: D-003, D-013, ARCH v1.0 § ASC transport/security envelope + ASC Link  
 Do: Define and implement the v0.1 ASC envelope plus small-payload link encode/decode path, including request identity, expiry/integrity placeholders, and fragment-based transport.  
@@ -102,10 +116,10 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-No implementation evidence yet.
+Implementation evidence exists for T-001.
 
 Closure checks:
-- Built: NO
-- Verified: NO
-- Matches architecture: NOT YET TESTED
+- Built: PARTIAL — T-001 complete
+- Verified: PARTIAL — T-001 verified
+- Matches architecture: YES FOR T-001
 - Recorded: YES — task queue created
