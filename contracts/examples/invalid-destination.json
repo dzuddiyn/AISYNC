@@ -1,0 +1,12 @@
+{
+  "Project": "AISYNC",
+  "Source method": "ZASSIMPLE",
+  "Operation": "SAVE",
+  "Record type": "decision",
+  "Record ID": "D-018",
+  "Content/change": {
+    "status": "LOCKED"
+  },
+  "Lineage": [],
+  "Destination": []
+}
