@@ -4,7 +4,7 @@
 **Status:** READY FOR CONFIRMATION — NOT YET CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-016 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-017 and recorded Action Plan findings.
 
 > This file is a working architecture draft. It becomes confirmed only after the owner replies exactly: `YA, CONFIRM ARCHITECTURE`.
 
@@ -30,7 +30,7 @@ native direct write when available
 ASC Link universal fallback
         ↓
 Apps Script Web App
-parse → preview → authenticate → CONFIRM & SYNC
+Google Account gate → preserve pending request → preview → CONFIRM & SYNC
         ↓
 ASC Core
 validate → authorize → translate → route
@@ -129,7 +129,15 @@ Interactive ASC surface/engine for:
 
 A failure must remain visible as failure and must not be presented as a successful sync.
 
-### 7. ASC Core
+### 7. Google Account authentication
+
+- Google Account is the v0.1 login/identity mechanism.
+- access is owner-only for v0.1.
+- pending ASC Link requests survive sign-in.
+- sign-in does not itself authorize persistence; explicit CONFIRM & SYNC remains required.
+- successful sync returns the user to the main ASC UI.
+
+### 8. ASC Core
 
 Responsibilities:
 - validate request
@@ -146,7 +154,7 @@ Non-responsibilities:
 - inventing progress
 - silently changing LOCKED method decisions
 
-### 8. Google Sheets = ASC DB
+### 9. Google Sheets = ASC DB
 
 Operational/index store, not a competing editable master for canonical GitHub artifacts.
 
@@ -158,7 +166,7 @@ Minimum logical tables/tabs:
 
 Method-owned semantic fields such as lifecycle stage/progress are stored/displayed by ASC, not invented by ASC Core.
 
-### 9. GitHub adapter
+### 10. GitHub adapter
 
 First persistence proof and canonical artifact destination.
 
@@ -174,7 +182,7 @@ v0.1 write path:
 
 Later multi-user/public deployment migrates to GitHub App authentication.
 
-### 10. Write Receipt
+### 11. Write Receipt
 
 Must distinguish proposed state from persisted state.
 
@@ -188,7 +196,7 @@ Minimum intent:
 
 Exact receipt schema remains an implementation detail.
 
-### 11. External integration targets
+### 12. External integration targets
 
 Primary locked targets:
 - Obsidian
@@ -262,6 +270,7 @@ Core decisions:
 - D-014 — GitHub/Sheets authority model
 - D-015 — Sites + Apps Script + post-sync redirect
 - D-016 — fine-grained PAT v0.1 → GitHub App later
+- D-017 — Google Account owner-only authentication
 
 Action Plan lineage:
 - AP-001 through AP-007
