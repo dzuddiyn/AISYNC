@@ -133,3 +133,7 @@ Finding: Google Account is the v0.1 identity gate with owner-only access; pendin
 
 PF-006 | RESOLVED BY D-018  
 Finding: ZASS Core owns validation semantics; local CLI and future GitHub CI are runners over the same core. ASC may consume/display commit-linked validation results but must not duplicate validator logic. GitHub CI is not yet implemented and must remain represented as future work until built.
+
+
+PF-007 | RESOLVED BY T-003  
+Finding: ASC DB v0.1 now exists as a native Google Sheet with PROJECTS, RECORDS, ACTION_PLAN, and HISTORY. The bootstrap row model carries GitHub source artifact/commit and explicit authority fields, so Sheets functions as operational/index storage without becoming the canonical Markdown master. Native Sheet URL is documented in `db/README.md`.
