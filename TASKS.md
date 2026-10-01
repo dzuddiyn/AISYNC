@@ -91,8 +91,8 @@ Pass: No persistence occurs before explicit confirmation; success returns to mai
 
 T-009 | QUEUED  
 Source: AP-003, UI data requirements  
-Decision / Architecture lineage: D-005, D-006, D-012, D-014, ARCH v1.0 § Google Sites ASC UI  
-Do: Implement the read/dashboard path: DECIDE/BUILD landing, project list with progress + latest update, and project detail with the seven locked sections.  
+Decision / Architecture lineage: D-005, D-006, D-012, D-014, D-019, ARCH v1.0 § Google Sites ASC UI  
+Do: Implement the read/dashboard path: DECIDE/DESIGN landing, project list with progress + latest update, and project detail with the seven locked sections.  
 Depends on: T-003, T-004  
 Pass: The UI can display Project progress bar, Progress summary, Next Action Plan summary, Next stage summary, Action Plan table, ZASS table, and History from ASC DB/index data without inventing method semantics.
 
