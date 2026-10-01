@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.6  
+**Project record version:** 0.6.7  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -62,7 +62,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0.1 is CONFIRMED. T-001 through T-003 have PASSED. T-004 Apps Script owner-only preview skeleton is implemented and locally verified, but remains IN PROGRESS until a real deployed Google Account sign-in preserves the pending ASC request and reaches preview without a write.
+Current direction: architecture v1.0.1 is CONFIRMED. T-001 through T-003 have PASSED. The active ASC DB has been migrated to the intended Google owner profile `dzuddiyn Google`. T-004 Apps Script owner-only preview skeleton remains IN PROGRESS until a real deployed Google Account sign-in preserves the pending ASC request and reaches preview without a write.
 
 ---
 
@@ -499,6 +499,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.7 | 2026-10-02 | Operational ownership fix: recreated and verified the active ASC DB under the intended Google owner profile `dzuddiyn Google`; replaced the repo's active Sheet URL and preserved the same T-003 schema/authority boundary. T-004 remains IN PROGRESS pending real deployment/auth verification. |
 | 0.6.6 | 2026-10-02 | DO IT T-004 partial: implemented owner-only Apps Script Web App skeleton, pending fragment/session preservation, and preview-only client; local state/decode/no-write tests PASS. Real deployed Google Account sign-in verification remains pending, so T-004 is not yet marked PASS. |
 | 0.6.5 | 2026-10-02 | DO IT T-003 PASS: created and verified native Google Sheets ASC DB v0.1 with PROJECTS / RECORDS / ACTION_PLAN / HISTORY, authority/source lineage fields, DECIDE / DESIGN validation, operational filters, and Asia/Kuala_Lumpur timezone. T-004 promoted to READY. |
 | 0.6.4 | 2026-10-01 | Small UI terminology patch: D-019 LOCKED, refining ASC landing labels from DECIDE / BUILD to DECIDE / DESIGN without changing architecture semantics. Architecture document patched to v1.0.1. |
