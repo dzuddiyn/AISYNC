@@ -1,8 +1,8 @@
 # AISYNC — ZASSIMPLE ACTION PLAN
 
-**Status:** INTERNAL WORKING ARTIFACT  
+**Status:** READY FOR TASK SLICING  
 **Method:** ZASSIMPLE v0.2.4  
-**Lifecycle stage:** DESIGN  
+**Lifecycle stage:** DO IT  
 **Authority:** Planning artifact only. It must not override LOCKED owner decisions.
 
 > Implementation thoughts discovered during DESIGN may refine architecture. Architecture findings may refine this Action Plan. LOCKED decisions remain owner authority.
@@ -122,8 +122,12 @@ Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is
 
 ## Architecture feedback
 
-The core DESIGN blockers are now resolved by D-013 through D-016. Remaining implementation details include exact JSON data types/validation rules, ASC envelope encoding, receipt schema details, progress calculation fields emitted by each method, retry/conflict handling, and privacy/replay implementation. The architecture draft is ready for the owner confirmation gate; do not mark it confirmed until the owner replies exactly `YA, CONFIRM ARCHITECTURE`.
+The core DESIGN blockers are resolved by D-013 through D-018. Architecture v1.0 is confirmed. The next ZASSIMPLE step is DO IT: re-plan from current state, slice the Action Plan into executable tasks, and surface one current task at a time. Task slicing has not started yet.
 
 
 PF-005 | RESOLVED BY D-017  
 Finding: Google Account is the v0.1 identity gate with owner-only access; pending ASC Link requests survive sign-in, preview precedes persistence, and successful sync returns to the main ASC UI.
+
+
+PF-006 | RESOLVED BY D-018  
+Finding: ZASS Core owns validation semantics; local CLI and future GitHub CI are runners over the same core. ASC may consume/display commit-linked validation results but must not duplicate validator logic. GitHub CI is not yet implemented and must remain represented as future work until built.
