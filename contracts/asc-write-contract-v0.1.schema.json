@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aisync.local/contracts/asc-write-contract-v0.1.schema.json",
+  "title": "ASC Write Contract v0.1",
+  "description": "Canonical semantic handoff from a method/project to ASC. Transport/security metadata belongs in the ASC envelope, not this contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "Project",
+    "Source method",
+    "Operation",
+    "Record type",
+    "Record ID",
+    "Content/change",
+    "Lineage",
+    "Destination"
+  ],
+  "properties": {
+    "Project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Source method": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Operation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Record type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Record ID": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Content/change": {
+      "oneOf": [
+        { "type": "object" },
+        { "type": "array" },
+        { "type": "string", "minLength": 1 }
+      ]
+    },
+    "Lineage": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "Destination": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}
