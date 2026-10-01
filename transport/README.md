@@ -1,6 +1,6 @@
 # ASC Link Transport v0.1
 
-Status: T-002 implementation
+Status: T-002 PASS
 
 ## Boundary
 
@@ -52,3 +52,15 @@ A valid T-001 contract must:
 2. support Unicode content;
 3. remain absent from ordinary query parameters;
 4. reject links that attempt to carry `asc` in the query string.
+
+
+## Verified result
+
+Executed against the committed module with Node:
+- semantic round-trip: PASS
+- Unicode round-trip: PASS
+- fragment-only payload: PASS
+- ordinary query payload exposure: NONE
+- query-carried ASC payload rejection: PASS
+
+Expiry rejection, digest verification, and replay protection remain intentionally deferred to T-010.
