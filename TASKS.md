@@ -10,15 +10,33 @@
 
 ## Current task
 
-T-002 | READY  
-Source: AP-002, AP-007  
-Decision / Architecture lineage: D-003, D-013, ARCH v1.0 § ASC transport/security envelope + ASC Link  
-Do: Define and implement the v0.1 ASC envelope plus small-payload link encode/decode path, including request identity, expiry/integrity placeholders, and fragment-based transport.  
+T-003 | READY  
+Source: AP-003, PF-003, D-014  
+Decision / Architecture lineage: D-005, D-012, D-014, ARCH v1.0 § Google Sheets = ASC DB  
+Do: Create the v0.1 Google Sheets ASC DB structure and bootstrap mapping for PROJECTS, RECORDS, ACTION_PLAN, and HISTORY.  
 Depends on: T-001  
-Pass: A valid T-001 contract round-trips through an ASC Link without semantic loss, and ordinary query parameters do not expose the record payload.  
+Pass: One sample project can be represented without making Sheets a competing editable master for canonical GitHub artifacts.  
 Result: NOT STARTED
 
 ## Completed
+
+T-002 | PASS  
+Source: AP-002, AP-007  
+Decision / Architecture lineage: D-003, D-013, ARCH v1.0 § ASC transport/security envelope + ASC Link  
+Built:
+- `transport/asc-envelope-v0.1.schema.json`
+- `transport/asc-link.mjs`
+- `transport/test-asc-link.mjs`
+- `transport/README.md`
+Verification:
+- T-001 contract round-tripped through encode → ASC Link fragment → decode without semantic loss
+- Unicode content round-tripped correctly
+- payload remained absent from ordinary query parameters
+- query-carried `asc` payload was rejected
+- integrity digest remains an explicit placeholder for T-010 rather than a false security claim
+Result: PASS — small-payload ASC Link transport works through `#asc=<Base64URL envelope>` and preserves contract semantics.
+
+
 
 T-001 | PASS  
 Source: AP-001  
@@ -35,13 +53,6 @@ Verification:
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
-
-T-003 | QUEUED  
-Source: AP-003, PF-003, D-014  
-Decision / Architecture lineage: D-005, D-012, D-014, ARCH v1.0 § Google Sheets = ASC DB  
-Do: Create the v0.1 Google Sheets ASC DB structure and bootstrap mapping for PROJECTS, RECORDS, ACTION_PLAN, and HISTORY.  
-Depends on: T-001  
-Pass: One sample project can be represented without making Sheets a competing editable master for canonical GitHub artifacts.
 
 T-004 | QUEUED  
 Source: AP-003, AP-007, PF-005  
@@ -109,10 +120,10 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001.
+Implementation evidence exists for T-001 and T-002.
 
 Closure checks:
-- Built: PARTIAL — T-001 complete
-- Verified: PARTIAL — T-001 verified
-- Matches architecture: YES FOR T-001
+- Built: PARTIAL — T-001 and T-002 complete
+- Verified: PARTIAL — T-001 and T-002 verified
+- Matches architecture: YES FOR T-001 AND T-002
 - Recorded: YES — task queue created
