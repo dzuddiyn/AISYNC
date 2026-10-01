@@ -15,7 +15,7 @@ Turn the locked ASC boundaries into a minimum testable v0.1 without coupling ZAS
 
 AP-001 | OPEN  
 Source: D-002, D-004, D-011  
-Action: Define the concrete ASC Write Contract v0.1 representation using the locked fields: Project, Source method, Operation, Record type, Record ID, Content/change, Lineage, Destination.  
+Action: Implement the locked ASC Write Contract v0.1 representation as canonical JSON using: Project, Source method, Operation, Record type, Record ID, Content/change, Lineage, Destination; keep transport/security metadata in a separate ASC envelope (D-013).  
 Dependencies: None beyond the locked field set.  
 Constraint / feasibility note: Keep destination-specific mechanics out of the method contract.  
 Pass / stop condition: One generic contract can express a real ZASSIMPLE SAVE without embedding GitHub- or Sheets-specific write logic.  
@@ -31,7 +31,7 @@ Feeds architecture: YES
 
 AP-003 | OPEN  
 Source: D-006, D-009, D-012  
-Action: Design the Google Sites ASC UI flow.  
+Action: Implement the locked Google Sites + Apps Script UI flow, including preview/confirm/write behavior and redirect back to the main ASC UI after a successful confirmed update (D-015).  
 Dependencies: D-012 UI information architecture.  
 Constraint / feasibility note: Landing must stay simple: DECIDE / BUILD. Project detail carries the richer lineage views.  
 Pass / stop condition: The UI can represent the locked navigation and project-detail sections without forcing users to inspect raw Markdown.  
@@ -39,7 +39,7 @@ Feeds architecture: YES
 
 AP-004 | OPEN  
 Source: D-002, D-004  
-Action: Define the ASC Core boundary: validate, authorize, translate, route, write through adapter, verify, return receipt.  
+Action: Implement the ASC Core boundary: validate, authorize, translate, route, write through adapter, verify, return receipt; use GitHub as canonical artifact destination and Sheets as operational ASC DB per D-014.  
 Dependencies: AP-001.  
 Constraint / feasibility note: ASC Core must not perform reasoning or silently rewrite method meaning / LOCKED decisions.  
 Pass / stop condition: The same contract can enter the Core regardless of which AI app generated it.  
@@ -47,7 +47,7 @@ Feeds architecture: YES
 
 AP-005 | OPEN  
 Source: D-007  
-Action: Implement the first destination adapter for GitHub.  
+Action: Implement the first destination adapter for GitHub using the locked v0.1 fine-grained PAT path, current-file/SHA fetch, create/update, verification, and receipt flow (D-016).  
 Dependencies: AP-001, AP-004.  
 Constraint / feasibility note: v0.1 proof should support Markdown update → commit → verification → factual receipt.  
 Pass / stop condition: A ZASSIMPLE project with no AI→GitHub integration can SAVE through ASC and receive a verified commit result.  
@@ -111,27 +111,15 @@ Integration order after GitHub is not yet locked.
 PF-001 | OPEN  
 Finding: Google Sheets is the locked ASC DB for v0.1 (D-005). A separate ASC database is not required for the first implementation.
 
-PF-002 | OPEN  
-Finding: Google Sites is the locked ASC UI (D-006), but the mechanism used to provide dynamic preview/confirm/write behavior inside that UI remains an implementation question.
+PF-002 | RESOLVED BY D-015  
+Finding: Google Sites is the main ASC shell; Apps Script Web App provides dynamic preview/confirm/write behavior and returns the user to the main ASC UI after successful sync.
 
-PF-003 | OPEN  
-Finding: The locked project-detail UI requires normalized access to progress, current/next stage, Action Plan, ZASS records, latest update, and history. This may materially shape the Google Sheets record structure and should feed the architecture draft.
+PF-003 | RESOLVED BY D-014  
+Finding: The project-detail UI reads normalized operational/index data from Google Sheets logical tables PROJECTS, RECORDS, ACTION_PLAN, and HISTORY; semantic stage/progress remains method-owned.
 
-PF-004 | OPEN  
-Finding: GitHub remains a Source of Truth destination and the first persistence proof, while Google Sheets is the ASC operational database. Exact authority by record class still needs explicit architecture treatment.
+PF-004 | RESOLVED BY D-014  
+Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is the operational/index ASC DB and must not silently become a competing editable master.
 
 ## Architecture feedback
 
-The Action Plan currently suggests these architecture concerns must be resolved before confirmation:
-
-- common contract representation
-- Google Sites dynamic interaction mechanism
-- Google Sheets table/record model
-- GitHub authentication/write path
-- receipt/verification format
-- project progress derivation
-- history model
-- source-of-truth authority by record class
-- privacy/authentication/replay rules
-
-Do not mark architecture confirmed until the owner completes the ZASSIMPLE confirmation gate.
+The core DESIGN blockers are now resolved by D-013 through D-016. Remaining implementation details include exact JSON data types/validation rules, ASC envelope encoding, receipt schema details, progress calculation fields emitted by each method, retry/conflict handling, and privacy/replay implementation. The architecture draft is ready for the owner confirmation gate; do not mark it confirmed until the owner replies exactly `YA, CONFIRM ARCHITECTURE`.

@@ -366,6 +366,76 @@ Receipt
 
 ---
 
+
+## Locked v0.1 implementation direction
+
+### Contract and transport
+
+ASC uses **canonical JSON** for the semantic Write Contract. Transport/security metadata lives in a separate **ASC envelope**.
+
+```text
+ASC envelope
+├─ contract/version metadata
+├─ request / expiry / integrity metadata
+└─ contract
+   ├─ Project
+   ├─ Source method
+   ├─ Operation
+   ├─ Record type
+   ├─ Record ID
+   ├─ Content/change
+   ├─ Lineage
+   └─ Destination
+```
+
+### Authority model
+
+- **GitHub** — canonical project artifacts and Git lineage.
+- **Google Sheets = ASC DB** — structured operational/index data for UI, progress views, normalized records, Action Plan views, and receipts/history.
+
+Minimum logical Sheets tables/tabs:
+
+- PROJECTS
+- RECORDS
+- ACTION_PLAN
+- HISTORY
+
+ASC displays semantic progress/stage produced by the method; it does not invent method progress.
+
+### Google Sites + Apps Script
+
+```text
+AI / ASC Link
+      ↓
+Apps Script Web App
+parse → preview → confirm
+      ↓
+ASC Core
+      ↓
+write + verify
+      ↓
+receipt
+      ↓
+redirect back to main Google Sites ASC UI
+```
+
+Google Sites remains the main dashboard/navigation shell. The Apps Script Web App handles interactive payload/confirmation/write behavior.
+
+After a **successful** CONFIRM & SYNC, the user returns to the main ASC UI. Failed writes must surface failure and must not masquerade as success.
+
+### GitHub v0.1 authentication
+
+For the personal v0.1 prototype:
+
+- repo-scoped fine-grained PAT
+- minimum required Contents write permission
+- stored server-side
+- never included in ASC Link/browser-visible payload
+
+Later multi-user/public deployment should migrate to a GitHub App.
+
+---
+
 ## What is not decided yet
 
 The boundary is locked. The implementation architecture is not.
@@ -405,7 +475,9 @@ It contains the current decisions, risks, open questions, and project history.
 ## Current project state
 
 ```text
-BOUNDARY + ASC LINK + V0.1 FRAMEWORK LOCKED
+V0.1 ARCHITECTURE DRAFT READY FOR CONFIRMATION
+      ↓
+owner architecture confirmation
       ↓
 implement and validate locked ASC Write Contract
       ↓

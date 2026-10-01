@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.4.0  
+**Project record version:** 0.5.0  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DESIGN  
@@ -55,8 +55,12 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Airtable | UNKNOWN | Structured SaaS destination | Overlaps with Sheets | Keep for later review | CANDIDATE |
 | ASC Write Contract v0.1 fields | PASS | Common language across methods/destinations | Encoding/schema types still open | Field set locked | D-011 LOCKED |
 | DECIDE / BUILD UI information architecture | PASS | Clear landing and project drill-down | Visual implementation open | Section set locked | D-012 LOCKED |
+| Canonical JSON + ASC envelope | PASS | Separates meaning from transport/security | Exact field data types still to implement | Representation locked | D-013 LOCKED |
+| GitHub canonical artifacts + Sheets operational DB | PASS | Avoids dual-master drift | Sync/index rules need implementation | Authority model locked | D-014 LOCKED |
+| Google Sites shell + Apps Script engine + redirect | PASS | Simple UI with programmable confirmation flow | App Script implementation remains | Interaction pattern locked | D-015 LOCKED |
+| Fine-grained PAT v0.1 → GitHub App later | PASS | Low v0.1 burden with migration path | Secret handling must be correct | Auth path locked | D-016 LOCKED |
 
-Current direction: build and validate the minimum ASC v0.1 flow using the locked contract, Google Sites UI, Google Sheets ASC DB, and GitHub first adapter.
+Current direction: prepare final architecture confirmation using the now-locked JSON contract/envelope, GitHub-vs-Sheets authority model, Google Sites + Apps Script UI pattern with post-sync redirect, and v0.1 GitHub PAT write path.
 
 ---
 
@@ -319,6 +323,65 @@ Locked by: Project Owner
 Date: 2026-10-01
 
 
+
+D-013 | LOCKED  
+Decision: Lock the **ASC Write Contract representation** as canonical JSON with a separate ASC transport/security envelope.
+
+Semantic contract fields remain exactly:
+- Project
+- Source method
+- Operation
+- Record type
+- Record ID
+- Content/change
+- Lineage
+- Destination
+
+Transport/security metadata such as contract version, request ID, expiry, nonce/replay controls, and payload hash belong to the **ASC envelope**, not the semantic method contract.  
+Reason: Preserve a clean boundary between method meaning and transport/security mechanics while using a universal machine-readable format.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-014 | LOCKED  
+Decision: Lock the **v0.1 Source-of-Truth / ASC DB authority model**:
+
+- **GitHub** = canonical project artifacts and Git lineage, including ZASS-family Markdown artifacts such as working record, Action Plan, Architecture, Tasks, and commit history.
+- **Google Sheets = ASC DB** = structured operational/index records used by ASC UI and transport/history views; it must not silently become a competing editable master for the same canonical artifact.
+
+Minimum ASC DB logical tables/tabs:
+1. PROJECTS
+2. RECORDS
+3. ACTION_PLAN
+4. HISTORY
+
+The method owns semantic values such as project stage/progress. ASC stores/displays them; ASC Core must not invent method progress.  
+Reason: Avoid dual-master drift while giving the UI normalized structured access to project state and history.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-015 | LOCKED  
+Decision: Lock the **Google Sites + Apps Script interaction pattern** for v0.1:
+
+- Google Sites = main ASC dashboard/navigation shell.
+- Apps Script Web App = interactive ASC surface/engine for payload parsing, preview, confirmation, server-side processing, and write actions.
+- ASC Link for small payloads opens the interactive web app, which parses the proposal, shows preview, requires explicit CONFIRM & SYNC, performs the write through ASC Core, shows/verifies the receipt, then **redirects the user back to the main ASC UI / Google Sites dashboard** after successful confirmation/update.
+- Failed writes must show a factual failure state and must not falsely redirect as if persistence succeeded.
+
+Reason: Keep Google Sites simple while using a Google-native programmable surface for secure interactive behavior and preserving a clean post-sync return path to the main UI.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
+D-016 | LOCKED  
+Decision: Lock the **GitHub authentication/write path for v0.1**:
+
+- v0.1 personal prototype: use a repo-scoped **fine-grained GitHub PAT** with minimum required Contents write permission, stored server-side and never exposed in ASC Link payload/browser-visible data.
+- Write flow: fetch current file/SHA → create/update content → obtain commit result → verify persisted state → issue ASC Write Receipt.
+- Later multi-user/public production path: migrate authentication to a **GitHub App** rather than expanding PAT usage.
+
+Reason: Minimize v0.1 implementation burden while preserving a clear migration path to stronger multi-user authorization.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
 ---
 
 ## LOGICAL BOUNDARY
@@ -360,9 +423,9 @@ A consumer should not need destination-specific knowledge merely to produce mean
 
 ## ARCHITECTURE
 
-**Status:** PENDING CONFIRMATION
+**Status:** READY FOR CONFIRMATION
 
-The boundary is LOCKED, but implementation architecture remains open.
+The architecture draft is now sufficiently defined for owner confirmation. The implementation remains unbuilt.
 
 This decision does **not** yet select:
 
@@ -381,7 +444,7 @@ This decision does **not** yet select:
 - adapter implementation order after GitHub
 - ASC Web implementation details beyond the locked Google Sites UI boundary
 
-Those require later evidence and explicit decisions.
+Remaining items are implementation details or later-phase concerns; the core v0.1 architecture blockers have been resolved by D-013 through D-016.
 
 ---
 
@@ -389,6 +452,7 @@ Those require later evidence and explicit decisions.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.5.0 | 2026-10-01 | LOCKED D-013–D-016: canonical JSON contract + transport envelope, GitHub/Sheets authority model, Google Sites + Apps Script interaction pattern with post-sync redirect to main UI, and v0.1 GitHub fine-grained PAT write path with later GitHub App migration. Added architecture draft ready for confirmation. |
 | 0.4.0 | 2026-10-01 | LOCKED D-004–D-012: ASC v0.1 framework, Google Sheets as ASC DB, Google Sites as ASC UI, GitHub first adapter, primary integrations, ASC Write Contract v0.1 fields, and DECIDE/BUILD project UI information architecture. Added first-class ACTION_PLAN.md. |
 | 0.3.1 | 2026-10-01 | Synced project method from ZASSIMPLE v0.1.6 to official v0.2.4; adopted 6D lifecycle, Stage Pulse/selection-matrix behavior, PROCEED/LOCK + SAVE command surfaces, hidden action-plan lineage, and current DESIGN stage without changing D-002/D-003. |
 | 0.3.0 | 2026-10-01 | LOCKED D-003: ASC Link established as the universal write fallback; native integrations remain optional fast paths; user-confirmed web preview/sync flow defined. |
