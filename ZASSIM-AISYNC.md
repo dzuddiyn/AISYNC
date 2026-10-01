@@ -1,12 +1,54 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.3.0  
-**Method:** ZASSIMPLE v0.1.6  
+**Project record version:** 0.3.1  
+**Method:** ZASSIMPLE v0.2.4  
+**Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
+**Lifecycle stage:** DESIGN  
 **Status:** BOUNDARY LOCKED — implementation architecture not confirmed  
 **Owner:** Project Owner
 
 > AISYNC is shared infrastructure for moving, translating, writing, and verifying meaningful information produced by methods and projects. It is not itself a reasoning method.
+
+---
+
+
+## ZASSIMPLE METHOD STATE
+
+AISYNC now follows **ZASSIMPLE v0.2.4** behavior.
+
+Surface UX:
+
+```text
+DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
+```
+
+Current project stage: **DESIGN**  
+Reason: core boundaries and the ASC Link fallback are LOCKED, while implementation architecture remains unconfirmed.
+
+Current command surface:
+
+- `ZASS` / `ZASS!!` — show the relevant ZASSIMPLE update, Stage Pulse, and Current Selection Matrix.
+- `PROCEED/LOCK` — primary owner decision command; `LOCK` / `LOCK DECISION` remain compatibility aliases.
+- `SAVE` — primary persistence command; `COMMIT` remains a compatibility alias.
+- `CONFIRM ARCHITECTURE` — opens final architecture confirmation review.
+- `YA, CONFIRM ARCHITECTURE` — final owner confirmation for a confirmed architecture.
+- `DO IT` — after architecture confirmation, derive executable tasks and present one task at a time.
+
+Internal lineage principle:
+
+> ZASSIMPLE stays lightweight on the surface while preserving lineage through decision → action plan ↔ architecture → task → execution → delivery.
+
+Implementation thoughts discovered during DECIDE or DESIGN should feed hidden action-plan lineage and may refine architecture. Architecture changes may in turn refine the action plan.
+
+### CURRENT SELECTION MATRIX
+
+| Option / Candidate | Must-have fit | Strength | Risk / Weakness | Evidence / Unknown | Status |
+|---|---|---|---|---|---|
+| Shared Method → ASC → SoT boundary | PASS | Clean separation of reasoning from persistence | Destination semantics still need design | Implementation contract not defined | D-002 LOCKED |
+| ASC Link universal write fallback | PASS | Works even when an AI app cannot write directly | Payload/auth/large-data mechanics still open | Needs implementation experiment | D-003 LOCKED |
+
+Current direction: define the minimum ASC information/write contract before selecting implementation technology.
 
 ---
 
@@ -238,6 +280,7 @@ Those require later evidence and explicit decisions.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.3.1 | 2026-10-01 | Synced project method from ZASSIMPLE v0.1.6 to official v0.2.4; adopted 6D lifecycle, Stage Pulse/selection-matrix behavior, PROCEED/LOCK + SAVE command surfaces, hidden action-plan lineage, and current DESIGN stage without changing D-002/D-003. |
 | 0.3.0 | 2026-10-01 | LOCKED D-003: ASC Link established as the universal write fallback; native integrations remain optional fast paths; user-confirmed web preview/sync flow defined. |
 | 0.2.0 | 2026-10-01 | LOCKED D-002: official Method → AI-SYNC → Source of Truth boundary; AISYNC defined as shared transport/write infrastructure reusable by ZASS Full, ZASSIMPLE, ZASSELECTION, Dzuddiyn Library, and other projects. |
 | 0.1.0 | 2026-09-29 | Initial AISYNC project record. D-001 defined the temporary AISYNC ↔ Dzuddiyn Library boundary. |

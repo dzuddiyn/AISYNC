@@ -2,13 +2,36 @@
 
 > Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** Boundary locked; implementation architecture pending  
-**Method used to develop this project:** ZASSIMPLE v0.1.6  
+**Status:** DESIGN — boundary locked; implementation architecture pending  
+**Method used to develop this project:** ZASSIMPLE v0.2.4  
 **Repository:** AISYNC
 
 AISYNC separates **how information is reasoned about** from **how that information is transported and persisted**.
 
 It is designed as common infrastructure that can be reused by ZASS Full, ZASSIMPLE, ZASSELECTION, Dzuddiyn Library, and other projects.
+
+---
+
+
+## ZASSIMPLE project workflow
+
+AISYNC is currently developed with **ZASSIMPLE v0.2.4**.
+
+```text
+DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
+```
+
+Current stage: **DESIGN**.
+
+The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, architecture, executable tasks, verification, and delivery.
+
+Primary command surface:
+
+```text
+[🔬 ZASS!!] -- [📌 PROCEED/LOCK] -- [📚 SAVE]
+```
+
+Legacy `LOCK` / `LOCK DECISION` and `COMMIT` remain compatible aliases.
 
 ---
 
