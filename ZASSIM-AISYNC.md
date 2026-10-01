@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.2.0  
+**Project record version:** 0.3.0  
 **Method:** ZASSIMPLE v0.1.6  
 **Status:** BOUNDARY LOCKED — implementation architecture not confirmed  
 **Owner:** Project Owner
@@ -114,6 +114,61 @@ Reason: This separates reasoning semantics from storage mechanics, allows multip
 Locked by: Project Owner  
 Date: 2026-10-01
 
+
+D-003 | LOCKED  
+Decision: Establish **ASC Link** as the universal write fallback / escape hatch when an AI application cannot directly persist to the required destination.
+
+1. **Native integration is the fast path, not the requirement.**  
+   If an AI app can write successfully through an approved native integration, connector, tool, or equivalent route, it may use that route.
+
+2. **ASC Link is the universal fallback path.**  
+   If direct write is unavailable or fails, the AI generates an ASC Sync Link according to the contract embedded in the method file.
+
+3. **Method-file bootstrap.**  
+   ZASS Full / ZASSIMPLE / ZASSELECTION may carry the ASC fallback instructions and ASC base link so an AI can learn the write fallback from the method file itself, whether that method was supplied by attachment, copy/paste, or an accessible repository link.
+
+4. **User-confirmed web flow.**  
+   The intended UX is:
+   ```text
+   user requests SAVE / SYNC / COMMIT
+            ↓
+   direct write attempted when available
+            ↓
+   if unavailable / unsuccessful
+            ↓
+   AI generates ASC Sync Link
+            ↓
+   user clicks link
+            ↓
+   ASC Web opens
+            ↓
+   login if required
+            ↓
+   preview proposed change
+            ↓
+   CONFIRM & SYNC
+            ↓
+   ASC writes to destination
+            ↓
+   verification / receipt
+   ```
+
+5. **AI does not need ASC-native integration to use the fallback.**  
+   The minimum capability is to understand the method instructions and generate a valid hyperlink/payload.
+
+6. **Small payload transport safety.**  
+   For link-carried small payloads, prefer a client-side URL fragment (`#...`) rather than placing sensitive record content directly in ordinary query parameters. The ASC Web should parse the proposal locally before authenticated persistence. Exact encoding/encryption remains an implementation decision.
+
+7. **Large payloads remain open.**  
+   A separate package/block/upload mechanism may be introduced later if link payloads become impractical. It is not required for v0.1.
+
+8. **Universal principle.**  
+   Universal support means a common ASC information/write contract with a common confirmation path — not that every AI platform must implement the same native integration.
+
+Reason: This avoids maintaining a native integration for every AI app while still providing a low-friction write path for ordinary AI chat applications that cannot directly write to GitHub, Google Sheets, or an ASC database.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
 ---
 
 ## LOGICAL BOUNDARY
@@ -171,6 +226,9 @@ This decision does **not** yet select:
 - exact verification receipt format
 - which destination is authoritative for each record class
 - synchronization direction or topology
+- exact ASC Link payload schema / encoding
+- large-payload fallback mechanism
+- ASC Web implementation technology
 
 Those require later evidence and explicit decisions.
 
@@ -180,5 +238,6 @@ Those require later evidence and explicit decisions.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.3.0 | 2026-10-01 | LOCKED D-003: ASC Link established as the universal write fallback; native integrations remain optional fast paths; user-confirmed web preview/sync flow defined. |
 | 0.2.0 | 2026-10-01 | LOCKED D-002: official Method → AI-SYNC → Source of Truth boundary; AISYNC defined as shared transport/write infrastructure reusable by ZASS Full, ZASSIMPLE, ZASSELECTION, Dzuddiyn Library, and other projects. |
 | 0.1.0 | 2026-09-29 | Initial AISYNC project record. D-001 defined the temporary AISYNC ↔ Dzuddiyn Library boundary. |

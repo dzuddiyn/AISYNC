@@ -167,6 +167,92 @@ This does not force DL to automate anything in its current phase.
 
 ---
 
+
+## Universal write fallback: ASC Link
+
+Native integration is useful when it exists, but it is **not required** for ASC.
+
+The locked fallback is:
+
+```text
+METHOD FILE
+(ZASS / ZASSIMPLE / ZASSELECTION)
+        │
+        │ contains ASC fallback contract
+        ▼
+      AI APP
+        │
+        ├──────── direct write works ───────► destination
+        │
+        └──────── cannot write / write fails
+                          │
+                          ▼
+                 generate ASC Sync Link
+                          │
+                          ▼
+                       ASC Web
+                          │
+                 login if required
+                          │
+                        preview
+                          │
+                   CONFIRM & SYNC
+                          │
+                          ▼
+                       ASC Core
+                          │
+              ┌───────────┼───────────┐
+              ▼           ▼           ▼
+           GitHub       Sheets      ASC DB
+                          │
+                          ▼
+                 verification receipt
+```
+
+### Why this matters
+
+ASC does not need a custom native integration for every AI application.
+
+An ordinary AI app can participate if it can:
+
+1. understand the ASC fallback instructions from the method file;
+2. produce the required structured write request; and
+3. generate the ASC Sync Link.
+
+This means:
+
+> **Native integration = convenience / fast path.**
+
+> **ASC Link = universal write escape hatch.**
+
+Universal support therefore means a **common information/write contract and confirmation path**, not one identical integration across every AI vendor.
+
+### Method bootstrap routes
+
+An AI may learn the method and its ASC fallback instructions through:
+
+- attached method file;
+- copied/pasted method content;
+- accessible repository link.
+
+A public repository is therefore only one bootstrap route, not a requirement.
+
+### Link payload principle
+
+For small link-carried proposals, ASC should prefer client-side URL fragments such as:
+
+```text
+https://asc.example/sync#payload=...
+```
+
+rather than putting sensitive content directly into normal query parameters.
+
+The ASC Web should open, parse the proposal locally, require authentication when applicable, show a preview, and persist only after explicit confirmation.
+
+Exact payload encoding, encryption, authentication, and large-payload handling remain implementation decisions.
+
+---
+
 ## What is not decided yet
 
 The boundary is locked. The implementation architecture is not.
@@ -184,6 +270,9 @@ Not yet selected:
 - which destination is authoritative for each record type
 - sync direction/topology
 - automation level
+- exact ASC Link payload schema / encoding
+- large-payload fallback mechanism
+- ASC Web implementation technology
 
 These should be decided from evidence, not assumed.
 
@@ -202,7 +291,7 @@ It contains the current decisions, risks, open questions, and project history.
 ## Current project state
 
 ```text
-BOUNDARY LOCKED
+BOUNDARY + ASC LINK FALLBACK LOCKED
       ↓
 define minimum information contract
       ↓
