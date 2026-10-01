@@ -32,10 +32,10 @@ Result: PASS — envelope schema + fragment-only Base64URL link encoder/decoder 
 Feeds architecture: YES
 
 AP-003 | OPEN  
-Source: D-006, D-009, D-012  
+Source: D-006, D-009, D-012, D-019  
 Action: Implement the locked Google Sites + Apps Script UI flow, including preview/confirm/write behavior and redirect back to the main ASC UI after a successful confirmed update (D-015).  
 Dependencies: D-012 UI information architecture.  
-Constraint / feasibility note: Landing must stay simple: DECIDE / BUILD. Project detail carries the richer lineage views.  
+Constraint / feasibility note: Landing must stay simple: DECIDE / DESIGN. Project detail carries the richer lineage views.  
 Pass / stop condition: The UI can represent the locked navigation and project-detail sections without forcing users to inspect raw Markdown.  
 Feeds architecture: YES
 
@@ -85,7 +85,7 @@ The project detail view must be able to render:
 6. ZASS table with all applicable source-method record components
 7. History
 
-The DECIDE / BUILD project list must be able to render:
+The DECIDE / DESIGN project list must be able to render:
 
 - project progress bar
 - latest update
