@@ -10,15 +10,34 @@
 
 ## Current task
 
-T-003 | READY  
-Source: AP-003, PF-003, D-014  
-Decision / Architecture lineage: D-005, D-012, D-014, ARCH v1.0 § Google Sheets = ASC DB  
-Do: Create the v0.1 Google Sheets ASC DB structure and bootstrap mapping for PROJECTS, RECORDS, ACTION_PLAN, and HISTORY.  
-Depends on: T-001  
-Pass: One sample project can be represented without making Sheets a competing editable master for canonical GitHub artifacts.  
+T-004 | READY  
+Source: AP-003, AP-007, PF-005  
+Decision / Architecture lineage: D-006, D-015, D-017, ARCH v1.0.1 § Apps Script Web App + Google Account authentication  
+Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
+Depends on: T-002  
+Pass: An unauthenticated ASC Link request survives sign-in and reaches a post-login preview state without any write occurring.  
 Result: NOT STARTED
 
 ## Completed
+
+T-003 | PASS  
+Source: AP-003, PF-003, D-014  
+Decision / Architecture lineage: D-005, D-012, D-014, D-019, ARCH v1.0.1 § Google Sheets = ASC DB  
+Built:
+- native Google Sheet `AISYNC ASC DB v0.1`
+- tabs: `PROJECTS`, `RECORDS`, `ACTION_PLAN`, `HISTORY`
+- repo schema/authority documentation: `db/README.md`
+Verification:
+- four tabs present with frozen header rows and filters
+- AISYNC bootstrap project/record/action/history rows readable
+- `DECIDE / DESIGN` validation active
+- Action Plan status validation active
+- HISTORY `SUCCESS / FAILED` validation active
+- timezone set to `Asia/Kuala_Lumpur`
+- GitHub source artifact/commit and authority fields explicitly preserve canonical-vs-operational boundary
+Result: PASS — one AISYNC project is represented operationally without making Sheets a competing canonical master.
+
+
 
 T-002 | PASS  
 Source: AP-002, AP-007  
@@ -53,13 +72,6 @@ Verification:
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
-
-T-004 | QUEUED  
-Source: AP-003, AP-007, PF-005  
-Decision / Architecture lineage: D-006, D-015, D-017, ARCH v1.0 § Apps Script Web App + Google Account authentication  
-Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
-Depends on: T-002  
-Pass: An unauthenticated ASC Link request survives sign-in and reaches a post-login preview state without any write occurring.
 
 T-005 | QUEUED  
 Source: AP-004  
@@ -120,10 +132,10 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001 and T-002.
+Implementation evidence exists for T-001, T-002, and T-003.
 
 Closure checks:
-- Built: PARTIAL — T-001 and T-002 complete
-- Verified: PARTIAL — T-001 and T-002 verified
-- Matches architecture: YES FOR T-001 AND T-002
+- Built: PARTIAL — T-001, T-002, and T-003 complete
+- Verified: PARTIAL — T-001, T-002, and T-003 verified
+- Matches architecture: YES FOR T-001, T-002, AND T-003
 - Recorded: YES — task queue created
