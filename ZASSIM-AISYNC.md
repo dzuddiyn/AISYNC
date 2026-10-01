@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.4  
+**Project record version:** 0.6.5  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -62,7 +62,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0 is CONFIRMED. T-001 and T-002 have PASSED. ASC Link fragment transport is implemented and verified; T-003 (Google Sheets ASC DB structure) is now the only current READY task.
+Current direction: architecture v1.0.1 is CONFIRMED. T-001 through T-003 have PASSED. Native Google Sheets ASC DB v0.1 is live and verified; T-004 (Apps Script Web App + Google Account gate) is now the only current READY task.
 
 ---
 
@@ -499,6 +499,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.5 | 2026-10-02 | DO IT T-003 PASS: created and verified native Google Sheets ASC DB v0.1 with PROJECTS / RECORDS / ACTION_PLAN / HISTORY, authority/source lineage fields, DECIDE / DESIGN validation, operational filters, and Asia/Kuala_Lumpur timezone. T-004 promoted to READY. |
 | 0.6.4 | 2026-10-01 | Small UI terminology patch: D-019 LOCKED, refining ASC landing labels from DECIDE / BUILD to DECIDE / DESIGN without changing architecture semantics. Architecture document patched to v1.0.1. |
 | 0.6.3 | 2026-10-01 | DO IT T-002 PASS: implemented ASC envelope v0.1 and fragment-only Base64URL link encode/decode; verified Unicode semantic round-trip and no payload exposure in ordinary query parameters. T-003 promoted to READY; expiry/integrity/replay enforcement remains deferred to T-010. |
 | 0.6.2 | 2026-10-01 | DO IT T-001 PASS: implemented canonical ASC Write Contract v0.1 JSON Schema and valid/invalid examples; verified required-field, extra-field, and destination constraints. T-002 promoted to READY; no T-002 implementation started. |
