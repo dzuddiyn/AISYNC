@@ -36,13 +36,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-002 | MOVED TO CURRENT  
-Source: AP-002, AP-007  
-Decision / Architecture lineage: D-003, D-013, ARCH v1.0 § ASC transport/security envelope + ASC Link  
-Do: Define and implement the v0.1 ASC envelope plus small-payload link encode/decode path, including request identity, expiry/integrity placeholders, and fragment-based transport.  
-Depends on: T-001  
-Pass: A valid T-001 contract round-trips through an ASC Link without semantic loss, and ordinary query parameters do not expose the record payload.
-
 T-003 | QUEUED  
 Source: AP-003, PF-003, D-014  
 Decision / Architecture lineage: D-005, D-012, D-014, ARCH v1.0 § Google Sheets = ASC DB  
