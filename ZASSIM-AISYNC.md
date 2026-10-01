@@ -1,11 +1,11 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.5.1  
+**Project record version:** 0.6.0  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
-**Lifecycle stage:** DESIGN  
-**Status:** BOUNDARY LOCKED — implementation architecture not confirmed  
+**Lifecycle stage:** DO IT  
+**Status:** ARCHITECTURE CONFIRMED — implementation not started  
 **Owner:** Project Owner
 
 > AISYNC is shared infrastructure for moving, translating, writing, and verifying meaningful information produced by methods and projects. It is not itself a reasoning method.
@@ -23,8 +23,8 @@ Surface UX:
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current project stage: **DESIGN**  
-Reason: core boundaries and the ASC Link fallback are LOCKED, while implementation architecture remains unconfirmed.
+Current project stage: **DO IT**  
+Reason: ASC architecture was explicitly confirmed by the Project Owner on 2026-10-01. Implementation has not started; Action Plan can now be sliced into executable tasks when DO IT execution begins.
 
 Current command surface:
 
@@ -388,6 +388,32 @@ Reason: Reuse the Google stack and keep the v0.1 login flow minimal.
 Locked by: Project Owner  
 Date: 2026-10-01
 
+
+D-018 | LOCKED  
+Decision: Lock the **ZASS SYSTEM ↔ ASC cross-system boundary**.
+
+1. **ZASS Core owns validation semantics.**  
+   Parsers, consistency rules, Git-aware checks, ACTION_PLAN consistency checks, and rule codes such as Zxxx belong to the ZASS SYSTEM core/validator.
+
+2. **Local CLI and GitHub CI are runners over the same ZASS Core.**  
+   Local `zass check` is the local-first/power-user path. GitHub CI, when implemented, must invoke the same validation semantics rather than reimplementing its own rule set.
+
+3. **ASC must not duplicate ZASS validation logic.**  
+   ASC may trigger, read, consume, store, and display ZASS validation/CI results tied to a commit, but ASC does not own a second implementation of ZASS rules.
+
+4. **ZASS remains fully usable without ASC.**  
+   AI-SYNC improves UX, onboarding, transport, persistence, dashboarding, and automation; it is not a runtime requirement for ZASS local tooling.
+
+5. **GitHub is the shared junction / Source of Truth.**  
+   Local CLI and future GitHub CI validate project state around the same Git-backed artifacts; ASC persists to and reads from the same project lineage according to the locked authority model.
+
+6. **Current implementation truth must remain explicit.**  
+   Local `zass check` exists today; GitHub CI integration is an architecture direction and must not be represented as implemented until it actually exists.
+
+Reason: Prevent rule drift and duplicate validators while preserving local-first ZASS and allowing ASC to become the mainstream UX/automation layer.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
 ---
 
 ## LOGICAL BOUNDARY
@@ -429,9 +455,9 @@ A consumer should not need destination-specific knowledge merely to produce mean
 
 ## ARCHITECTURE
 
-**Status:** READY FOR CONFIRMATION
+**Status:** CONFIRMED
 
-The architecture draft is now sufficiently defined for owner confirmation. The implementation remains unbuilt.
+Architecture v1.0 was confirmed by the Project Owner using the exact confirmation phrase `YA, CONFIRM ARCHITECTURE` on 2026-10-01. Implementation remains unbuilt.
 
 This decision does **not** yet select:
 
@@ -458,6 +484,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.0 | 2026-10-01 | LOCKED D-018 cross-system boundary: ZASS Core owns validation semantics; CLI/CI are shared-core runners; ASC consumes/displays results without duplicating rules. Architecture v1.0 CONFIRMED by exact owner command `YA, CONFIRM ARCHITECTURE`; lifecycle moved to DO IT, implementation not started. |
 | 0.5.1 | 2026-10-01 | LOCKED D-017: Google Account owner-only login, pending-request preservation across sign-in, preview-before-write, and return to main ASC UI after successful sync. |
 | 0.5.0 | 2026-10-01 | LOCKED D-013–D-016: canonical JSON contract + transport envelope, GitHub/Sheets authority model, Google Sites + Apps Script interaction pattern with post-sync redirect to main UI, and v0.1 GitHub fine-grained PAT write path with later GitHub App migration. Added architecture draft ready for confirmation. |
 | 0.4.0 | 2026-10-01 | LOCKED D-004–D-012: ASC v0.1 framework, Google Sheets as ASC DB, Google Sites as ASC UI, GitHub first adapter, primary integrations, ASC Write Contract v0.1 fields, and DECIDE/BUILD project UI information architecture. Added first-class ACTION_PLAN.md. |
