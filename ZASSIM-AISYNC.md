@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.3  
+**Project record version:** 0.6.4  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -54,7 +54,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Primary integrations: Obsidian, Notion, OneNote, Logseq, Joplin | PASS | Covers major local/cloud note ecosystems | Different adapter mechanics | Integration order not yet set | D-010 LOCKED |
 | Airtable | UNKNOWN | Structured SaaS destination | Overlaps with Sheets | Keep for later review | CANDIDATE |
 | ASC Write Contract v0.1 fields | PASS | Common language across methods/destinations | Encoding/schema types still open | Field set locked | D-011 LOCKED |
-| DECIDE / BUILD UI information architecture | PASS | Clear landing and project drill-down | Visual implementation open | Section set locked | D-012 LOCKED |
+| DECIDE / DESIGN UI information architecture | PASS | Clear landing and project drill-down | Visual implementation open | Label refinement locked | D-019 LOCKED |
 | Canonical JSON + ASC envelope | PASS | Separates meaning from transport/security | Exact field data types still to implement | Representation locked | D-013 LOCKED |
 | GitHub canonical artifacts + Sheets operational DB | PASS | Avoids dual-master drift | Sync/index rules need implementation | Authority model locked | D-014 LOCKED |
 | Google Sites shell + Apps Script engine + redirect | PASS | Simple UI with programmable confirmation flow | App Script implementation remains | Interaction pattern locked | D-015 LOCKED |
@@ -299,8 +299,8 @@ Reason: Provide one common write language without coupling methods to GitHub, Sh
 Locked by: Project Owner  
 Date: 2026-10-01
 
-D-012 | LOCKED  
-Decision: Lock the initial **Google Sites ASC UI information architecture**.
+D-012 | REFINED BY D-019  
+Previous decision: Lock the initial **Google Sites ASC UI information architecture**.
 
 Landing page:
 - two main entry points: **DECIDE** and **BUILD**
@@ -325,6 +325,19 @@ Locked by: Project Owner
 Date: 2026-10-01
 
 
+
+
+D-019 | LOCKED  
+Decision: Refine the two top-level ASC UI entry labels from **DECIDE / BUILD** to **DECIDE / DESIGN**.
+
+Scope:
+- landing page labels become **DECIDE** and **DESIGN**;
+- project-list and project-detail flow remain unchanged;
+- this is a terminology/UX patch only and does not alter the confirmed architecture semantics, persistence model, or execution lifecycle.
+
+Reason: Align the user-facing entry wording with the intended decision/design workflow.  
+Locked by: Project Owner  
+Date: 2026-10-01
 
 D-013 | LOCKED  
 Decision: Lock the **ASC Write Contract representation** as canonical JSON with a separate ASC transport/security envelope.
@@ -486,6 +499,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.4 | 2026-10-01 | Small UI terminology patch: D-019 LOCKED, refining ASC landing labels from DECIDE / BUILD to DECIDE / DESIGN without changing architecture semantics. Architecture document patched to v1.0.1. |
 | 0.6.3 | 2026-10-01 | DO IT T-002 PASS: implemented ASC envelope v0.1 and fragment-only Base64URL link encode/decode; verified Unicode semantic round-trip and no payload exposure in ordinary query parameters. T-003 promoted to READY; expiry/integrity/replay enforcement remains deferred to T-010. |
 | 0.6.2 | 2026-10-01 | DO IT T-001 PASS: implemented canonical ASC Write Contract v0.1 JSON Schema and valid/invalid examples; verified required-field, extra-field, and destination constraints. T-002 promoted to READY; no T-002 implementation started. |
 | 0.6.1 | 2026-10-01 | DO IT task slicing completed: created `TASKS.md` with T-001 current READY, T-002–T-011 queued by dependency, and T-012 blocked/later pending real ZASS GitHub CI. No implementation executed yet. |
