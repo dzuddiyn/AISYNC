@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE ACTION PLAN
 
-**Status:** READY FOR TASK SLICING  
+**Status:** SLICED INTO TASKS  
 **Method:** ZASSIMPLE v0.2.4  
 **Lifecycle stage:** DO IT  
 **Authority:** Planning artifact only. It must not override LOCKED owner decisions.
@@ -122,7 +122,7 @@ Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is
 
 ## Architecture feedback
 
-The core DESIGN blockers are resolved by D-013 through D-018. Architecture v1.0 is confirmed. The next ZASSIMPLE step is DO IT: re-plan from current state, slice the Action Plan into executable tasks, and surface one current task at a time. Task slicing has not started yet.
+The core DESIGN blockers are resolved by D-013 through D-018. Architecture v1.0 is confirmed. The Action Plan has now been sliced into `TASKS.md`. Current executable task: T-001. Future tasks remain queued until prior dependencies pass or are explicitly replanned.
 
 
 PF-005 | RESOLVED BY D-017  
