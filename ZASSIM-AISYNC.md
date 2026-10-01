@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.5.0  
+**Project record version:** 0.5.1  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DESIGN  
@@ -382,6 +382,12 @@ Reason: Minimize v0.1 implementation burden while preserving a clear migration p
 Locked by: Project Owner  
 Date: 2026-10-01
 
+D-017 | LOCKED  
+Decision: ASC v0.1 uses Google Account as the login and identity gate. Access is owner-only for v0.1. If a user arrives through an ASC Link before sign-in, the pending request must remain available after sign-in. Preview must appear before CONFIRM & SYNC. After a successful confirmed update, ASC returns the user to the main Google Sites UI. Failed updates remain visibly failed. Multi-user roles are deferred beyond v0.1.  
+Reason: Reuse the Google stack and keep the v0.1 login flow minimal.  
+Locked by: Project Owner  
+Date: 2026-10-01
+
 ---
 
 ## LOGICAL BOUNDARY
@@ -452,6 +458,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.5.1 | 2026-10-01 | LOCKED D-017: Google Account owner-only login, pending-request preservation across sign-in, preview-before-write, and return to main ASC UI after successful sync. |
 | 0.5.0 | 2026-10-01 | LOCKED D-013–D-016: canonical JSON contract + transport envelope, GitHub/Sheets authority model, Google Sites + Apps Script interaction pattern with post-sync redirect to main UI, and v0.1 GitHub fine-grained PAT write path with later GitHub App migration. Added architecture draft ready for confirmation. |
 | 0.4.0 | 2026-10-01 | LOCKED D-004–D-012: ASC v0.1 framework, Google Sheets as ASC DB, Google Sites as ASC UI, GitHub first adapter, primary integrations, ASC Write Contract v0.1 fields, and DECIDE/BUILD project UI information architecture. Added first-class ACTION_PLAN.md. |
 | 0.3.1 | 2026-10-01 | Synced project method from ZASSIMPLE v0.1.6 to official v0.2.4; adopted 6D lifecycle, Stage Pulse/selection-matrix behavior, PROCEED/LOCK + SAVE command surfaces, hidden action-plan lineage, and current DESIGN stage without changing D-002/D-003. |
