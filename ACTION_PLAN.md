@@ -212,3 +212,13 @@ Finding: AISYNC now follows official ZASSIMPLE v0.3.0. DESIGN is the generic des
 
 PF-022 | RESOLVED BY D-026  
 Finding: T-013B should not pre-build both Markdown and HTML surfaces. Field-test clean text/Markdown first. Add a clean HTML `/view` compatibility fallback only if a required receiver fails the primary endpoint but can read a normal webpage.
+
+
+PF-023 | RESOLVED BY D-027  
+Finding: ASC should become the continuity authority for ordinary cross-AI continuation. The source AI should not need to carry a full long-form handover packet. Normal transfer should originate from ASC Web/project tree and emit only a short receiver bootstrap, a public Method Gateway link, and a controlled continuity reference.
+
+PF-024 | CONTINUITY SECURITY REMAINS OPEN  
+Finding: Method links can be public, but saved project/thread continuity should be private/controlled/scoped. The exact minimal v0.1 mechanism (authenticated fetch, scoped token, expiry, temporary package, short ID, or equivalent) remains open and should be decided during implementation rather than guessed now.
+
+PF-025 | UX BENCHMARK  
+Finding: A long ZASSPILL field-test handover packet is now an explicit negative UX benchmark. If ordinary users still need to paste that class of packet, understand raw GitHub/fallback URLs, or manually manage method internals after ASC is complete, the continuity UX is not yet successful.
