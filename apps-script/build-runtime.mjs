@@ -18,6 +18,7 @@ const OUTPUT = path.join(HERE, 'AscRuntime.gs');
 // Order matters: dependencies first.
 export const RUNTIME_MODULES = Object.freeze([
   { file: 'transport/asc-link.mjs', namespace: 'transport' },
+  { file: 'transport/envelope-security.mjs', namespace: 'security' },
   { file: 'core/asc-core.mjs', namespace: 'core' },
   { file: 'adapters/github/github-adapter.mjs', namespace: 'githubAdapter' },
   { file: 'adapters/github/github-rest-client.mjs', namespace: 'githubRest' },

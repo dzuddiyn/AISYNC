@@ -5,7 +5,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { createHash } from 'node:crypto';
 import { buildRuntime } from './build-runtime.mjs';
+import { sealEnvelope } from '../transport/envelope-security.mjs';
 
 const read = (f) => fs.readFileSync(new URL('./' + f, import.meta.url), 'utf8');
 const SHIMS = read('RuntimeShims.gs');
@@ -51,12 +53,25 @@ const Utilities = {
     return signed(Buffer.from(text, 'base64'));
   },
   base64EncodeWebSafe(str) { return Buffer.from(String(str), 'utf8').toString('base64url'); },
-  newBlob(data) { return makeBlob(typeof data === 'string' ? signed(Buffer.from(data, 'utf8')) : Array.from(data)); }
+  newBlob(data) { return makeBlob(typeof data === 'string' ? signed(Buffer.from(data, 'utf8')) : Array.from(data)); },
+  DigestAlgorithm: { SHA_256: 'SHA_256' },
+  Charset: { UTF_8: 'UTF_8' },
+  computeDigest(alg, text, charset) {
+    assert.equal(alg, 'SHA_256');
+    assert.equal(charset, 'UTF_8');
+    return signed(createHash('sha256').update(String(text), 'utf8').digest());
+  }
 };
+
+const NOW = '2026-10-03T03:00:00.000Z';
+const nodeSha = (t) => createHash('sha256').update(t, 'utf8').digest('hex');
 
 function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser = OWNER } = {}) {
   const github = { file: null, calls: [], commitCounter: 0, putMode, getMode: 'ok' };
   const cacheFaults = { remove: false, put: false, get: false };
+  const propFaults = { get: false, set: false, dropWrite: false, onGet: null };
+  const lockState = { held: false, unavailable: false, acquisitions: 0 };
+  const store = { ...props };
   const rows = [];
   const cache = new Map();
   const logs = [];
@@ -106,7 +121,30 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
     UrlFetchApp,
     HtmlService: {},
     SpreadsheetApp: { openById: () => ({ getSheetByName: (n) => (n === 'HISTORY' ? sheet : null) }) },
-    PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => (k in props ? props[k] : null) }) },
+    PropertiesService: {
+      getScriptProperties: () => ({
+        getProperty: (k) => {
+          if (propFaults.get && k.startsWith('asc.replay.')) throw new Error('props get');
+          if (propFaults.onGet && k.startsWith('asc.replay.')) { const hook = propFaults.onGet; propFaults.onGet = null; hook(); }
+          return k in store ? store[k] : null;
+        },
+        setProperty: (k, v) => {
+          if (propFaults.set) throw new Error('props set');
+          if (!propFaults.dropWrite) store[k] = String(v);
+          return this;
+        }
+      })
+    },
+    LockService: {
+      getScriptLock: () => {
+        if (lockState.unavailable) throw new Error('no lock service');
+        let mine = false;
+        return {
+          tryLock: () => { if (lockState.held) return false; lockState.held = true; mine = true; lockState.acquisitions += 1; return true; },
+          releaseLock: () => { if (mine) { lockState.held = false; mine = false; } }
+        };
+      }
+    },
     Session: {
       getActiveUser: () => ({ getEmail: () => activeUser }),
       getEffectiveUser: () => ({ getEmail: () => OWNER })
@@ -124,7 +162,10 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
   vm.runInContext(SHIMS, context, { filename: 'RuntimeShims.gs' });
   vm.runInContext(RUNTIME, context, { filename: 'AscRuntime.gs' });
   vm.runInContext(CODE, context, { filename: 'Code.gs' });
-  return { context, github, rows, cache, logs, cacheFaults };
+  const clock = { now: NOW };
+  context.ascNow_ = () => clock.now;
+  const replayKeys = () => Object.keys(store).filter((k) => k.startsWith('asc.replay.v1.'));
+  return { context, github, rows, cache, logs, cacheFaults, propFaults, lockState, store, clock, replayKeys };
 }
 
 const settle = () => new Promise((resolve) => setImmediate(resolve));
@@ -147,8 +188,16 @@ function contractWith(overrides = {}) {
   };
 }
 
-function envelopeWith(contract, requestId = 'TEST_ONLY_T008B_LOCAL_001') {
-  return { envelope_version: '0.1', request_id: requestId, expires_at: '2026-10-04T00:00:00Z', integrity: { algorithm: 'SHA-256', digest: null }, contract };
+// T-010: sealed SHA-256 envelope, 25-minute lifetime around the fake server clock.
+function envelopeWith(contract, requestId = 'TEST_ONLY_T008B_LOCAL_001', times = {}) {
+  return sealEnvelope({
+    envelope_version: '0.1',
+    request_id: requestId,
+    issued_at: times.issuedAt || '2026-10-03T02:55:00Z',
+    expires_at: times.expiresAt || '2026-10-03T03:20:00Z',
+    integrity: { algorithm: 'SHA-256', digest: null },
+    contract
+  }, nodeSha);
 }
 
 const confirmFor = (requestId = 'TEST_ONLY_T008B_LOCAL_001') => ({ confirmed: true, action: 'CONFIRM_AND_SYNC', requestId });
@@ -164,7 +213,8 @@ async function run(world, envelope, confirmation) {
 }
 
 function assertNoTokenLeak(world, ...values) {
-  const blob = JSON.stringify([values, world.rows, [...world.cache.values()], world.logs]);
+  const replayMarkers = world.replayKeys().map((k) => world.store[k]);
+  const blob = JSON.stringify([values, world.rows, [...world.cache.values()], world.logs, replayMarkers]);
   assert.equal(blob.includes(FAKE_TOKEN), false, 'token leaked');
 }
 
@@ -190,6 +240,7 @@ for (const confirmation of [undefined, {}, { confirmed: true, action: 'CONFIRM_A
   assert.equal(final.redirect, null);
   assert.equal(w.github.calls.length, 0);
   assert.equal(w.rows.length, 0);
+  assert.equal(w.replayKeys().length, 0, 'no replay claim without explicit confirmation');
 }
 
 // 3. Confirmed TEST_ONLY CREATE: GET → PUT → GET, verified receipt, HISTORY row, Sites redirect.
@@ -342,61 +393,209 @@ for (const [label, contract, opts] of [
   assert.equal(shims.atob(Buffer.from('abc').toString('base64')), 'abc');
 }
 
-// 12. Stale-result regression: same requestId twice; first SUCCESS must never leak into the second attempt.
+// 12. Stale-result regression (T-010 form): reusing a request_id is REPLAY_REJECTED; the first
+// SUCCESS never leaks into the second attempt, and the second attempt performs zero I/O.
 {
   const envelope = envelopeWith(contractWith(), 'TEST_ONLY_T008B_SAME_ID');
   const confirmation = confirmFor('TEST_ONLY_T008B_SAME_ID');
 
-  // 12a. first attempt succeeds and caches SUCCESS; second attempt is forced to fail at read.
   const w = createWorld({ props: fullProps });
   const first = await run(w, envelope, confirmation);
   assert.equal(first.final.state, 'SYNCED');
-  assert.equal(first.final.receipt.status, 'SUCCESS');
-  w.github.getMode = 'error';
+  const callsBefore = w.github.calls.length;
+  const rowsBefore = w.rows.length;
   const second = await run(w, envelope, confirmation);
-  assert.equal(second.immediate.state, 'RESULT_PENDING');
   assert.equal(second.final.state, 'FAILED');
+  assert.equal(second.final.error.code, 'REPLAY_REJECTED');
   assert.equal(second.final.redirect, null);
-  assert.equal(second.final.receipt.status, 'FAILED');
-  assert.equal(second.final.receipt.adapter_outcome, 'READ_ERROR');
-  assert.notDeepStrictEqual(second.final, first.final);
+  assert.equal(second.final.writePerformed, false);
   assert.equal(JSON.stringify(second.final).includes('"state":"SYNCED"'), false);
+  assert.equal(w.github.calls.length, callsBefore, 'replay rejection: zero GitHub calls');
+  assert.equal(w.rows.length, rowsBefore, 'replay rejection: zero HISTORY rows');
 
-  // 12b. second attempt write fails AND its result cannot be cached → unknown FAILED, never the first SUCCESS.
-  const w2 = createWorld({ props: fullProps });
-  const ok = await run(w2, envelope, confirmation);
-  assert.equal(ok.final.state, 'SYNCED');
-  w2.github.getMode = 'error';
-  w2.cacheFaults.put = true;
-  const lost = await run(w2, envelope, confirmation);
+  // 12b. result cannot be cached → unknown FAILED, never the first SUCCESS.
+  w.cacheFaults.put = true;
+  const lost = await run(w, envelope, confirmation);
   assert.equal(lost.final.state, 'FAILED');
   assert.equal(lost.final.error.code, 'SYNC_RESULT_UNAVAILABLE');
-  assert.equal(lost.final.redirect, null);
   assert.equal(lost.final.writePerformed, null);
 
-  // 12c. cache cannot be cleared → attempt is not started (no GitHub I/O, no HISTORY), never SUCCESS.
+  // 12c. cache cannot be cleared → attempt not started and request_id NOT consumed.
   const w3 = createWorld({ props: fullProps });
-  await run(w3, envelope, confirmation);
-  const callsBefore = w3.github.calls.length;
-  const rowsBefore = w3.rows.length;
   w3.cacheFaults.remove = true;
-  const blocked = w3.context.confirmAndSync({ fragment: encodeFragment(envelope), confirmation });
+  const freshEnv = envelopeWith(contractWith(), 'TEST_ONLY_T008B_CACHE');
+  const blocked = w3.context.confirmAndSync({ fragment: encodeFragment(freshEnv), confirmation: confirmFor('TEST_ONLY_T008B_CACHE') });
   await settle();
-  assert.equal(blocked.state, 'FAILED');
   assert.equal(blocked.error.code, 'RESULT_CACHE_UNAVAILABLE');
-  assert.equal(blocked.redirect, null);
-  assert.equal(w3.github.calls.length, callsBefore);
-  assert.equal(w3.rows.length, rowsBefore);
+  assert.equal(w3.github.calls.length + w3.rows.length + w3.replayKeys().length, 0);
+  w3.cacheFaults.remove = false;
+  assert.equal((await run(w3, freshEnv, confirmFor('TEST_ONLY_T008B_CACHE'))).final.state, 'SYNCED');
 
-  // 12d. cache read failure → factual FAILED/unknown, does not throw, never redirects.
+  // 12d. cache read failure → factual FAILED/unknown, does not throw.
   w3.cacheFaults.get = true;
   let lookup;
-  assert.doesNotThrow(() => { lookup = w3.context.getConfirmSyncResult('TEST_ONLY_T008B_SAME_ID'); });
-  assert.equal(lookup.state, 'FAILED');
+  assert.doesNotThrow(() => { lookup = w3.context.getConfirmSyncResult('TEST_ONLY_T008B_CACHE'); });
   assert.equal(lookup.error.code, 'SYNC_RESULT_UNREADABLE');
-  assert.equal(lookup.redirect, null);
   assert.equal(lookup.writePerformed, null);
 }
 
-console.log('T-008B Apps Script binding test: PASS');
+// ---- T-010B ------------------------------------------------------------------------------
+const preview = (w, env) => JSON.parse(JSON.stringify(w.context.previewAscRequest({ fragment: encodeFragment(env) })));
+
+// 13. Server preview: valid request is security-valid without claiming replay or doing I/O.
+{
+  const w = createWorld({ props: fullProps });
+  const p = preview(w, envelopeWith(contractWith()));
+  assert.equal(p.state, 'SECURITY_VALID');
+  assert.equal(p.securityValid, true);
+  assert.equal(p.writeEnabled, true);
+  assert.equal(p.requestId, 'TEST_ONLY_T008B_LOCAL_001');
+  assert.equal(p.expiresAt, '2026-10-03T03:20:00Z');
+  assert.equal(p.writePerformed, false);
+  assert.equal('contract' in p, false);
+  assert.equal(w.github.calls.length + w.rows.length + w.replayKeys().length + w.lockState.acquisitions, 0, 'preview: zero GitHub/HISTORY/replay/lock');
+  assertNoTokenLeak(w, p);
+
+  const noToken = createWorld({ props: { ASC_MAIN_UI_URL: SITES_URL } });
+  const p2 = preview(noToken, envelopeWith(contractWith()));
+  assert.equal(p2.securityValid, true);
+  assert.equal(p2.writeEnabled, false);
+}
+
+// 14. Server preview rejects bad requests visibly; they never become write-enabled.
+{
+  const tampered = envelopeWith(contractWith());
+  tampered.contract['Content/change'] = 'altered after digest';
+  const unsealed = { ...envelopeWith(contractWith()), integrity: { algorithm: 'SHA-256', digest: null } };
+  const cases = [
+    ['expired', envelopeWith(contractWith(), 'R1', { issuedAt: '2026-10-03T02:00:00Z', expiresAt: '2026-10-03T02:30:00Z' }), 'REQUEST_EXPIRED', {}],
+    ['too long', envelopeWith(contractWith(), 'R2', { issuedAt: '2026-10-03T02:59:00Z', expiresAt: '2026-10-03T03:30:00Z' }), 'LIFETIME_EXCEEDED', {}],
+    ['tampered', tampered, 'INTEGRITY_MISMATCH', {}],
+    ['unsealed', unsealed, 'INTEGRITY_DIGEST_INVALID', {}],
+    ['non-owner', envelopeWith(contractWith()), 'OWNER_REQUIRED', { activeUser: 'someone@example.test' }],
+    ['no active user', envelopeWith(contractWith()), 'OWNER_REQUIRED', { activeUser: '' }]
+  ];
+  for (const [label, env, code, opts] of cases) {
+    const w = createWorld({ props: fullProps, ...opts });
+    const p = preview(w, env);
+    assert.equal(p.state, 'REJECTED', label);
+    assert.equal(p.securityValid, false, label);
+    assert.equal(p.writeEnabled, false, label);
+    assert.equal(p.error.code, code, label);
+    assert.equal(w.github.calls.length + w.rows.length + w.replayKeys().length, 0, label);
+  }
+  const w = createWorld({ props: fullProps });
+  for (const fragment of [undefined, '', '#asc=!!']) {
+    const p = w.context.previewAscRequest({ fragment });
+    assert.equal(p.securityValid, false);
+    assert.equal(p.error.code, 'INVALID_FRAGMENT');
+  }
+}
+
+// 15. Confirm re-validates: request expiring between preview and confirm is rejected, zero I/O, no claim.
+{
+  const w = createWorld({ props: fullProps });
+  const env = envelopeWith(contractWith());
+  assert.equal(preview(w, env).securityValid, true);
+  w.clock.now = '2026-10-03T03:20:00.000Z';
+  const { final } = await run(w, env, confirmFor());
+  assert.equal(final.state, 'FAILED');
+  assert.equal(final.stage, 'SECURITY');
+  assert.equal(final.error.code, 'REQUEST_EXPIRED');
+  assert.equal(final.writePerformed, false);
+  assert.equal(w.github.calls.length + w.rows.length + w.replayKeys().length, 0);
+
+  // altered pending fragment at confirm time
+  const w2 = createWorld({ props: fullProps });
+  const altered = envelopeWith(contractWith());
+  altered.contract['Content/change'] = '# swapped after preview\n';
+  const r2 = await run(w2, altered, confirmFor());
+  assert.equal(r2.final.error.code, 'INTEGRITY_MISMATCH');
+  assert.equal(w2.github.calls.length + w2.rows.length + w2.replayKeys().length, 0);
+}
+
+// 16. Non-owner / identity change at confirm: no replay claim, zero I/O.
+for (const activeUser of ['someone@example.test', '']) {
+  const w = createWorld({ props: fullProps, activeUser });
+  const { final } = await run(w, envelopeWith(contractWith()), confirmFor());
+  assert.equal(final.stage, 'OWNER');
+  assert.equal(final.error.code, 'OWNER_REQUIRED');
+  assert.equal(w.github.calls.length + w.rows.length + w.replayKeys().length + w.lockState.acquisitions, 0);
+}
+
+// 17. Replay: first confirmed attempt claims; failed destination attempt stays consumed; new ID proceeds.
+{
+  const w = createWorld({ props: fullProps, putMode: 'conflict' });
+  const env = envelopeWith(contractWith(), 'TEST_ONLY_T010_REPLAY');
+  const first = await run(w, env, confirmFor('TEST_ONLY_T010_REPLAY'));
+  assert.equal(first.final.state, 'FAILED');
+  assert.equal(first.final.stage, 'WRITE');
+  assert.equal(w.replayKeys().length, 1);
+  const key = w.replayKeys()[0];
+  assert.match(key, /^asc\.replay\.v1\.[0-9a-f]{64}$/, 'bounded, hashed property key');
+  assert.equal(key.includes('TEST_ONLY_T010_REPLAY'), false);
+  assert.deepStrictEqual(Object.keys(JSON.parse(w.store[key])).sort(), ['claimed_at', 'state']);
+  w.github.putMode = 'ok';
+  const callsBefore = w.github.calls.length;
+  const rowsBefore = w.rows.length;
+  const retry = await run(w, env, confirmFor('TEST_ONLY_T010_REPLAY'));
+  assert.equal(retry.final.error.code, 'REPLAY_REJECTED', 'consumed even though the first write failed');
+  assert.equal(w.github.calls.length, callsBefore);
+  assert.equal(w.rows.length, rowsBefore);
+  assert.equal(w.lockState.held, false, 'lock released');
+  const fresh = await run(w, envelopeWith(contractWith(), 'TEST_ONLY_T010_REPLAY_2'), confirmFor('TEST_ONLY_T010_REPLAY_2'));
+  assert.equal(fresh.final.state, 'SYNCED');
+  assert.equal(w.replayKeys().length, 2);
+  assertNoTokenLeak(w, first.final, retry.final, fresh.final);
+}
+
+// 18. Atomic claim: a concurrent invocation during the critical section cannot win.
+{
+  const w = createWorld({ props: fullProps });
+  let concurrent = null;
+  w.propFaults.onGet = () => { concurrent = w.context.ascClaimReplay_('TEST_ONLY_T010_RACE'); };
+  const winner = w.context.ascClaimReplay_('TEST_ONLY_T010_RACE');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(winner)), { claimed: true });
+  assert.equal(concurrent.claimed, false, 'concurrent claimant blocked by lock');
+  assert.equal(concurrent.code, 'REPLAY_STORE_UNAVAILABLE');
+  assert.equal(w.context.ascClaimReplay_('TEST_ONLY_T010_RACE').code, 'REPLAY_REJECTED');
+  assert.equal(w.replayKeys().length, 1, 'exactly one claim persisted');
+  assert.equal(w.lockState.held, false);
+}
+
+// 19. Lock / property failures fail closed: REPLAY_STORE_UNAVAILABLE, zero destination I/O.
+for (const fault of ['lockBusy', 'lockService', 'propGet', 'propSet', 'dropWrite']) {
+  const w = createWorld({ props: fullProps });
+  if (fault === 'lockBusy') w.lockState.held = true;
+  if (fault === 'lockService') w.lockState.unavailable = true;
+  if (fault === 'propGet') w.propFaults.get = true;
+  if (fault === 'propSet') w.propFaults.set = true;
+  if (fault === 'dropWrite') w.propFaults.dropWrite = true;
+  const { final } = await run(w, envelopeWith(contractWith()), confirmFor());
+  assert.equal(final.state, 'FAILED', fault);
+  assert.equal(final.stage, 'REPLAY', fault);
+  assert.equal(final.error.code, 'REPLAY_STORE_UNAVAILABLE', fault);
+  assert.equal(final.writePerformed, false, fault);
+  assert.equal(w.github.calls.length + w.rows.length, 0, fault);
+  if (fault !== 'lockBusy') assert.equal(w.lockState.held, false, fault + ': lock released');
+}
+
+// 20. Credential boundary: token read server-side only; never in browser-visible results/HTML/client.
+{
+  assert.doesNotMatch(CLIENT, /GITHUB_TOKEN|sessionStorage\.setItem\([^)]*token/i);
+  const html = read('Index.html');
+  assert.doesNotMatch(html, /GITHUB_TOKEN/);
+  const w = createWorld({ props: fullProps });
+  const outputs = [
+    w.context.getBootstrapState(),
+    w.context.previewAscRequest({ fragment: encodeFragment(envelopeWith(contractWith())) }),
+    (await run(w, envelopeWith(contractWith()), confirmFor())).final,
+    (await run(w, envelopeWith(contractWith()), confirmFor())).final,
+    w.context.getConfirmSyncResult('TEST_ONLY_T008B_LOCAL_001')
+  ];
+  assertNoTokenLeak(w, outputs);
+  assert.equal(JSON.stringify(Object.keys(outputs[1])).includes('token'), false);
+}
+
+console.log('T-008B + T-010B Apps Script binding test: PASS');
 console.log('real network / GitHub / Sheets writes: none');

@@ -24,12 +24,14 @@ const contract = {
 
 const envelope = createEnvelope(contract, {
   requestId: "req-t002-001",
+  issuedAt: "2026-10-01T11:45:00.000Z",
   expiresAt: "2026-10-01T12:00:00.000Z"
 });
 
 assert.equal(ASC_LINK_CONSTANTS.envelopeVersion, "0.1");
 assert.equal(envelope.integrity.algorithm, "SHA-256");
-assert.equal(envelope.integrity.digest, null);
+assert.equal(envelope.integrity.digest, null); // unsealed; sealing/validation: envelope-security.mjs (T-010)
+assert.equal(envelope.issued_at, "2026-10-01T11:45:00.000Z");
 
 const encoded = encodeEnvelope(envelope);
 const decodedDirect = decodeEnvelope(encoded);
@@ -59,6 +61,11 @@ assert.throws(
 assert.throws(
   () => createEnvelope(contract, { requestId: "", expiresAt: "2026-10-01T12:00:00Z" }),
   /requestId is required/
+);
+
+assert.throws(
+  () => createEnvelope(contract, { requestId: "req", expiresAt: "2026-10-01T12:00:00Z" }),
+  /issuedAt must be/
 );
 
 console.log("T-002 transport tests: PASS");

@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.30 | 2026-10-03 | LOCKED D-029 T-010 v0.1 envelope security/replay rules (30-minute expiry, SHA-256 integrity as error detection only, one confirmed attempt per request_id via LockService + Script Properties, owner-only gate, server-side-only GITHUB_TOKEN, preview + confirm double validation). T-010A/B LOCAL PASS; T-010 remains IN PROGRESS pending live proof. |
 | 0.6.29 | 2026-10-03 | T-006 PASS: real GitHub Contents API adapter completed one controlled VERIFIED_WRITE; commit and persisted file SHA independently verified; AP-005 done and T-007 promoted. |
 | 0.6.28 | 2026-10-03 | T-006A PASS: GitHub adapter local/mock mechanics published; truthful current-SHA, commit-SHA, persisted-state verification, WRITE_UNVERIFIED, Promise/throw handling, and isolation boundaries verified; T-006 remains IN PROGRESS for controlled live write. |
 | 0.6.27 | 2026-10-03 | T-005 PASS: pure ASC Core boundary published; exact contract validation, fail-closed authorization, deep semantic isolation, destination routing, isolated adapter descriptors, and neutral receipt handoff verified; T-006 promoted. |
@@ -1146,6 +1147,22 @@ Decision: Refine the Method Gateway receiver-facing host based on live field evi
 Locked by: Project Owner  
 Date: 2026-10-02
 
+D-029 | LOCKED
+
+Decision: T-010 v0.1 ASC envelope security / replay rules. These rules extend D-013's transport/security envelope; the eight semantic Write Contract fields are unchanged.
+
+1. Expiry. Every write-capable ASC envelope carries `issued_at` and `expires_at` (valid ISO date-time strings) as transport/security metadata. Require `expires_at > issued_at`, `expires_at - issued_at <= 30 minutes`, and not already expired at validation time (`REQUEST_EXPIRED`). Invalid or excessive lifetime fails closed before destination I/O. Expiry is never silently extended.
+2. SHA-256 integrity. Mandatory for write-capable envelopes. `integrity.algorithm` is exactly `SHA-256`; `integrity.digest` is a lowercase 64-character hex digest of the UTF-8 canonical JSON of `{envelope_version, request_id, issued_at, expires_at, contract}` (object keys sorted recursively, array order preserved, scalars preserved, the `integrity` object excluded). Missing/bad algorithm or digest fails closed; a mismatch is `INTEGRITY_MISMATCH`. Limitation: a plain SHA-256 digest carried with the payload provides integrity consistency / error detection only. It is not sender authentication, a signature, a MAC, an authenticated envelope, or tamper-proof transport: anyone able to rewrite both payload and digest can recompute it.
+3. Replay. One `request_id` may perform only one confirmed sync attempt. Preview never consumes it. After envelope security, owner identity, and explicit request-bound CONFIRM & SYNC pass, and before any GitHub/HISTORY I/O, the `request_id` is atomically claimed. A second attempt is `REPLAY_REJECTED` with zero destination writes. A confirmed attempt stays consumed even if its write later fails; any retry needs a new `request_id`. If replay state cannot be safely determined or claimed, fail closed (`REPLAY_STORE_UNAVAILABLE`). Apps Script v0.1 mechanism: `LockService` + `PropertiesService.getScriptProperties()`; CacheService is result delivery only, never the replay authority.
+4. Owner identity. v0.1 stays owner-only. Before the replay claim and any destination I/O, the Google active user must be non-empty and equal the effective/deploying owner (existing v0.1 identity model). Absent/mismatched identity fails closed: no GitHub call, no HISTORY write, no replay claim.
+5. Destination credential. `GITHUB_TOKEN` stays a server-side Script Property only (D-016 fine-grained repo-scoped PAT model unchanged). It is never placed in the envelope, returned by a server function, rendered in HTML, put in browser storage, logged into receipts, or included in browser-visible errors.
+6. Double validation. Security is validated server-side at preview (structure, expiry/lifetime, SHA-256 integrity, owner) before CONFIRM & SYNC is shown as enabled; browser decode is transport UX only. Preview never claims replay state and never writes. At CONFIRM & SYNC everything is validated again server-side before the replay claim and before I/O; a previous browser or preview validation is never trusted as write authorization.
+7. Atomic replay claim. The check-and-set runs under an Apps Script lock: lock → inspect persistent claim → reject if claimed → persist claim if unused → release. Only one simultaneous confirmed invocation for a `request_id` can win. The claim happens after explicit confirmation + security + owner checks and before destination I/O.
+
+`request_id` is the v0.1 replay key; no separate nonce is added.
+
+Locked by: Project Owner\
+Date: 2026-10-03
 
 ## T-013B CLOSURE CHECKPOINT
 

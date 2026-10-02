@@ -2,12 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://aisync.local/transport/asc-envelope-v0.1.schema.json",
   "title": "ASC Transport Envelope v0.1",
-  "description": "Transport wrapper for an ASC Write Contract v0.1. Security enforcement is completed later; this schema reserves request identity, expiry, and integrity metadata without changing semantic contract meaning.",
+  "description": "Transport wrapper for an ASC Write Contract v0.1. T-010 (D-029): issued_at/expires_at lifetime <= 30 minutes and a SHA-256 digest over canonical JSON of {envelope_version, request_id, issued_at, expires_at, contract} are enforced server-side by transport/envelope-security.mjs. The digest is integrity/error detection only, not sender authentication. Security metadata does not change semantic contract meaning.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "envelope_version",
     "request_id",
+    "issued_at",
     "expires_at",
     "integrity",
     "contract"
@@ -19,6 +20,10 @@
     "request_id": {
       "type": "string",
       "minLength": 1
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
     },
     "expires_at": {
       "type": "string",
@@ -33,8 +38,8 @@
           "const": "SHA-256"
         },
         "digest": {
-          "type": ["string", "null"],
-          "minLength": 1
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         }
       }
     },

@@ -228,7 +228,7 @@ receipt:      adapter_outcome=VERIFIED_WRITE, write_performed=true, verified=tru
 redirect:     main Google Sites ASC UI (https://sites.google.com/view/aisync-asc/laman-utama)
 ```
 
-Limits: this proves the TEST_ONLY destination policy only. It is not a production Record ID → GitHub path mapping; that mapping remains undecided. Failure paths (FAILED/unverified writes never redirect) are proven by the local tests above, not by a live forced failure. Replay/expiry/integrity controls remain T-010.
+Limits: this proves the TEST_ONLY destination policy only. It is not a production Record ID → GitHub path mapping; that mapping remains undecided. Failure paths (FAILED/unverified writes never redirect) are proven by the local tests above, not by a live forced failure. Replay/expiry/integrity controls were added later in T-010 (see below).
 
 
 ## T-009A/B/C read-only dashboard — LOCAL PASS (not deployed)
@@ -247,3 +247,13 @@ node apps-script/test-dashboard-ui.mjs
 ```
 
 Pending: deployment, Google Sites integration, live read proof.
+
+
+## T-010B security / replay binding — LOCAL PASS (not deployed)
+
+- `previewAscRequest({ fragment })` validates the envelope server-side (structure, ≤ 30-minute lifetime, expiry, SHA-256 integrity, owner identity) and returns only safe fields. It never claims replay state and never writes. The client enables CONFIRM & SYNC only when this returns `securityValid` and `writeEnabled` for the same `request_id`; rejected requests are shown as `REJECTED (<code>)`.
+- `confirmAndSync` re-validates in order: decode → security/expiry/integrity → explicit request-bound confirmation → owner → atomic replay claim → existing T-008 flow (Core → GitHub verify → receipt → HISTORY → redirect).
+- Replay authority: `LockService.getScriptLock()` + Script Properties key `asc.replay.v1.<sha256(request_id)>` with marker `{state, claimed_at}`. CacheService only delivers results. Already claimed → `REPLAY_REJECTED`; lock/property uncertainty → `REPLAY_STORE_UNAVAILABLE`; both with zero GitHub/HISTORY calls. A confirmed attempt stays consumed even if the write fails; retry needs a new `request_id`. No marker cleanup in v0.1.
+- `GITHUB_TOKEN` is read from Script Properties only and never returned, rendered, stored client-side, or logged.
+
+Pending: deployment and live proof.

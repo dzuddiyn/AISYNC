@@ -10,14 +10,21 @@
 
 ## Current task
 
-T-010 | CURRENT — NOT STARTED  
+T-010 | CURRENT — IN PROGRESS\
 Source: AP-007  
-Decision / Design lineage: D-003, D-013, D-015, D-016, D-017  
+Decision / Design lineage: D-003, D-013, D-015, D-016, D-017, D-029\
 Do: Add v0.1 security/replay controls around link requests, owner identity, server-side destination credentials, expiry/integrity checks, and failure-safe behavior.  
 Depends on: T-002, T-004, T-005, T-006 — satisfied.  
 Pass: The prototype does not expose destination credentials, does not silently write, rejects/flags invalid or expired requests according to the chosen v0.1 rules, and preserves explicit owner confirmation.  
-Starting point: T-009 read/dashboard path is live and embedded in the published Google Sites ASC UI; T-010 has not started.  
-Current result: NOT STARTED.
+Starting point: T-009 read/dashboard path is live and embedded in the published Google Sites ASC UI.\
+Rules: D-029 | LOCKED (owner-approved v0.1 security/replay rules).
+
+- T-010A | LOCAL PASS — runtime-neutral `transport/envelope-security.mjs`: canonical JSON, integrity payload, injected SHA-256 verification, structural validation, `issued_at` / `expires_at` with ≤ 30-minute lifetime, factual failure codes (`REQUEST_EXPIRED`, `INTEGRITY_MISMATCH`, …); no network/persistence. Bundled mechanically into `AscRuntime.gs`; reused by `flow/confirm-sync.mjs` for both preview and confirm.
+- T-010B | LOCAL PASS — Apps Script binding: server-side `previewAscRequest` (security + owner, no replay claim, no write) gates CONFIRM & SYNC enablement; confirm re-validates security, then explicit confirmation, owner identity, and an atomic `LockService` + Script Properties `request_id` claim before any GitHub/HISTORY I/O; `REPLAY_REJECTED` / `REPLAY_STORE_UNAVAILABLE` fail closed with zero destination calls; `GITHUB_TOKEN` stays server-side only.
+- Tests: `node transport/test-envelope-security.mjs`, `node flow/test-confirm-sync.mjs`, `node apps-script/test-apps-script-binding.mjs`, `node apps-script/test-confirm-ui.mjs` — PASS with fake services; T-008/T-009 regressions PASS.
+
+Pending: Apps Script deployment and live proof (valid preview → confirmed TEST_ONLY sync, expired/tampered rejection, replay rejection). Not deployed; no live write performed.\
+Current result: IN PROGRESS — not PASS.
 
 ## Completed
 

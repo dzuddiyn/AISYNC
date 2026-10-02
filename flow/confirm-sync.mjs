@@ -10,6 +10,7 @@
 import { processCoreRequest } from '../core/asc-core.mjs';
 import { runGitHubAdapter } from '../adapters/github/github-adapter.mjs';
 import { createWriteReceipt, persistHistory } from '../receipts/write-receipt.mjs';
+import { validateEnvelopeSecurity } from '../transport/envelope-security.mjs';
 
 export const CONFIRM_ACTION = 'CONFIRM_AND_SYNC';
 
@@ -67,13 +68,38 @@ export function isExplicitConfirmation(confirmation, requestId) {
     confirmation.requestId === requestId;
 }
 
-// Preview is pure: it never touches a destination client or HISTORY writer.
-export function previewRequest(envelope) {
-  const read = readEnvelope(envelope);
-  if (read.error) {
-    return read.error;
+// T-010 (D-029) security gate: envelope structure, expiry/lifetime, SHA-256 integrity.
+function securityGate(envelope, requestId, now, sha256Hex) {
+  const security = validateEnvelopeSecurity(envelope, { now, sha256Hex });
+  if (!security.ok) {
+    return {
+      error: failed('SECURITY', security.code, security.message, {
+        requestId: requestId || null,
+        writePerformed: false
+      })
+    };
   }
+  return { security };
+}
 
+// Owner identity reuses the injected v0.1 owner policy (no parallel user system).
+function ownerGate(verifyOwner, authorizationContext, requestId) {
+  let owner = false;
+  try {
+    owner = verifyOwner(authorizationContext) === true;
+  } catch (error) {
+    owner = false;
+  }
+  if (!owner) {
+    return failed('OWNER', 'OWNER_REQUIRED', 'Active user is missing or is not the deploying owner.', {
+      requestId,
+      writePerformed: false
+    });
+  }
+  return null;
+}
+
+function awaitingConfirmation(read, security) {
   return {
     state: 'AWAITING_CONFIRMATION',
     stage: 'PREVIEW',
@@ -81,8 +107,41 @@ export function previewRequest(envelope) {
     requestId: read.requestId,
     contract: cloneValue(read.contract),
     confirmAction: CONFIRM_ACTION,
+    security: {
+      verified: true,
+      algorithm: security.algorithm,
+      issuedAt: security.issuedAt,
+      expiresAt: security.expiresAt
+    },
     writePerformed: false
   };
+}
+
+// Preview is pure: it validates security + owner but never claims replay state and never
+// touches a destination client or HISTORY writer.
+export function previewRequest(envelope, { now, sha256Hex, authorizationContext, verifyOwner } = {}) {
+  const read = readEnvelope(envelope);
+  if (read.error) {
+    return read.error;
+  }
+
+  const gate = securityGate(envelope, read.requestId, now, sha256Hex);
+  if (gate.error) {
+    return gate.error;
+  }
+
+  if (typeof verifyOwner !== 'function') {
+    return failed('CONFIG', 'MISSING_OWNER_POLICY', 'A server-side owner identity check is required.', {
+      requestId: read.requestId,
+      writePerformed: false
+    });
+  }
+  const ownerError = ownerGate(verifyOwner, authorizationContext, read.requestId);
+  if (ownerError) {
+    return ownerError;
+  }
+
+  return awaitingConfirmation(read, gate.security);
 }
 
 function isSupportedDestinationSet(routes) {
@@ -124,6 +183,9 @@ export async function confirmAndSyncRequest({
   githubClient,
   historyWriter,
   now,
+  sha256Hex,
+  verifyOwner,
+  claimReplay,
   sourceCommit = null,
   mainUiUrl
 } = {}) {
@@ -132,15 +194,63 @@ export async function confirmAndSyncRequest({
     return read.error;
   }
 
-  // Gate 1: no persistence of any kind without explicit, request-bound confirmation.
+  // Server configuration is checked first so a misconfigured server never consumes a request ID.
+  const configError = function (code, message) {
+    return failed('CONFIG', code, message, { requestId: read.requestId, writePerformed: false });
+  };
+  if (typeof now !== 'function') {
+    return configError('MISSING_CLOCK', 'A server clock is required for expiry checks and factual receipt timestamps.');
+  }
+  if (typeof resolveGitHubWriteSpec !== 'function') {
+    return configError('MISSING_WRITE_SPEC_RESOLVER', 'A server-side GitHub write-spec resolver is required.');
+  }
+  if (typeof verifyOwner !== 'function') {
+    return configError('MISSING_OWNER_POLICY', 'A server-side owner identity check is required.');
+  }
+  if (typeof claimReplay !== 'function') {
+    return configError('MISSING_REPLAY_GUARD', 'A server-side replay claim is required.');
+  }
+
+  // Gate 1 (T-010): security is re-validated at confirm time; a previous preview is never trusted.
+  const gate = securityGate(envelope, read.requestId, now, sha256Hex);
+  if (gate.error) {
+    return gate.error;
+  }
+
+  // Gate 2: no persistence of any kind without explicit, request-bound confirmation.
   if (!isExplicitConfirmation(confirmation, read.requestId)) {
     return {
-      ...previewRequest(envelope),
+      ...awaitingConfirmation(read, gate.security),
       error: { code: 'CONFIRMATION_REQUIRED', message: 'Explicit CONFIRM & SYNC is required before persistence.' }
     };
   }
 
-  // Gate 2: ASC Core validate / authorize / route. Rejection stops before any write.
+  // Gate 3 (T-010): owner identity before replay claim and before any destination I/O.
+  const ownerError = ownerGate(verifyOwner, authorizationContext, read.requestId);
+  if (ownerError) {
+    return ownerError;
+  }
+
+  // Gate 4 (T-010): atomic one-time replay claim. Once claimed, the request ID stays
+  // consumed even if the destination attempt later fails; a retry needs a new request_id.
+  let claim;
+  try {
+    claim = await claimReplay(read.requestId);
+  } catch (error) {
+    claim = null;
+  }
+  if (!claim || claim.claimed !== true) {
+    const rejected = Boolean(claim) && claim.code === 'REPLAY_REJECTED';
+    return failed('REPLAY', rejected ? 'REPLAY_REJECTED' : 'REPLAY_STORE_UNAVAILABLE',
+      rejected
+        ? 'This request_id has already been used for a confirmed sync attempt. A new ASC request is required.'
+        : 'Replay state could not be safely claimed. Sync was not started; nothing was saved.', {
+        requestId: read.requestId,
+        writePerformed: false
+      });
+  }
+
+  // Gate 5: ASC Core validate / authorize / route. Rejection stops before any write.
   const core = processCoreRequest({
     contract: read.contract,
     authorizationContext,
@@ -162,20 +272,6 @@ export async function confirmAndSyncRequest({
     });
   }
 
-  if (typeof now !== 'function') {
-    return failed('CONFIG', 'MISSING_CLOCK', 'A server clock is required for factual receipt timestamps.', {
-      requestId: read.requestId,
-      writePerformed: false
-    });
-  }
-
-  if (typeof resolveGitHubWriteSpec !== 'function') {
-    return failed('CONFIG', 'MISSING_WRITE_SPEC_RESOLVER', 'A server-side GitHub write-spec resolver is required.', {
-      requestId: read.requestId,
-      writePerformed: false
-    });
-  }
-
   const invocation = core.adapterInvocations[0];
   let writeSpec;
   try {
@@ -184,10 +280,10 @@ export async function confirmAndSyncRequest({
     writeSpec = null;
   }
 
-  // Gate 3: GitHub adapter owns read → write → read verification.
+  // Gate 6: GitHub adapter owns read → write → read verification.
   const adapterResult = await runGitHubAdapter(invocation, writeSpec, githubClient);
 
-  // Gate 4: T-007 factual receipt.
+  // Gate 7: T-007 factual receipt.
   const receiptResult = createWriteReceipt({
     requestId: read.requestId,
     projectId: read.contract.Project,
@@ -206,7 +302,7 @@ export async function confirmAndSyncRequest({
     });
   }
 
-  // Gate 5: T-007 HISTORY persistence for both SUCCESS and FAILED receipts.
+  // Gate 8: T-007 HISTORY persistence for both SUCCESS and FAILED receipts.
   const history = await persistHistory(receiptResult, strictHistoryWriter(historyWriter));
   const receipt = cloneValue(receiptResult.receipt);
   const base = {

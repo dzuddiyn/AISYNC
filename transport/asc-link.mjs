@@ -32,16 +32,24 @@ export function createEnvelope(contract, options = {}) {
   }
 
   const requestId = String(options.requestId ?? "").trim();
+  const issuedAt = String(options.issuedAt ?? "").trim();
   const expiresAt = String(options.expiresAt ?? "").trim();
 
   if (!requestId) throw new Error("requestId is required.");
+  if (!issuedAt || Number.isNaN(Date.parse(issuedAt))) {
+    throw new Error("issuedAt must be a valid date-time string.");
+  }
   if (!expiresAt || Number.isNaN(Date.parse(expiresAt))) {
     throw new Error("expiresAt must be a valid date-time string.");
   }
 
+  // T-010 (D-029): issued_at / expires_at / integrity are transport/security metadata.
+  // The digest is filled by sealEnvelope() in envelope-security.mjs; null = unsealed,
+  // which server-side security validation rejects.
   return {
     envelope_version: ENVELOPE_VERSION,
     request_id: requestId,
+    issued_at: issuedAt,
     expires_at: expiresAt,
     integrity: {
       algorithm: "SHA-256",
