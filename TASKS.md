@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE TASKS
 
 **Status:** EXECUTION QUEUE  
-**Method:** ZASSIMPLE v0.2.4  
+**Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Architecture:** v1.0.6 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
@@ -12,7 +12,7 @@
 
 T-013A | IN PROGRESS — METHOD REGISTRY + PROTECTED GITHUB SYNC
 Source: AP-008, D-023, D-024
-Decision / Architecture lineage: D-002, D-005, D-023, D-024, ARCH v1.0.5 § Public Method Gateway / read plane
+Decision / Architecture lineage: D-002, D-005, D-023, D-024, ARCH v1.0.6 § Public Method Gateway / read plane
 Do:
 - maintain one lightweight METHODS registry in ASC DB;
 - sync the three frozen/current Malay method files from canonical GitHub;
