@@ -155,7 +155,7 @@ PF-011 | RESOLVED BY D-022
 Finding: ASC v0.1 will not attempt to force the `#asc` fragment through Google's authentication redirect. Primary auth continuation is B: preserve the pending state in the original ASC tab, authenticate in a new tab, return, then CONTINUE/replay. Fallback A is login then click the ASC link / GO / CONTINUE again. The preserved-user-state requirement is mandatory; seamless automatic cross-tab auth recovery is deferred.
 
 
-AP-008 | OPEN — EXECUTION HELD BY D-024  
+AP-008 | IN PROGRESS — D-024 GATE SATISFIED  
 Source: D-023  
 Action: Implement the smallest AI-SYNC Public Method Gateway proof for ZASSPILL_MY, ZASSIMPLE_MY, and ZASSELECTION_MY.  
 Dependencies: Current canonical method files in the official ZASS GitHub repository.  
@@ -187,3 +187,16 @@ If promoted after ZASSPILL review, split the Method Gateway proof into:
 - T-013A: minimal METHODS registry + protected GitHub sync;
 - T-013B: public Markdown gateway + Gemini/Copilot readability + ZASSPILL handoff proof;
 then resume T-004 front-door/routing/handoff.
+
+
+PF-017 | T-013A IMPLEMENTATION  
+Finding: The smallest compatible implementation uses two separate Apps Script code surfaces:
+- protected sync worker: GitHub → METHODS;
+- public read gateway: METHODS → Markdown.
+This preserves the public-read/protected-write boundary and leaves ASC Write Contract v0.1 unchanged.
+
+PF-018 | T-013A REGISTRY CREATED  
+Finding: The active ASC DB now includes a METHODS tab with the nine snapshot columns locked by D-023. Registry structure exists; live GitHub sync execution remains to verify.
+
+PF-019 | PUBLIC GATEWAY PLATFORM NOTE  
+Finding: Apps Script ContentService can serve plain text and anonymous web-app access is available through ANYONE_ANONYMOUS with execution as deployer. ContentService may deliver output via a Google-controlled content URL; this is acceptable only if Gemini/Copilot field tests prove receiver readability. The gateway must never redirect the receiver to GitHub.
