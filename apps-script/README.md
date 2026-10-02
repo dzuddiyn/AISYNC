@@ -27,7 +27,7 @@ This matches the Apps Script web-app manifest model documented by Google.
 
 The client follows this order:
 
-1. read `#asc=...` from the current URL;
+1. read `#asc=...` through Apps Script's `google.script.url.getLocation()` API;
 2. immediately store the fragment in `sessionStorage`;
 3. if a later navigation/reload returns without the fragment, restore it from `sessionStorage`;
 4. decode the T-002 envelope;
@@ -75,3 +75,12 @@ Until that live check is performed, T-004 remains implementation-complete but ve
 - persistence/write functions exposed: NONE
 
 This does not replace the required real Google Account web-app deployment test.
+
+
+## Live-test finding: Apps Script IFRAME URL access
+
+The first live deployment showed that reading `window.location.hash` inside the Apps Script HTML iframe does not reliably expose the outer `/exec#asc=...` fragment.
+
+The client now uses the Apps Script-supported `google.script.url.getLocation()` API, which is specifically intended to expose web-app URL parameters and fragments from IFRAME-based Apps Script HTML. Local tests retain a `window.location` fallback.
+
+A new deployment version must be tested before T-004 can be marked PASS.
