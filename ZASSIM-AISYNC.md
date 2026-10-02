@@ -1,8 +1,8 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.15  
-**Method:** ZASSIMPLE v0.2.4  
+**Project record version:** 0.6.16  
+**Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
 **Status:** ARCHITECTURE CONFIRMED — implementation in progress  
@@ -15,7 +15,7 @@
 
 ## ZASSIMPLE METHOD STATE
 
-AISYNC now follows **ZASSIMPLE v0.2.4** behavior.
+AISYNC now follows **ZASSIMPLE v0.3.0** behavior.
 
 Surface UX:
 
@@ -24,20 +24,22 @@ DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
 Current project stage: **DO IT**  
-Reason: ASC architecture was explicitly confirmed by the Project Owner on 2026-10-01. Implementation has not started; Action Plan can now be sliced into executable tasks when DO IT execution begins.
+Reason: ASC technical architecture/design was explicitly confirmed by the Project Owner on 2026-10-01. The project is now in active DO IT execution; current work is T-013A.
 
 Current command surface:
 
 - `ZASS` / `ZASS!!` — show the relevant ZASSIMPLE update, Stage Pulse, and Current Selection Matrix.
 - `PROCEED/LOCK` — primary owner decision command; `LOCK` / `LOCK DECISION` remain compatibility aliases.
 - `SAVE` — primary persistence command; `COMMIT` remains a compatibility alias.
-- `CONFIRM ARCHITECTURE` — opens final architecture confirmation review.
-- `YA, CONFIRM ARCHITECTURE` — final owner confirmation for a confirmed architecture.
-- `DO IT` — after architecture confirmation, derive executable tasks and present one task at a time.
+- `CONFIRM DESIGN` — opens the current ZASSIMPLE v0.3.0 final design confirmation review.
+- `YA, CONFIRM DESIGN` — final owner confirmation for a design under the current method.
+- `DO IT` — after design confirmation, execute the sliced tasks one at a time.
+
+Historical compatibility note: AISYNC architecture v1.x was confirmed on 2026-10-01 under the earlier `YA, CONFIRM ARCHITECTURE` surface. That confirmation remains valid; under ZASSIMPLE v0.3.0, architecture is treated as a technical subtype of DESIGN.
 
 Internal lineage principle:
 
-> ZASSIMPLE stays lightweight on the surface while preserving lineage through decision → action plan ↔ architecture → task → execution → delivery.
+> ZASSIMPLE stays lightweight on the surface while preserving lineage through decision → action plan ↔ design/technical architecture → task → execution → delivery.
 
 Implementation thoughts discovered during DECIDE or DESIGN should feed hidden action-plan lineage and may refine architecture. Architecture changes may in turn refine the action plan.
 
@@ -552,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.16 | 2026-10-02 | Updated AISYNC thread/project baseline to official ZASSIMPLE v0.3.0. Current surface now uses DESIGN / CONFIRM DESIGN; architecture is treated as a technical design subtype. Historical architecture confirmation remains valid. Current DO IT task remains T-013A. |
 | 0.6.15 | 2026-10-02 | LOCKED D-025 Method Gateway v0.1 implementation path: existing Write Contract unchanged; METHODS registry + protected exact-commit GitHub sync + separate public read gateway; execute T-013A → T-013B → resume T-004. |
 | 0.6.14 | 2026-10-02 | D-024 gate satisfied by official ZASSPILL v0.1.0 Phase 1 freeze. T-013 promoted as next implementation work. METHODS registry created in ASC DB; Method Snapshot Record v0.1 schema, protected GitHub sync worker, and separate public read gateway code added. T-004 remains paused. |
 | 0.6.13 | 2026-10-02 | LOCKED D-024 execution-order gate: pause T-004 at its verified boundary; keep T-013 planned but unpromoted; wait for official ZASSPILL, then review its real handoff contract and let the owner decide whether to run T-013A → T-013B before resuming T-004. |
@@ -824,3 +827,25 @@ Decision: Lock the **AI-SYNC Method Gateway v0.1 implementation path** selected 
 Reason: This is the smallest implementation compatible with current ASC boundaries while keeping public read, protected sync, GitHub authority, and method semantics cleanly separated.  
 Locked by: Project Owner  
 Date: 2026-10-02
+
+
+## METHOD BASELINE UPDATE — ZASSIMPLE v0.3.0
+
+Effective for this AISYNC thread/project from 2026-10-02.
+
+Source:
+- official repo: `dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint`
+- path: `ZASSIMPLE/ZASSIMPLE_MY.md`
+- version: `0.3.0`
+- source repo commit reviewed: `38760ddbc194ea530730bb615be2553cc38f267b`
+- source file blob: `b51680d434ecdffbd7daba742e9fa6d6466d0c82`
+
+Current behavioral alignment:
+- DUMP-first remains the default conversational surface.
+- Lifecycle remains `DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!`.
+- `PROCEED/LOCK` remains the owner decision command.
+- `SAVE` remains the persistence command.
+- current confirmation surface is `CONFIRM DESIGN` / `YA, CONFIRM DESIGN`.
+- architecture remains valid as a technical subtype of DESIGN for this software/infrastructure project.
+- historical AISYNC architecture confirmation under `YA, CONFIRM ARCHITECTURE` is preserved as project history and is not reopened by this method baseline update.
+- current stage remains DO IT; current implementation task remains T-013A.
