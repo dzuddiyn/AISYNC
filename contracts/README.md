@@ -1,7 +1,7 @@
 # ASC Write Contract v0.1
 
 Status: IMPLEMENTED FOR T-001  
-Architecture lineage: D-011, D-013, ARCHITECTURE v1.0
+Design lineage: D-011, D-013, DESIGN v1.0
 
 ## Purpose
 
