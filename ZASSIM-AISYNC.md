@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.25  
+**Project record version:** 0.6.26  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.26 | 2026-10-03 | T-004 PASS: live copy-open provider handoff verified across Gemini/ChatGPT/Copilot field cases; exact-source guardrail held; method transport proven distinct from still-open controlled project continuity; T-005 promoted. |
 | 0.6.25 | 2026-10-02 | T-004 live provider-selection / intent-routing / method-mapping proof PASS: ChatGPT/Gemini/Copilot options, deterministic DUMP/DECIDE/DESIGN routing, user override persistence, exact Method Gateway mapping, and preview-only handoff verified; actual provider handoff remains next. |
 | 0.6.24 | 2026-10-02 | T-004 D-022 live preserve/auth/replay proof PASS: GitHub Pages static front door preserves #asc in the original tab; protected Apps Script handles authenticated preview; CONTINUE replay works without refresh after noopener regression fix; NO WRITE verified. |
 | 0.6.23 | 2026-10-02 | LOCKED D-028 receiver-facing host refinement; T-013B PASS; GitHub Pages adopted for v0.1 receiver-facing method transport; exact-URL/no-substitution guardrail recorded; T-004 resumed. |
@@ -1286,3 +1287,61 @@ receiver reads exact public Method Gateway URL
 ```
 
 The implementation must not claim provider capabilities that have not been proven.
+
+## T-004 CLOSURE CHECKPOINT
+
+Date: 2026-10-03  
+Status: **PASS**
+
+T-004 pass criteria are now satisfied:
+
+```text
+front door
+↓
+preserve pending request across Google auth
+↓
+CONTINUE / replay
+↓
+mandatory provider selection
+↓
+visible + user-overridable route
+DUMP / DECIDE / DESIGN
+↓
+exact ZASS method + Method Gateway mapping
+↓
+PREPARE HANDOFF
+↓
+COPY bootstrap
+↓
+OPEN provider base URL
+↓
+manual paste
+↓
+receiver uses exact Method Gateway
+```
+
+Live receiver evidence:
+
+- **Gemini:** exact ZASSIMPLE gateway fetch PASS; continued under DESIGN. It then introduced generic/inaccurate AISYNC assumptions because the handoff did not contain controlled project continuity.
+- **ChatGPT:** exact gateway fetch PASS; continued with a project-aligned architecture response. This demonstrates the handoff path but is not isolated proof of portable project continuity because ambient project/account context may have contributed.
+- **Copilot:** exact gateway fetch FAIL in the tested session; receiver correctly stopped and did not substitute repository search, raw GitHub, cache, or another source. Guardrail behavior PASS.
+
+Interpretation:
+
+```text
+PUBLIC METHOD TRANSPORT
+method link → receiver
+= PROVEN
+
+CONTROLLED PROJECT CONTINUITY
+saved thread/state → receiver
+= NOT YET PROVEN
+```
+
+Therefore:
+- T-004 closes as PASS;
+- no provider prefill/deep-link capability is claimed;
+- copy-open remains the v0.1 fallback;
+- no persistence/write was introduced by T-004;
+- D-027/PF-024 controlled/private continuity remains open as separate work;
+- execution advances to **T-005 — ASC Core request boundary**.
