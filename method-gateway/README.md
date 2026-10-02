@@ -235,3 +235,22 @@ Rules:
 - ASC Write Contract v0.1 is unchanged;
 - T-013A must pass before T-013B;
 - T-004 resumes after the Method Gateway proof.
+
+
+## Receiver format fallback — D-026
+
+Primary:
+
+```text
+/method/<method>/my
+→ text/plain Markdown
+```
+
+Evidence-triggered fallback only:
+
+```text
+/method/<method>/my/view
+→ clean HTML compatibility page
+```
+
+Do not implement the HTML view unless Gemini/Copilot field tests show that the plain-text endpoint is insufficient. Both surfaces, if eventually needed, must expose the same AI-SYNC-held snapshot and preserve identical method semantics.
