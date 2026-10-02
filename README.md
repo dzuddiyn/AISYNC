@@ -515,3 +515,32 @@ select implementation architecture later
 ```
 
 AISYNC should remain small, reusable, and independent of any one reasoning method or persistence destination.
+
+
+## Intended start UX
+
+ASC's user-facing entry is intentionally simple:
+
+```text
+Type naturally
+      ↓
+Choose AI provider (required)
+      ↓
+GO
+      ↓
+login if needed
+      ↓
+ASC auto-routes
+  DUMP / DECIDE / DESIGN
+      ↓
+open selected AI chat with ASC bootstrap prompt when supported
+      OR
+show copy/paste prompt + provider link
+```
+
+DUMP / DECIDE / DESIGN are user-facing modes. Internal mappings are:
+- DUMP → ZASSPILL
+- DECIDE → ZASSELECTION / PICKS
+- DESIGN → ZASSIMPLE / IDEA
+
+The route is visible and user-overridable. Ambiguous intent defaults to DUMP.
