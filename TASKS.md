@@ -3,7 +3,7 @@
 **Status:** EXECUTION QUEUE  
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
-**Design:** v1.0.8 CONFIRMED  
+**Design:** v1.0.9 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
@@ -28,7 +28,11 @@ Built / proven already:
 - no-write preview boundary;
 - direct fragment-through-login failure identified;
 - D-022 original-tab preservation strategy locked;
-- public receiver-facing method transport proven by T-013.
+- public receiver-facing method transport proven by T-013;
+- static GitHub Pages front door at `/asc/` proven live for fragment preservation;
+- protected Apps Script preview proven live for authenticated replay;
+- SIGN IN → return to original tab → CONTINUE works without refresh;
+- replayed D-028 TEST_ONLY payload reached protected preview with NO WRITE.
 Pass:
 - user draft/request is preserved across the auth step;
 - authenticated CONTINUE/replay restores the pending request into preview;
@@ -36,7 +40,7 @@ Pass:
 - DUMP / DECIDE / DESIGN map to the correct ZASS subsystem;
 - provider handoff uses the public Method Gateway URL and does not falsely claim unsupported auto-prefill;
 - no persistence occurs before an explicit later write/confirm task.
-Current result: RESUMED after T-013 PASS. Next smallest implementation step is the original-tab preserve → login → CONTINUE/replay flow.
+Current result: D-022 live preserve → auth → CONTINUE/replay proof PASS. T-004 remains IN PROGRESS; next smallest slice is provider selection + visible/user-overridable DUMP / DECIDE / DESIGN routing before AI handoff.
 
 ## Completed
 
