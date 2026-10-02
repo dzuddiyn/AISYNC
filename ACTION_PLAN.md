@@ -200,3 +200,7 @@ Finding: The active ASC DB now includes a METHODS tab with the nine snapshot col
 
 PF-019 | PUBLIC GATEWAY PLATFORM NOTE  
 Finding: Apps Script ContentService can serve plain text and anonymous web-app access is available through ANYONE_ANONYMOUS with execution as deployer. ContentService may deliver output via a Google-controlled content URL; this is acceptable only if Gemini/Copilot field tests prove receiver readability. The gateway must never redirect the receiver to GitHub.
+
+
+PF-020 | RESOLVED BY D-025  
+Finding: Lock the smallest Method Gateway implementation topology: existing ASC DB `METHODS` registry, protected exact-commit GitHub sync worker, and a separate public anonymous read-only Apps Script gateway. Keep the eight-field ASC Write Contract unchanged. Execute T-013A → T-013B → resume T-004.
