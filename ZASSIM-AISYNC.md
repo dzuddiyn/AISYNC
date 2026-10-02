@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.21  
+**Project record version:** 0.6.22  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -1108,5 +1108,15 @@ Gemini / Copilot / other AI receivers
 Apps Script remains useful for protected sync/backend behavior, but the current evidence does not support using Apps Script as the receiver-facing public host.
 
 Remaining T-013B proof:
-1. Copilot direct read of the GitHub Pages method URL;
-2. ZASSPILL handoff carrying the public gateway URL.
+1. ZASSPILL handoff carrying the public gateway URL.
+
+
+### Copilot receiver proof
+
+- Copilot direct read of `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/`: **PASS**.
+- Combined receiver proof now stands at:
+  - Browser: PASS
+  - Gemini: PASS
+  - Copilot: PASS
+
+Only the ZASSPILL gateway-link handoff proof remains before T-013B can close.
