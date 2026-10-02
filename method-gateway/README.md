@@ -209,3 +209,29 @@ Next verification step:
 4. run it a second time and verify upsert/no duplicate.
 
 Only after that should T-013B public deployment be field-tested.
+
+
+## Locked implementation path — D-025
+
+The v0.1 proof implementation is now locked:
+
+```text
+Official ZASS GitHub
+        ↓ exact main HEAD
+protected sync Apps Script
+        ↓
+ASC DB / METHODS
+        ↓
+public read-only Apps Script
+        ↓
+receiver AI
+```
+
+Rules:
+- one sync run uses one exact GitHub commit for all three MY methods;
+- normal sync uses no manual Markdown copy-paste;
+- public read and protected sync stay in separate Apps Script projects;
+- public routes serve snapshot content themselves;
+- ASC Write Contract v0.1 is unchanged;
+- T-013A must pass before T-013B;
+- T-004 resumes after the Method Gateway proof.
