@@ -2,7 +2,7 @@
 
 Status:
 - T-004 PROTECTED PREVIEW — LIVE PASS (front-door preservation handled by GitHub Pages).
-- T-008 PREVIEW → CONFIRM & SYNC → RECEIPT → HISTORY → REDIRECT — LIVE PASS for the owner-locked TEST_ONLY destination only; T-008B runtime binding deployed as Apps Script version 3.
+- T-008 PREVIEW → CONFIRM & SYNC → RECEIPT → HISTORY → SUCCESS RETURN — LIVE PASS for the owner-locked TEST_ONLY destination only; D-030 defines the guaranteed v0.1 return as a user-activated `Return to main ASC UI` link/button, with automatic top-level navigation optional.
 
 ## Purpose
 
@@ -22,7 +22,7 @@ This matches the Apps Script web-app manifest model documented by Google.
 - `appsscript.json` — V8 runtime + owner-only web-app configuration
 - `Code.gs` — `doGet()`, template include helper, bootstrap state, T-008B `confirmAndSync` / `getConfirmSyncResult`
 - `Index.html` — ASC preview + CONFIRM & SYNC shell
-- `Client.html` — pending-fragment preservation + decode + preview + confirm/receipt/redirect logic
+- `Client.html` — pending-fragment preservation + decode + preview + confirm/receipt/success-return logic
 - `RuntimeShims.gs`, `AscRuntime.gs` — T-008B runtime binding (see below)
 - `DashboardRead.gs`, `Dashboard.html`, `DashboardClient.html` — T-009 read-only dashboard (`?view=dashboard`; see below)
 - `test-pending-request.mjs` — dependency-free state/preview-boundary test
@@ -178,7 +178,7 @@ At that checkpoint provider selection, DUMP / DECIDE / DESIGN routing, and AI ha
 
 ## T-008A confirm/sync UI — LOCAL PASS
 
-The protected preview now renders a CONFIRM & SYNC control, a write-receipt card, and a main-ASC-UI return link. The client builds a request-bound confirmation only from an explicit click, redirects only when the server returns `SYNCED` with a verified SUCCESS receipt and `HISTORY_PERSISTED`, and otherwise keeps the pending request and a visible FAILED state.
+The protected preview now renders a CONFIRM & SYNC control, a write-receipt card, and a main-ASC-UI return link. The client builds a request-bound confirmation only from an explicit click. After `SYNCED` with a verified SUCCESS receipt and `HISTORY_PERSISTED`, the return link is exposed and automatic top-level navigation may also be attempted; D-030 makes the user-activated link/button the guaranteed v0.1 return path. Otherwise the pending request stays visible with a factual FAILED state.
 
 The T-008A server placeholder was superseded by the T-008B runtime binding below.
 
@@ -249,10 +249,16 @@ node apps-script/test-dashboard-ui.mjs
 Pending: deployment, Google Sites integration, live read proof.
 
 
+## D-030 successful return behavior — LOCKED / LIVE PROVEN
+
+After a verified SUCCESS receipt and persisted HISTORY, ASC v0.1 must expose a visible user-activated `Return to main ASC UI` link/button. Automatic top-level navigation may still be attempted when the hosting/browser platform permits it, but it is not required for PASS and must not be the only return mechanism. FAILED/unverified/incomplete results stay visibly non-successful.
+
+T-011 live proof established this behavior with owner-issued request `TEST_ONLY_T011_ZASSIMPLE_SAVE_20261002224115`: GitHub commit `50a3372c0540a9db021d0c0518b010836c58f247`, verified persisted payload, HISTORY row 6 SUCCESS, then user-activated return to the main ASC UI.
+
 ## T-010 security / replay binding — PASS (live)
 
 - `previewAscRequest({ fragment })` validates the envelope server-side (structure, ≤ 30-minute lifetime, expiry, SHA-256 integrity, owner identity) and returns only safe fields. It never claims replay state and never writes. The client enables CONFIRM & SYNC only when this returns `securityValid` and `writeEnabled` for the same `request_id`; rejected requests are shown as `REJECTED (<code>)`.
-- `confirmAndSync` re-validates in order: decode → security/expiry/integrity → explicit request-bound confirmation → owner → atomic replay claim → existing T-008 flow (Core → GitHub verify → receipt → HISTORY → redirect).
+- `confirmAndSync` re-validates in order: decode → security/expiry/integrity → explicit request-bound confirmation → owner → atomic replay claim → existing T-008 flow (Core → GitHub verify → receipt → HISTORY → successful return path).
 - Replay authority: `LockService.getScriptLock()` + Script Properties key `asc.replay.v1.<sha256(request_id)>` with marker `{state, claimed_at}`. CacheService only delivers results. Already claimed → `REPLAY_REJECTED`; lock/property uncertainty → `REPLAY_STORE_UNAVAILABLE`; both with zero GitHub/HISTORY calls. A confirmed attempt stays consumed even if the write fails; retry needs a new `request_id`. No marker cleanup in v0.1.
 - `GITHUB_TOKEN` is read from Script Properties only and never returned, rendered, stored client-side, or logged.
 

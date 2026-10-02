@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE DESIGN
 
-**Version:** 1.0.9  
+**Version:** 1.0.10  
 **Status:** CONFIRMED  
 **Design Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.3.0  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-028 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-030 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 >
@@ -109,7 +109,8 @@ ASC Write Receipt
 HISTORY
         ↓
 after successful update:
-redirect user to main Google Sites ASC UI
+show verified SUCCESS + receipt, then expose user-activated Return to main ASC UI
+(automatic top-level navigation is optional when the platform permits it)
 ```
 
 ## Main components
@@ -188,7 +189,7 @@ Interactive ASC surface/engine for:
 - explicit confirmation
 - ASC Core invocation
 - receipt display
-- redirect to main Google Sites ASC UI after successful update
+- user-activated `Return to main ASC UI` link/button after successful verified update; automatic top-level navigation is optional (D-030)
 
 A failure must remain visible as failure and must not be presented as a successful sync.
 
@@ -198,7 +199,7 @@ A failure must remain visible as failure and must not be presented as a successf
 - access is owner-only for v0.1.
 - pending ASC Link requests survive sign-in.
 - sign-in does not itself authorize persistence; explicit CONFIRM & SYNC remains required.
-- successful sync returns the user to the main ASC UI.
+- successful sync exposes a user-activated return control to the main ASC UI; automatic top-level navigation is optional (D-030).
 
 ### 8. ASC Core
 
@@ -334,7 +335,13 @@ It must not silently become a second editable authority for the same canonical a
 - Contract meaning remains method-owned.
 - Explicit user confirmation precedes fallback persistence.
 - Credentials must not be exposed in ASC Link payload/browser-visible data.
-- Successful confirmed update returns user to main ASC UI.
+- Successful confirmed update exposes a user-activated return control to the main ASC UI; automatic top-level navigation is optional (D-030).
+
+## D-030 successful return refinement
+
+For ASC v0.1, the guaranteed post-sync return mechanism is a **user-activated `Return to main ASC UI` link/button** rendered only after verified SUCCESS + persisted HISTORY. Automatic top-level navigation may be attempted when the hosting/browser platform allows it, but it is not required for PASS and must not be the only return path. Failure/unverified states remain on the ASC surface and must not be presented as successful persistence.
+
+This refines D-015 / D-017 wording without reopening the confirmed design.
 
 ## Open implementation details
 
@@ -363,10 +370,12 @@ Core decisions:
 - D-019 — DECIDE / DESIGN terminology refinement
 - D-013 — canonical JSON + transport envelope
 - D-014 — GitHub/Sheets authority model
-- D-015 — Sites + Apps Script + post-sync redirect
+- D-015 — Sites + Apps Script + post-sync return pattern (refined by D-030)
 - D-016 — fine-grained PAT v0.1 → GitHub App later
 - D-017 — Google Account owner-only authentication
 - D-018 — ZASS Core / CLI / CI / ASC cross-system validation boundary
+- D-029 — v0.1 envelope security / replay controls
+- D-030 — v0.1 verified-success return path: user-activated main-ASC link/button; automatic top-level navigation optional
 
 Action Plan lineage:
 - AP-001 through AP-007
@@ -384,7 +393,7 @@ Confirmed by: **Project Owner**
 Date: **2026-10-01**  
 Confirmation phrase: `YA, CONFIRM ARCHITECTURE`
 
-Implementation status: **NOT STARTED**. Next lifecycle stage: **DO IT**.
+Implementation status: **ASC v0.1 CORE/FALLBACK DELIVERED**. T-001 through T-011 and T-013A/B are PASS; T-012 remains BLOCKED / LATER pending ZASS GitHub CI.
 
 
 ## Confirmed architecture patch record
