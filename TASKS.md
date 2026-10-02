@@ -10,21 +10,31 @@
 
 ## Current task
 
-T-009 | IN PROGRESS\
-Source: AP-003, UI data requirements\
-Decision / Design lineage: D-005, D-006, D-012, D-014, D-019, DESIGN v1.0 § Google Sites ASC UI\
-Do: Implement the read/dashboard path: DECIDE/DESIGN landing, project list with progress + latest update, and project detail with the seven locked sections.\
-Depends on: T-003 PASS, T-004 PASS — satisfied.\
-Pass: The UI can display Project progress bar, Progress summary, Next Action Plan summary, Next stage summary, Action Plan table, ZASS table, and History from ASC DB/index data without inventing method semantics.\
-Starting point: the minimum owner-only Google Sites shell created as a T-008 redirect prerequisite (`https://sites.google.com/view/aisync-asc/laman-utama`) exists; no dashboard content has been built there.\
-T-009A | LOCAL PASS — read-only ASC DB adapter `apps-script/DashboardRead.gs`: `getDashboardProjects()` / `getDashboardProject(projectId)`; SpreadsheetApp read calls only; required-header validation with structural `TAB_MISSING` / `SCHEMA_INCOMPATIBLE` failures; display strings preserved exactly; blank `progress_percent` → `NOT_PROVIDED` (null, never 0); no progress/latest-update derivation; exact `project_id` filtering for RECORDS / ACTION_PLAN / HISTORY; duplicate PROJECTS rows refused; source metadata exposed with freshness `UNVERIFIED`.\
-T-009B | LOCAL PASS — `?view=dashboard` route (`Dashboard.html` + `DashboardClient.html`); default route still serves the T-008 preview; DECIDE / DESIGN grouping from `PROJECTS.ui_entry` only; progress bar only when provided, otherwise "Not provided"; latest update shown exactly from `PROJECTS.latest_update`.\
-T-009C | LOCAL PASS — project detail with the seven locked sections in order (sections 1–4 from PROJECTS; Action Plan table from ACTION_PLAN; ZASS table from RECORDS; History from HISTORY); empty tables render gracefully; HISTORY status/receipt shown unmodified.\
-Tests: `node apps-script/test-dashboard-read.mjs`, `node apps-script/test-dashboard-ui.mjs` — PASS with fake services; T-008 regression tests PASS.\
-Pending: Apps Script deployment of the dashboard, Google Sites integration, and live read proof against the ASC DB. Not deployed; live Sheet and Google Sites unchanged.\
-Current result: IN PROGRESS — not PASS.
+T-010 | CURRENT — NOT STARTED  
+Source: AP-007  
+Decision / Design lineage: D-003, D-013, D-015, D-016, D-017  
+Do: Add v0.1 security/replay controls around link requests, owner identity, server-side destination credentials, expiry/integrity checks, and failure-safe behavior.  
+Depends on: T-002, T-004, T-005, T-006 — satisfied.  
+Pass: The prototype does not expose destination credentials, does not silently write, rejects/flags invalid or expired requests according to the chosen v0.1 rules, and preserves explicit owner confirmation.  
+Starting point: T-009 read/dashboard path is live and embedded in the published Google Sites ASC UI; T-010 has not started.  
+Current result: NOT STARTED.
 
 ## Completed
+
+T-009 | PASS — MAIN ASC UI / DASHBOARD  
+Source: AP-003, UI data requirements  
+Decision / Design lineage: D-005, D-006, D-012, D-014, D-019, DESIGN v1.0 § Google Sites ASC UI  
+Do: Implement the read/dashboard path: DECIDE/DESIGN landing, project list with progress + latest update, and project detail with the seven locked sections.  
+Depends on: T-003 PASS, T-004 PASS — satisfied.  
+Pass: The UI displays Project progress bar, Progress summary, Next Action Plan summary, Next stage summary, Action Plan table, ZASS table, and History from ASC DB/index data without inventing method semantics.  
+Built / proven:
+- T-009A | PASS — read-only ASC DB adapter `apps-script/DashboardRead.gs`; schema validation, exact `project_id` filtering, no mutation calls, no semantic inference, blank progress remains not-provided, source metadata exposed with freshness `UNVERIFIED`.
+- T-009B | PASS — `?view=dashboard` DECIDE / DESIGN landing; project grouping uses `PROJECTS.ui_entry` only; progress bar shown only when provided; latest update displayed exactly from ASC DB.
+- T-009C | PASS — project detail renders all seven locked sections in order from PROJECTS / ACTION_PLAN / RECORDS / HISTORY.
+- T-009D | LIVE PASS — Apps Script deployment version 5, "T-009D dashboard HTML include fix", serves the live dashboard on the existing owner-only deployment; PR #5 fixed the malformed HTML include found during first live deployment.
+- T-009E | LIVE PASS — published Google Sites ASC UI at `https://sites.google.com/view/aisync-asc/laman-utama` embeds the dashboard successfully. Live owner verification showed the AISYNC DESIGN project, project detail, Action Plan table, ZASS table, and HISTORY rows including bootstrap T-003, T-007 proof, and T-008 live SAVE.
+Freshness boundary: live ASC DB operational/index values may be stale; the dashboard displays them faithfully and marks freshness `UNVERIFIED`. T-009 does not invent GitHub→Sheets semantic refresh rules.
+Current result: PASS. Execution advances to T-010 security/replay controls.
 
 T-008 | PASS — PREVIEW → CONFIRM & SYNC → RECEIPT → REDIRECT\
 Source: AP-003, AP-007\
@@ -215,13 +225,6 @@ Verification:
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
-
-T-010 | QUEUED  
-Source: AP-007  
-Decision / Design lineage: D-003, D-013, D-015, D-016, D-017  
-Do: Add v0.1 security/replay controls around link requests, owner identity, server-side destination credentials, expiry/integrity checks, and failure-safe behavior.  
-Depends on: T-002, T-004, T-005, T-006  
-Pass: The prototype does not expose destination credentials, does not silently write, rejects/flags invalid or expired requests according to the chosen v0.1 rules, and preserves explicit owner confirmation.
 
 T-011 | QUEUED  
 Source: AP-001 through AP-007  
