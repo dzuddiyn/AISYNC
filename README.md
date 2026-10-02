@@ -2,8 +2,8 @@
 
 > Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** ARCHITECTURE CONFIRMED — DO IT ready; implementation not started  
-**Method used to develop this project:** ZASSIMPLE v0.2.4  
+**Status:** DESIGN/ARCHITECTURE CONFIRMED — DO IT in progress; current task T-013A  
+**Method used to develop this project:** ZASSIMPLE v0.3.0  
 **Repository:** AISYNC
 
 AISYNC separates **how information is reasoned about** from **how that information is transported and persisted**.
@@ -15,15 +15,15 @@ It is designed as common infrastructure that can be reused by ZASS Full, ZASSIMP
 
 ## ZASSIMPLE project workflow
 
-AISYNC is currently developed with **ZASSIMPLE v0.2.4**.
+AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
 
 ```text
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DO IT** — architecture v1.0 is confirmed; implementation has not started.
+Current stage: **DO IT** — technical design/architecture is confirmed and implementation is in progress; current task is **T-013A**.
 
-The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, architecture, executable tasks, verification, and delivery.
+The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, design/technical architecture, executable tasks, verification, and delivery.
 
 Primary command surface:
 
@@ -32,6 +32,8 @@ Primary command surface:
 ```
 
 Legacy `LOCK` / `LOCK DECISION` and `COMMIT` remain compatible aliases.
+
+ZASSIMPLE v0.3.0 treats architecture as a technical subtype of DESIGN. AISYNC's existing confirmed architecture remains valid; new confirmation work should use the current `CONFIRM DESIGN` surface.
 
 ---
 
