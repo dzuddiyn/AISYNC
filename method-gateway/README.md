@@ -1,7 +1,7 @@
 # AI-SYNC Public Method Gateway — v0.1 Proof Plan
 
-**Status:** T-013A PASS — T-013B LIVE DEPLOYMENT / CROSS-AI PROOF PENDING  
-**Design lineage:** D-023 / ASC DESIGN v1.0.8  
+**Status:** T-013A PASS — T-013B PASS — v0.1 proof complete  
+**Design lineage:** D-023 / D-025 / D-026 / D-028 / ASC DESIGN v1.0.9  
 **Scope:** Malay method proof only
 
 ## Purpose
@@ -210,7 +210,7 @@ Verified:
 5. method version/path/content are populated;
 6. a second run upserts existing rows without duplicates.
 
-Current work: **T-013B** — Apps Script was proven public to browsers but was not fetchable by Gemini or Copilot as a receiver-facing host, even with an HTML compatibility view. A GitHub Pages proof surface was then deployed. Gemini successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and correctly identified ZASSIMPLE v0.3.0 plus method semantics. Copilot direct-read proof also PASSED. Remaining proof: ZASSPILL handoff carrying the public gateway URL.
+T-013B is **PASS**. Apps Script remained useful for protected sync/backend behavior but was not reliable as the receiver-facing host. GitHub Pages became the v0.1 receiver surface. Browser, Gemini, and Copilot direct-read tests passed; ZASSPILL carried the exact ZASSIMPLE gateway URL into a DESIGN handoff; Gemini completed the end-to-end handoff under ZASSIMPLE using the supplied explicit test context.
 
 ## Locked implementation path — D-025
 
@@ -295,3 +295,29 @@ Current receiver-facing result:
 - Gemini: PASS
 - Copilot: PASS
 - ZASSPILL gateway-link handoff: PENDING
+
+
+## T-013B closure
+
+Status: **PASS**
+
+Receiver-facing v0.1 URLs:
+- `https://dzuddiyn.github.io/AISYNC/method/zasspill/my/`
+- `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/`
+- `https://dzuddiyn.github.io/AISYNC/method/zasselection/my/`
+
+Proof summary:
+- browser anonymous access: PASS;
+- Gemini direct read: PASS;
+- Copilot direct read: PASS;
+- ZASSPILL generated the exact DESIGN → ZASSIMPLE handoff URL: PASS;
+- Gemini end-to-end continuation under ZASSIMPLE: PASS.
+
+Copilot caveat:
+- one later handoff session failed to fetch the exact page and substituted repository search, yielding stale/incorrect version context;
+- therefore the receiver-source guardrail is mandatory: if the exact gateway fetch fails, report the failure and do not substitute another source as method authority.
+
+Proof record:
+- `proofs/zasspill-to-zassimple-handoff.md`
+
+D-028 records the host refinement and receiver-source guardrail. T-013 is closed for the v0.1 proof; execution resumes at T-004.
