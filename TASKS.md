@@ -3,7 +3,7 @@
 **Status:** EXECUTION QUEUE  
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
-**Architecture:** v1.0.7 CONFIRMED  
+**Architecture:** v1.0.8 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
@@ -90,6 +90,15 @@ D-022 auth strategy is LOCKED for v0.1:
 - Fallback A: complete login → click ASC link / GO / CONTINUE again.
 - Requirement: user draft/request must not be lost; fragment survival across auth redirect is not required.
 - Fully automatic invisible auth recovery is deferred.
+
+D-027 transfer UX target is LOCKED for the later T-004 resume:
+- SAVE should surface an ASC link instead of requiring a long user-pasted packet;
+- intentional cross-AI continuation should originate from ASC Web/project tree;
+- user selects saved thread/state and target AI;
+- transfer page emits a short instruction + public method link + controlled continuity reference;
+- provider open/prefill is capability-aware; short copy/paste is the fallback;
+- method links may be public; project continuity must remain controlled/scoped;
+- exact continuity-link security mechanism remains an implementation decision.
 
 ## Completed
 
