@@ -1,6 +1,6 @@
 # AI-SYNC Public Method Gateway — v0.1 Proof Plan
 
-**Status:** PLANNED — NOT IMPLEMENTED / HELD BY D-024  
+**Status:** IMPLEMENTATION STARTED — T-013A LIVE VERIFICATION PENDING  
 **Architecture:** D-023 / ASC v1.0.5  
 **Scope:** Malay method proof only
 
@@ -164,7 +164,7 @@ Do not merge these two representations.
 
 ## Execution-order gate
 
-D-024 locks sequencing only. Do not implement this plan yet.
+D-024 gate is now satisfied by the official ZASSPILL v0.1.0 Phase 1 freeze. T-013 implementation is active.
 
 ```text
 T-004 paused
@@ -184,3 +184,28 @@ resume T-004
 ```
 
 This prevents AISYNC from guessing unfinished ZASSPILL semantics.
+
+
+## Implemented files
+
+T-013A / T-013B code skeleton now exists:
+
+- `method-snapshot-v0.1.schema.json` — separate read-plane record schema.
+- `sync/RegistrySync.gs` — protected GitHub→METHODS sync.
+- `sync/appsscript.json` — protected sync project manifest.
+- `public/Gateway.gs` — public read-only snapshot server.
+- `public/appsscript.json` — anonymous-read web-app manifest.
+
+The protected sync worker first resolves the canonical repository's `main` branch HEAD commit, then fetches all three method files at that exact commit. This makes one sync run internally consistent and traceable.
+
+## Current implementation checkpoint
+
+T-013A is not PASS yet.
+
+Next verification step:
+1. create/copy the protected sync Apps Script project from the repo files;
+2. run `syncMethodsFromGitHub()` once;
+3. verify three METHODS rows and real GitHub commit/version/content;
+4. run it a second time and verify upsert/no duplicate.
+
+Only after that should T-013B public deployment be field-tested.
