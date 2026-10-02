@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const read = (f) => fs.readFileSync(new URL('./' + f, import.meta.url), 'utf8');
-const CLIENT = read('DashboardClient.html');
+const CLIENT_FILE = read('DashboardClient.html');
+const CLIENT = CLIENT_FILE.replace(/^\s*<script>\s*/, '').replace(/\s*<\/script>\s*$/, '');
 const CODE = read('Code.gs');
 const DASH_HTML = read('Dashboard.html');
 const INDEX_HTML = read('Index.html');
@@ -28,6 +29,8 @@ const INDEX_HTML = read('Index.html');
   ctx.doGet({ parameter: { view: 'dashboard' } });
   assert.deepStrictEqual(served, ['Index', 'Index', 'Index', 'Index', 'Dashboard']);
   assert.match(DASH_HTML, /include\('DashboardClient'\)/);
+  assert.match(CLIENT_FILE, /^\s*<script>/);
+  assert.match(CLIENT_FILE, /<\/script>\s*$/);
   assert.match(INDEX_HTML, /include\('Client'\)/, 'T-008 preview page still includes its own client');
   assert.doesNotMatch(DASH_HTML, /include\('Client'\)/);
   assert.doesNotMatch(CLIENT, /confirmAndSync|getConfirmSyncResult|SpreadsheetApp|UrlFetchApp|GITHUB_TOKEN/);
