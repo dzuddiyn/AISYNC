@@ -10,7 +10,32 @@
 
 ## Current task
 
-T-004 | PAUSED — VERIFIED BOUNDARY / WAITING D-024 GATE  
+T-013A | IN PROGRESS — METHOD REGISTRY + PROTECTED GITHUB SYNC
+Source: AP-008, D-023, D-024
+Decision / Architecture lineage: D-002, D-005, D-023, D-024, ARCH v1.0.5 § Public Method Gateway / read plane
+Do:
+- maintain one lightweight METHODS registry in ASC DB;
+- sync the three frozen/current Malay method files from canonical GitHub;
+- pin each snapshot to the exact GitHub branch-head commit used for the fetch;
+- extract method version from the Markdown;
+- upsert snapshots without manual Markdown copy/paste.
+Built:
+- ASC DB METHODS tab with headers:
+  method_key, method, language, version, source_repo, source_path, source_commit, synced_at, content
+- `method-gateway/method-snapshot-v0.1.schema.json`
+- `method-gateway/sync/RegistrySync.gs`
+- `method-gateway/sync/appsscript.json`
+Pass:
+- protected sync function runs successfully;
+- three rows are present;
+- versions/content/source paths are correct;
+- all three rows identify the same real GitHub commit used for that sync;
+- re-running the sync updates/upserts instead of duplicating rows.
+Current result: IMPLEMENTATION BUILT — LIVE Apps Script RUN/VERIFICATION PENDING.
+
+## Paused task
+
+T-004 | PAUSED — VERIFIED BOUNDARY  
 Source: AP-003, AP-007, PF-005  
 Decision / Architecture lineage: D-006, D-015, D-017, D-020, D-021, D-022, ARCH v1.0.4 § Apps Script Web App + Google Account authentication / front-door orchestration  
 Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
@@ -183,7 +208,7 @@ Closure checks:
 - Recorded: YES — task queue created
 
 
-T-013 | QUEUED / HELD — PUBLIC METHOD GATEWAY v0.1 PROOF  
+T-013 | ACTIVE — PUBLIC METHOD GATEWAY v0.1 PROOF  
 Source: AP-008, D-023  
 Decision / Architecture lineage: D-002, D-005, D-018, D-023, ARCH v1.0.5 § Public Method Gateway / read plane  
 Do: Prove the smallest public AI-readable method mirror for the three Malay methods only:
@@ -203,7 +228,7 @@ Pass:
 - GitHub update can sync without copy/paste;
 - ZASSPILL can hand off a gateway URL.
 Constraint: do not add EN methods, public write/admin APIs, webhook complexity, or extra connectors in this proof.
-Result: NOT STARTED — held by D-024 until official ZASSPILL review and explicit owner promotion.
+Result: STARTED — D-024 gate satisfied; T-013A implementation built, live sync verification pending.
 
 
 ### Planned slicing after D-024 gate
@@ -216,3 +241,17 @@ If T-013 is promoted:
 - **T-013B — Public gateway proof:** serve the stored Markdown publicly without login/redirect, test Gemini and Copilot readability, and prove ZASSPILL can carry the gateway URL during handoff.
 
 After those pass sufficiently, resume the remaining T-004 front-door/routing/handoff work.
+
+
+T-013B | QUEUED — PUBLIC METHOD GATEWAY + CROSS-AI PROOF
+Source: T-013A, D-023
+Do:
+- deploy separate public read-only Apps Script Web App;
+- expose equivalent routes for zasspill/my, zassimple/my, zasselection/my;
+- return snapshot Markdown itself using ContentService text output;
+- expose provenance metadata separately;
+- verify no login required;
+- field-test Gemini and Copilot readability;
+- verify ZASSPILL handoff can carry the gateway URL.
+Depends on: T-013A PASS.
+Pass: acceptance conditions 2–8 of D-023 proof are demonstrated.
