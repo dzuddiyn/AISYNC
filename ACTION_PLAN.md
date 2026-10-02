@@ -145,3 +145,7 @@ Finding: The Apps Script Web App skeleton is implemented using owner-only Google
 
 PF-009 | RESOLVED BY D-020  
 Finding: ASC front-door UX now requires explicit AI-provider selection, authentication before routing, automatic DUMP/DECIDE/DESIGN classification, visible/overridable route, and capability-aware handoff to the selected AI app. DUMP maps to ZASSPILL, DECIDE to ZASSELECTION/PICKS, and DESIGN to ZASSIMPLE/IDEA. ASC selects the subsystem/contract but does not own or duplicate its semantics. ZASSPILL remains an external dependency before the DUMP path can be finalized.
+
+
+PF-010 | RESOLVED BY LIVE T-004 TEST  
+Finding: The deployed Apps Script Web App correctly reads and previews `#asc` payloads after the user is already authenticated, using `google.script.url.getLocation()`. However, Google's owner-only authentication redirect does not preserve the outer `#asc` fragment from a fresh unauthenticated entry. Therefore direct `/exec#asc=...` through login is not the final flow. D-020's front-door preservation model is required: preserve draft/payload before authentication, complete login, then replay the payload into the authenticated Apps Script preview. No architecture reopening is required.
