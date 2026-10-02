@@ -1,7 +1,7 @@
 # AI-SYNC Public Method Gateway — v0.1 Proof Plan
 
 **Status:** IMPLEMENTATION STARTED — T-013A LIVE VERIFICATION PENDING  
-**Architecture:** D-023 / ASC v1.0.5  
+**Design lineage:** D-023 / ASC DESIGN v1.0.8  
 **Scope:** Malay method proof only
 
 ## Purpose
