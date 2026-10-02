@@ -586,3 +586,32 @@ Initial receiving routes are intended to be:
 - `/method/zasselection/my`
 
 This read plane is separate from the protected ASC write/auth/admin flow.
+
+
+## Continuity and transfer UX
+
+ASC is intended to hide handover transport complexity from ordinary users.
+
+Normal save target:
+
+```text
+SAVE
+→ ASC link
+→ preview
+→ confirm
+→ persisted
+```
+
+Intentional cross-AI continuation target:
+
+```text
+ASC Web
+→ Project Tree
+→ select thread/state
+→ select target AI
+→ TRANSFER
+→ copy/open
+→ continue
+```
+
+Method links are public read-only resources. Project/thread continuity is a separate controlled/scoped surface. Users should not need to manually handle raw GitHub links, fallback links, or long handover packets in the finished UX.
