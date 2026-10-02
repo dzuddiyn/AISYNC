@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.10  
+**Project record version:** 0.6.11  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -62,7 +62,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0.3 remains CONFIRMED with D-020 front-door orchestration and D-021 User-First UX locked. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
+Current direction: architecture v1.0.4 remains CONFIRMED with D-020 front-door orchestration, D-021 User-First UX, and D-022 B + A authentication-state preservation locked. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
 
 ---
 
@@ -552,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.11 | 2026-10-02 | LOCKED D-022: ASC v0.1 auth preservation uses B + A fallback — preserve draft/pending state in the original ASC tab, authenticate in a new tab, return and CONTINUE; if that flow is unavailable, login then click the ASC link/GO/CONTINUE again. Seamless automatic auth recovery is deferred. |
 | 0.6.10 | 2026-10-02 | T-004 live finding: authenticated Apps Script fragment preview PASS via `google.script.url.getLocation()`, but fresh unauthenticated `/exec#asc=...` loses the fragment across Google sign-in. D-020 front-door preserve → login → replay is therefore required; architecture remains confirmed. |
 | 0.6.9 | 2026-10-02 | LOCKED D-021 User-First UX: user types naturally, chooses only the AI provider, and ASC handles auth/routing/sub-system/contract/handoff behind the simple DUMP / DECIDE / DESIGN surface. DUMP implementation remains pending ZASSPILL. |
 | 0.6.8 | 2026-10-02 | LOCKED D-020: mandatory AI-provider selection, login-before-routing gate, automatic DUMP/DECIDE/DESIGN intent routing, visible/overridable route, ZASSPILL/ZASSELECTION/ZASSIMPLE mapping, provider handoff with supported prefill and mandatory copy/paste fallback. No code implementation started for this addendum while ZASSPILL remains pending. |
@@ -585,5 +586,40 @@ Decision: Lock the **User-First UX principle** for the ASC front door.
 - The exact DUMP implementation remains pending ZASSPILL completion. This decision does not pre-empt or redefine ZASSPILL semantics.
 
 Reason: preserve a plain-user-first experience while keeping deeper ZASS method structure modular and hidden until needed.  
+Locked by: Project Owner  
+Date: 2026-10-02
+
+
+D-022 | LOCKED  
+Decision: Lock the **ASC v0.1 authentication-state preservation strategy** as **B + A fallback**.
+
+### Primary path B — preserve in original ASC tab
+1. Before authentication, ASC preserves the user's current draft/request state in the original ASC front-door tab.
+2. The preserved minimum state may include the user draft, selected AI provider, pending ASC payload/request reference, and routing state required for continuation.
+3. ASC opens Google authentication in a new tab when possible.
+4. The original ASC tab remains the holder of the pending state; the design does **not** require the `#asc` fragment itself to survive Google's authentication redirect.
+5. After login succeeds, the user returns to the original ASC tab and presses **CONTINUE**.
+6. ASC then replays/reconstructs the pending request into the authenticated Apps Script flow and proceeds to preview.
+7. The user draft/request must not be silently lost when authentication is required.
+
+### Fallback A — login, then click/continue again
+If the browser, popup policy, tab behavior, or provider flow prevents the primary path:
+1. ASC tells the user that login is required.
+2. The user completes login.
+3. ASC clearly instructs the user to click the ASC link / GO / CONTINUE again.
+4. The second authenticated entry replays/opens the pending request where possible.
+5. Existing D-020 draft-protection warning remains applicable: if state cannot be safely preserved, ASC must tell the user to copy the message before redirecting.
+
+### Explicit v0.1 non-goal
+A fully automatic seamless auth-return mechanism with invisible cross-tab/session recovery (**Option C**) is not required for ASC v0.1. It may be considered later only if the simpler flow proves materially inadequate.
+
+### Requirement refinement
+The v0.1 requirement is:
+
+> **The user's draft/pending request must not be lost when authentication is required.**
+
+It is **not** a requirement that the URL fragment itself survive the Google login redirect.
+
+Reason: live T-004 testing proved authenticated fragment preview works, while a fresh unauthenticated `/exec#asc=...` loses the fragment across Google authentication. B + A provides a simpler, more reliable user-first path without adding complexity merely to save one click.  
 Locked by: Project Owner  
 Date: 2026-10-02
