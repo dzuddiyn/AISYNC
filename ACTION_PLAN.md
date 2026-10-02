@@ -155,7 +155,7 @@ PF-011 | RESOLVED BY D-022
 Finding: ASC v0.1 will not attempt to force the `#asc` fragment through Google's authentication redirect. Primary auth continuation is B: preserve the pending state in the original ASC tab, authenticate in a new tab, return, then CONTINUE/replay. Fallback A is login then click the ASC link / GO / CONTINUE again. The preserved-user-state requirement is mandatory; seamless automatic cross-tab auth recovery is deferred.
 
 
-AP-008 | IN PROGRESS — D-024 GATE SATISFIED  
+AP-008 | PASS — METHOD GATEWAY v0.1 PROOF  
 Source: D-023  
 Action: Implement the smallest AI-SYNC Public Method Gateway proof for ZASSPILL_MY, ZASSIMPLE_MY, and ZASSELECTION_MY.  
 Dependencies: Current canonical method files in the official ZASS GitHub repository.  
@@ -166,7 +166,7 @@ Constraint / feasibility note:
 - Sync/publish/configuration stays protected.
 - Start with MY only.
 - Do not modify ZASS method semantics.
-Pass / stop condition: the six D-023 proof objectives pass, including direct Gemini/Copilot readability and GitHub→gateway sync without manual copy/paste.  
+Pass / stop condition: PASS — protected GitHub→METHODS sync verified; receiver-facing GitHub Pages proof is readable by Gemini and Copilot; ZASSPILL→DESIGN→ZASSIMPLE method-link handoff passed end-to-end with Gemini. Copilot retrieval variability is recorded as a receiver caveat.  
 Feeds design: YES
 
 PF-012 | RESOLVED BY D-023  
@@ -222,3 +222,16 @@ Finding: Method links can be public, but saved project/thread continuity should 
 
 PF-025 | UX BENCHMARK  
 Finding: A long ZASSPILL field-test handover packet is now an explicit negative UX benchmark. If ordinary users still need to paste that class of packet, understand raw GitHub/fallback URLs, or manually manage method internals after ASC is complete, the continuity UX is not yet successful.
+
+
+PF-025 | RESOLVED BY D-028  
+Finding: Apps Script anonymous output is browser-readable but is not a reliable receiver-facing host for Gemini/Copilot. A standard static public host is more compatible.
+
+PF-026 | T-013B FIELD RESULT  
+Finding: GitHub Pages receiver surface passed browser, Gemini, and Copilot direct-read tests. ZASSPILL successfully carried the exact ZASSIMPLE gateway URL into a DESIGN handoff, and Gemini continued under ZASSIMPLE using the supplied explicit test context.
+
+PF-027 | RECEIVER SOURCE GUARDRAIL  
+Finding: One Copilot handoff session failed to fetch the exact public page and substituted repository search, producing stale/incorrect version context. Receivers must not substitute alternate sources when the exact gateway fetch fails.
+
+PF-028 | T-013 CLOSED / T-004 RESUMED  
+Finding: T-013A and T-013B are complete for the v0.1 proof. Execution returns to T-004 front-door/auth-preserve/routing/handoff work.
