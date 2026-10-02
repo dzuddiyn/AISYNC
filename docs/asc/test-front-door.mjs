@@ -29,6 +29,7 @@ const ui = {
 let signInCall;
 let openCount = 0;
 let networkCalls = 0;
+let routingDom = null;
 const sandbox = {
   console,
   window: {
@@ -41,9 +42,13 @@ const sandbox = {
   },
   document: {
     getElementById(id) {
+      if (routingDom && routingDom[id]) {
+        return routingDom[id];
+      }
       return id === 'status' ? ui.status : ui.continueButton;
     }
   },
+  sessionStorage: new FakeStorage(),
   fetch() {
     networkCalls += 1;
   }
@@ -161,6 +166,146 @@ assert.equal(
 );
 assert.equal(openCount, 1);
 assert.equal(networkCalls, 0);
+
+const providerConfigs = {
+  ChatGPT: {
+    provider: 'ChatGPT',
+    url: 'https://chatgpt.com/',
+    handoffMode: 'copy_open'
+  },
+  Gemini: {
+    provider: 'Gemini',
+    url: 'https://gemini.google.com/app',
+    handoffMode: 'copy_open'
+  },
+  Copilot: {
+    provider: 'Copilot',
+    url: 'https://copilot.microsoft.com/',
+    handoffMode: 'copy_open'
+  }
+};
+for (const provider of ['ChatGPT', 'Gemini', 'Copilot']) {
+  assert.equal(
+    JSON.stringify(sandbox.getProviderConfig(provider)),
+    JSON.stringify(providerConfigs[provider])
+  );
+}
+
+const prepared = sandbox.createPreparedHandoff({
+  draft: 'bina architecture untuk sistem AISYNC',
+  provider: 'Gemini',
+  route: 'DESIGN'
+});
+assert.equal(prepared.providerConfig.handoffMode, 'copy_open');
+assert.equal(prepared.bootstrap.includes('Target route: DESIGN'), true);
+assert.equal(prepared.bootstrap.includes('Target method: ZASSIMPLE'), true);
+assert.equal(
+  prepared.bootstrap.includes('https://dzuddiyn.github.io/AISYNC/method/zassimple/my/'),
+  true
+);
+assert.equal(prepared.bootstrap.includes('bina architecture untuk sistem AISYNC'), true);
+assert.equal(prepared.bootstrap.includes('Read the method from this exact Method Gateway URL.'), true);
+assert.equal(prepared.bootstrap.includes('If you cannot fetch the exact URL, report the failure'), true);
+assert.equal(prepared.bootstrap.includes('do not substitute repository search, raw GitHub'), true);
+assert.equal(prepared.bootstrap.includes('#asc='), false);
+assert.equal(prepared.bootstrap.includes(signInUrl), false);
+assert.equal(prepared.bootstrap.includes('FULL METHOD CONTENT'), false);
+assert.equal(prepared.bootstrap.includes('asc.github-pages.pending.fragment.v0.1'), false);
+assert.equal(prepared.bootstrap.includes('asc.front-door.draft.v0.1'), false);
+
+let providerOpenCall;
+sandbox.openProvider('Gemini', (...args) => {
+  providerOpenCall = args;
+});
+assert.deepEqual(providerOpenCall, [
+  'https://gemini.google.com/app',
+  '_blank',
+  'noopener'
+]);
+assert.equal(providerOpenCall[0].includes('?'), false);
+assert.equal(providerOpenCall[0].includes('#'), false);
+assert.equal(providerOpenCall[0].includes('bina architecture'), false);
+assert.equal(providerOpenCall[0].includes('zassimple/my'), false);
+assert.equal(openCount, 1);
+
+const copied = [];
+await sandbox.copyHandoffText({
+  writeText(value) {
+    copied.push(value);
+    return Promise.resolve();
+  }
+}, prepared.bootstrap);
+assert.equal(copied[0], prepared.bootstrap);
+assert.equal(openCount, 1);
+await assert.rejects(
+  sandbox.copyHandoffText({
+    writeText() {
+      return Promise.reject(new Error('clipboard denied'));
+    }
+  }, prepared.bootstrap)
+);
+
+assert.equal(sandbox.isPreparedHandoffCurrent(prepared, {
+  draft: 'bina architecture untuk sistem AISYNC',
+  provider: 'Gemini',
+  route: 'DESIGN'
+}), true);
+assert.equal(sandbox.isPreparedHandoffCurrent(prepared, {
+  draft: 'bandingkan ChatGPT dengan Gemini',
+  provider: 'Gemini',
+  route: 'DESIGN'
+}), false);
+assert.equal(sandbox.isPreparedHandoffCurrent(prepared, {
+  draft: 'bina architecture untuk sistem AISYNC',
+  provider: 'Copilot',
+  route: 'DESIGN'
+}), false);
+assert.equal(sandbox.isPreparedHandoffCurrent(prepared, {
+  draft: 'bina architecture untuk sistem AISYNC',
+  provider: 'Gemini',
+  route: 'DECIDE'
+}), false);
+
+routingDom = {
+  draft: { value: 'bina architecture untuk sistem AISYNC' },
+  provider: { value: 'Gemini' },
+  routeOverride: { value: 'DESIGN' },
+  suggestedRoute: { textContent: '' },
+  activeRoute: { textContent: '' },
+  prepareHandoff: { disabled: true },
+  handoffPreview: { hidden: true },
+  previewProvider: { textContent: '' },
+  previewRoute: { textContent: '' },
+  previewMethod: { textContent: '' },
+  previewGateway: { textContent: '', href: '' },
+  previewDraft: { textContent: '' },
+  receiverBootstrap: { textContent: '' },
+  handoffStatus: { textContent: '' },
+  copyHandoff: { disabled: true },
+  openProvider: { disabled: true }
+};
+sandbox.handlePrepareHandoff();
+assert.equal(openCount, 1);
+assert.equal(routingDom.copyHandoff.disabled, false);
+assert.equal(routingDom.openProvider.disabled, false);
+
+routingDom.draft.value = 'changed draft';
+sandbox.handleRoutingChange();
+assert.equal(routingDom.copyHandoff.disabled, true);
+assert.equal(routingDom.openProvider.disabled, true);
+assert.equal(routingDom.handoffPreview.hidden, true);
+
+routingDom.draft.value = 'bina architecture untuk sistem AISYNC';
+sandbox.handleRoutingChange();
+assert.equal(routingDom.copyHandoff.disabled, true);
+assert.equal(routingDom.openProvider.disabled, true);
+assert.equal(routingDom.handoffPreview.hidden, true);
+
+sandbox.handlePrepareHandoff();
+assert.equal(routingDom.copyHandoff.disabled, false);
+assert.equal(routingDom.openProvider.disabled, false);
+assert.equal(routingDom.handoffPreview.hidden, false);
+routingDom = null;
 
 assert.equal(typeof sandbox.confirmAndSync, 'undefined');
 assert.equal(typeof sandbox.writeToGitHub, 'undefined');

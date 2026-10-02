@@ -21,6 +21,24 @@ const ROUTE_CONFIGS = Object.freeze({
     methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zassimple/my/'
   })
 });
+const PROVIDER_CONFIGS = Object.freeze({
+  ChatGPT: Object.freeze({
+    provider: 'ChatGPT',
+    url: 'https://chatgpt.com/',
+    handoffMode: 'copy_open'
+  }),
+  Gemini: Object.freeze({
+    provider: 'Gemini',
+    url: 'https://gemini.google.com/app',
+    handoffMode: 'copy_open'
+  }),
+  Copilot: Object.freeze({
+    provider: 'Copilot',
+    url: 'https://copilot.microsoft.com/',
+    handoffMode: 'copy_open'
+  })
+});
+let preparedHandoff = null;
 
 function getAscFragment(hashValue) {
   const hash = String(hashValue || '').replace(/^#/, '');
@@ -61,6 +79,10 @@ function buildProtectedReplayUrl(baseUrl, fragment) {
 
 function getSupportedProviders() {
   return SUPPORTED_PROVIDERS.slice();
+}
+
+function getProviderConfig(provider) {
+  return PROVIDER_CONFIGS[String(provider || '')] || null;
 }
 
 function getRouteConfig(route) {
@@ -107,6 +129,59 @@ function createHandoffPreview(state) {
     methodGatewayUrl: routeConfig.methodGatewayUrl,
     draft: String(state.draft).trim()
   };
+}
+
+function buildReceiverBootstrap(preview) {
+  return [
+    'Target route: ' + preview.route,
+    'Target method: ' + preview.method,
+    'Public Method Gateway URL: ' + preview.methodGatewayUrl,
+    'User draft:',
+    preview.draft,
+    '',
+    'Receiver instruction:',
+    'Read the method from this exact Method Gateway URL.',
+    'If you cannot fetch the exact URL, report the failure and do not substitute repository search, raw GitHub, or another source as method authority.',
+    'Continue the user request under the stated route using the stated method.'
+  ].join('\n');
+}
+
+function createPreparedHandoff(state) {
+  const preview = createHandoffPreview(state);
+  const providerConfig = getProviderConfig(state && state.provider);
+
+  if (!preview || !providerConfig) {
+    return null;
+  }
+
+  return {
+    preview: preview,
+    providerConfig: providerConfig,
+    bootstrap: buildReceiverBootstrap(preview)
+  };
+}
+
+function openProvider(provider, openWindow) {
+  const config = getProviderConfig(provider);
+
+  if (!config) {
+    return false;
+  }
+
+  openWindow(config.url, '_blank', 'noopener');
+  return true;
+}
+
+function isPreparedHandoffCurrent(prepared, state) {
+  if (!prepared) {
+    return false;
+  }
+
+  return prepared.preview.draft === String(state.draft || '').trim() &&
+    prepared.preview.provider === state.provider &&
+    prepared.preview.route === state.route &&
+    prepared.preview.method === getRouteConfig(state.route).method &&
+    prepared.preview.methodGatewayUrl === getRouteConfig(state.route).methodGatewayUrl;
 }
 
 function setPendingState(pending) {
@@ -164,7 +239,11 @@ function getRoutingElements() {
     previewRoute: document.getElementById('previewRoute'),
     previewMethod: document.getElementById('previewMethod'),
     previewGateway: document.getElementById('previewGateway'),
-    previewDraft: document.getElementById('previewDraft')
+    previewDraft: document.getElementById('previewDraft'),
+    receiverBootstrap: document.getElementById('receiverBootstrap'),
+    handoffStatus: document.getElementById('handoffStatus'),
+    copyHandoff: document.getElementById('copyHandoff'),
+    openProvider: document.getElementById('openProvider')
   };
 }
 
@@ -196,7 +275,19 @@ function renderHandoffPreview(preview) {
   elements.previewGateway.textContent = preview.methodGatewayUrl;
   elements.previewGateway.href = preview.methodGatewayUrl;
   elements.previewDraft.textContent = preview.draft;
+  elements.receiverBootstrap.textContent = preparedHandoff.bootstrap;
+  elements.handoffStatus.textContent = '';
+  elements.copyHandoff.disabled = false;
+  elements.openProvider.disabled = false;
   elements.handoffPreview.hidden = false;
+}
+
+function invalidatePreparedHandoff() {
+  preparedHandoff = null;
+  const elements = getRoutingElements();
+  elements.copyHandoff.disabled = true;
+  elements.openProvider.disabled = true;
+  elements.handoffPreview.hidden = true;
 }
 
 function handleRoutingChange() {
@@ -206,6 +297,7 @@ function handleRoutingChange() {
     provider: elements.provider.value,
     routeOverride: elements.routeOverride.value
   };
+  invalidatePreparedHandoff();
   writeRoutingState(sessionStorage, state);
   renderRoutingState(state);
 }
@@ -217,15 +309,52 @@ function handlePrepareHandoff() {
     provider: elements.provider.value,
     routeOverride: elements.routeOverride.value
   });
-  const preview = createHandoffPreview({
+  preparedHandoff = createPreparedHandoff({
     draft: rendered.state.draft,
     provider: rendered.state.provider,
     route: rendered.active
   });
 
-  if (preview) {
-    renderHandoffPreview(preview);
+  if (preparedHandoff) {
+    renderHandoffPreview(preparedHandoff.preview);
   }
+}
+
+function setHandoffStatus(message) {
+  getRoutingElements().handoffStatus.textContent = message;
+}
+
+function copyHandoffText(clipboard, bootstrap) {
+  if (!clipboard || typeof clipboard.writeText !== 'function') {
+    return Promise.reject(new Error('Clipboard is unavailable.'));
+  }
+
+  return clipboard.writeText(bootstrap);
+}
+
+async function handleCopyHandoff() {
+  if (!preparedHandoff) {
+    return;
+  }
+
+  try {
+    await copyHandoffText(
+      typeof navigator !== 'undefined' ? navigator.clipboard : null,
+      preparedHandoff.bootstrap
+    );
+    setHandoffStatus('Handoff copied. Paste it into the provider chat.');
+  } catch (error) {
+    setHandoffStatus('Copy failed. The handoff remains visible for manual copying.');
+  }
+}
+
+function handleOpenProvider() {
+  if (!preparedHandoff) {
+    return;
+  }
+
+  openProvider(preparedHandoff.preview.provider, window.open);
+  setHandoffStatus('Paste the copied handoff into the provider chat.');
 }
 
 function handleSignIn() {
@@ -275,6 +404,8 @@ if (typeof window !== 'undefined') {
     document.getElementById('provider').addEventListener('change', handleRoutingChange);
     document.getElementById('routeOverride').addEventListener('change', handleRoutingChange);
     document.getElementById('prepareHandoff').addEventListener('click', handlePrepareHandoff);
+    document.getElementById('copyHandoff').addEventListener('click', handleCopyHandoff);
+    document.getElementById('openProvider').addEventListener('click', handleOpenProvider);
     bootFrontDoor();
   });
 }

@@ -102,6 +102,10 @@
       overflow-wrap: anywhere;
       font: inherit;
     }
+
+    .handoff-preview a {
+      overflow-wrap: anywhere;
+    }
   </style>
 </head>
 <body>
@@ -147,6 +151,13 @@
       <p>Public Method Gateway URL: <a id="previewGateway" href=""></a></p>
       <p>User draft:</p>
       <pre id="previewDraft"></pre>
+      <p>Receiver bootstrap:</p>
+      <pre id="receiverBootstrap"></pre>
+      <p id="handoffStatus"></p>
+      <div class="actions">
+        <button id="copyHandoff" type="button" disabled>COPY HANDOFF</button>
+        <button id="openProvider" type="button" disabled>OPEN PROVIDER</button>
+      </div>
     </section>
   </main>
   <script src="./client.js"></script>

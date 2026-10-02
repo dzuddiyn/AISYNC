@@ -96,7 +96,7 @@ NO WRITE
 
 The first live attempt exposed a false popup-failure state because `window.open(..., 'noopener')` may successfully open a new tab while returning `null`. The regression fix stopped using that return value as proof of failure, preserved `noopener`, and kept a valid CONTINUE state intact.
 
-This proof validates the D-022 original-tab preservation/replay slice and the local T-004 provider-selection/routing/method-preview slice. Actual provider handoff remains later T-004 work.
+This proof validates the D-022 original-tab preservation/replay slice and the local T-004 provider-selection/routing/method-preview slice. Prepared handoff uses the v0.1 copy-and-open fallback only; provider prefill/deep-link handoff remains later T-004 work.
 
 
 ## Live routing verification — 2026-10-02
