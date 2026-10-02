@@ -235,3 +235,13 @@ Finding: One Copilot handoff session failed to fetch the exact public page and s
 
 PF-028 | T-013 CLOSED / T-004 RESUMED  
 Finding: T-013A and T-013B are complete for the v0.1 proof. Execution returns to T-004 front-door/auth-preserve/routing/handoff work.
+
+
+PF-029 | T-004 LIVE AUTH-PRESERVE PROOF — PASS  
+Finding: A public Apps Script front door loses the incoming `#asc` fragment before client code can reliably preserve it. A static GitHub Pages front door preserves the fragment in the original tab, while the existing owner-only Apps Script remains the protected authenticated preview.
+
+PF-030 | D-022 LIVE FLOW — PASS  
+Finding: The live flow `static /asc/#asc → sessionStorage → SIGN IN in new tab → Google auth → return to original tab → CONTINUE → protected /exec#asc → preview` passed without refresh after the noopener regression fix. The D-028 TEST_ONLY payload rendered correctly and no write occurred.
+
+PF-031 | T-004 NEXT SLICE  
+Finding: Authentication-state preservation/replay is now proven. The next smallest T-004 slice is mandatory AI-provider selection plus visible/user-overridable DUMP / DECIDE / DESIGN routing and method-link handoff, while keeping persistence disabled.
