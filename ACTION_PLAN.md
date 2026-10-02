@@ -155,7 +155,7 @@ PF-011 | RESOLVED BY D-022
 Finding: ASC v0.1 will not attempt to force the `#asc` fragment through Google's authentication redirect. Primary auth continuation is B: preserve the pending state in the original ASC tab, authenticate in a new tab, return, then CONTINUE/replay. Fallback A is login then click the ASC link / GO / CONTINUE again. The preserved-user-state requirement is mandatory; seamless automatic cross-tab auth recovery is deferred.
 
 
-AP-008 | OPEN  
+AP-008 | OPEN — EXECUTION HELD BY D-024  
 Source: D-023  
 Action: Implement the smallest AI-SYNC Public Method Gateway proof for ZASSPILL_MY, ZASSIMPLE_MY, and ZASSELECTION_MY.  
 Dependencies: Current canonical method files in the official ZASS GitHub repository.  
@@ -177,3 +177,13 @@ Finding: The eight-field ASC Write Contract v0.1 should remain unchanged. Public
 
 PF-014 | MINIMUM v0.1 STORAGE CANDIDATE  
 Finding: Current Malay method files are small enough for a minimal three-row registry proof (approximately 16k–20k characters each at review time). A simple `METHODS` tab in ASC DB is therefore a viable initial snapshot store; this is an implementation candidate, not a new Source of Truth. If method size/behavior later makes Sheets unsuitable, storage may change without changing D-023.
+
+
+PF-015 | RESOLVED BY D-024  
+Finding: D-023 changes the practical execution order, but implementation should not begin against an unfinished ZASSPILL dependency. T-004 is therefore paused at its verified boundary and T-013 remains planned/unpromoted. Once ZASSPILL is official, review its actual handoff contract and let the owner decide whether to promote T-013.
+
+PF-016 | D-024 EXECUTION SEQUENCE  
+If promoted after ZASSPILL review, split the Method Gateway proof into:
+- T-013A: minimal METHODS registry + protected GitHub sync;
+- T-013B: public Markdown gateway + Gemini/Copilot readability + ZASSPILL handoff proof;
+then resume T-004 front-door/routing/handoff.
