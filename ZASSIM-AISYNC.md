@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.11  
+**Project record version:** 0.6.12  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -62,7 +62,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0.4 remains CONFIRMED with D-020 front-door orchestration, D-021 User-First UX, and D-022 B + A authentication-state preservation locked. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
+Current direction: architecture v1.0.5 remains CONFIRMED. D-023 adds a separate public Method Gateway/read-mirror plane while preserving the existing protected write plane and eight-field ASC Write Contract. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
 
 ---
 
@@ -552,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.12 | 2026-10-02 | LOCKED D-023 Public Method Gateway: GitHub remains method SoT; AI-SYNC holds identifiable method snapshots and serves Markdown itself through public read-only receiving URLs. Write Contract v0.1 remains unchanged; Method Snapshot Record is a separate read-plane representation. |
 | 0.6.11 | 2026-10-02 | LOCKED D-022: ASC v0.1 auth preservation uses B + A fallback — preserve draft/pending state in the original ASC tab, authenticate in a new tab, return and CONTINUE; if that flow is unavailable, login then click the ASC link/GO/CONTINUE again. Seamless automatic auth recovery is deferred. |
 | 0.6.10 | 2026-10-02 | T-004 live finding: authenticated Apps Script fragment preview PASS via `google.script.url.getLocation()`, but fresh unauthenticated `/exec#asc=...` loses the fragment across Google sign-in. D-020 front-door preserve → login → replay is therefore required; architecture remains confirmed. |
 | 0.6.9 | 2026-10-02 | LOCKED D-021 User-First UX: user types naturally, chooses only the AI provider, and ASC handles auth/routing/sub-system/contract/handoff behind the simple DUMP / DECIDE / DESIGN surface. DUMP implementation remains pending ZASSPILL. |
@@ -621,5 +622,68 @@ The v0.1 requirement is:
 It is **not** a requirement that the URL fragment itself survive the Google login redirect.
 
 Reason: live T-004 testing proved authenticated fragment preview works, while a fresh unauthenticated `/exec#asc=...` loses the fragment across Google authentication. B + A provides a simpler, more reliable user-first path without adding complexity merely to save one click.  
+Locked by: Project Owner  
+Date: 2026-10-02
+
+
+D-023 | LOCKED  
+Decision: Establish the **AI-SYNC Public Method Gateway / Read Mirror** as the portable receiving-method transport layer for ZASS methods.
+
+1. **GitHub remains the authoritative Source of Truth for method content.**  
+   The official ZASS repository owns canonical method files, versions, and Git commit lineage.
+
+2. **AI-SYNC owns portable method readability.**  
+   AI-SYNC provides a public read gateway/mirror so receiver AIs do not need reliable direct access to GitHub, GitHub raw URLs, jsDelivr, Jina Reader, or another third-party mirror.
+
+3. **The gateway must serve its own synced snapshot.**  
+   The public AI-SYNC method URL must not merely redirect, wrap, or proxy the receiver onward to GitHub. The gateway serves Markdown content from an AI-SYNC-held snapshot/registry.
+
+4. **No second Source of Truth.**  
+   AI-SYNC method snapshots are transport/read mirrors only. If a snapshot conflicts with GitHub, GitHub is authoritative. Snapshot metadata must identify the GitHub source version/commit used.
+
+5. **Public read boundary.**  
+   Public method reads require no login and are read-only. The public read surface is separate from protected ASC write/admin/sync-configuration flows.
+
+6. **Clean receiver format.**  
+   The method endpoint returns plain text / Markdown suitable for browsers and AI receivers. Registry metadata remains separately inspectable and must not require altering the method semantics.
+
+7. **Portable method URLs become the primary receiving links.**  
+   Intended public routes:
+   - `/method/zasspill/my`
+   - `/method/zassimple/my`
+   - `/method/zasselection/my`
+
+   GitHub links may remain as Source-of-Truth/reference links, but the portable AI-readable receiving link is the AI-SYNC gateway.
+
+8. **Locked sync direction.**
+   ```text
+   GitHub method commit/update
+           ↓
+   AI-SYNC Method Registry sync
+           ↓
+   AI-SYNC-held snapshot
+           ↓
+   Public Method Gateway
+           ↓
+   receiver AI
+   ```
+
+9. **Method semantics remain outside AI-SYNC.**  
+   ZASSPILL, ZASSELECTION, and ZASSIMPLE continue to own their own behavior/contracts. AI-SYNC solves transport/readability only and must not rewrite method semantics to solve access problems.
+
+10. **v0.1 proof scope is three Malay methods only.**
+    - `ZASSPILL_MY.md`
+    - `ZASSIMPLE_MY.md`
+    - `ZASSELECTION_MY.md`
+
+    English variants follow only after the Malay proof works.
+
+11. **v0.1 sync must not require manual copy/paste.**  
+    A protected/internal sync worker pulls canonical GitHub content into the Method Registry/snapshot store. Public users/AI receivers never receive sync or publish privileges.
+
+12. **ASC Write Contract v0.1 remains unchanged.**  
+    The eight-field semantic Write Contract is a protected write-plane handoff and is not expanded with Method Gateway metadata. Method snapshots use a separate read-plane registry record.
+
+Reason: cross-AI field testing showed that direct external method URLs cannot be assumed readable across receiver platforms. This is a transport/readability problem and belongs to AI-SYNC, while GitHub remains canonical and ZASS methods remain semantically unchanged.  
 Locked by: Project Owner  
 Date: 2026-10-02
