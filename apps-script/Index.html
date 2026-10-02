@@ -11,18 +11,29 @@
       .card { border: 1px solid #dadce0; border-radius: 12px; padding: 18px; margin-top: 16px; }
       .muted { color: #5f6368; }
       .error { color: #b3261e; }
+      button { font: inherit; padding: 10px 16px; border-radius: 8px; border: 1px solid #1a73e8; background: #1a73e8; color: #fff; cursor: pointer; }
+      button:disabled { background: #dadce0; border-color: #dadce0; color: #5f6368; cursor: not-allowed; }
       pre { white-space: pre-wrap; word-break: break-word; background: #f8f9fa; padding: 12px; border-radius: 8px; }
     </style>
   </head>
   <body>
     <main>
-      <span class="badge">ASC v0.1 · T-004 preview only</span>
+      <span class="badge">ASC v0.1 · T-008 preview → CONFIRM &amp; SYNC</span>
       <h1>ASC Preview</h1>
-      <p class="muted">Google Account access is enforced by the web-app deployment. No persistence is available in this task.</p>
+      <p class="muted">Google Account access is enforced by the web-app deployment. Nothing is persisted unless you explicitly press CONFIRM &amp; SYNC.</p>
       <div id="status" class="card">Loading…</div>
       <div id="preview" class="card" hidden>
         <h2>Pending request</h2>
         <pre id="payload"></pre>
+        <div id="confirm-controls" hidden>
+          <p id="confirm-note" class="muted"></p>
+          <button id="confirm-sync" type="button" disabled>CONFIRM &amp; SYNC</button>
+        </div>
+      </div>
+      <div id="receipt" class="card" hidden>
+        <h2>Write receipt</h2>
+        <pre id="receipt-json"></pre>
+        <a id="main-ui-link" href="#" target="_top" hidden>Return to main ASC UI</a>
       </div>
     </main>
 

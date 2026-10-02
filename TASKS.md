@@ -10,6 +10,30 @@
 
 ## Current task
 
+T-008 | IN PROGRESS — PREVIEW → CONFIRM & SYNC → RECEIPT → REDIRECT  
+Source: AP-003, AP-007  
+Decision / Design lineage: D-012, D-015, D-017, DESIGN v1.0 § Google Sites + Apps Script interaction flow  
+Do: Implement preview → explicit CONFIRM & SYNC → write/verify → receipt → redirect-to-main-ASC-UI flow, with truthful failure handling.  
+Depends on: T-004 PASS, T-005 PASS, T-007 PASS — satisfied.  
+Pass: No persistence occurs before explicit confirmation; success returns to main ASC UI after verified receipt; failure stays visibly failed and does not redirect as success.  
+T-008A | LOCAL PASS — runtime-neutral flow + client gating:
+- `flow/confirm-sync.mjs` composes ASC Core → GitHub adapter → factual receipt → HISTORY without duplicating them;
+- request-bound explicit confirmation required; preview and missing/invalid confirmation perform zero GitHub/HISTORY calls;
+- Core/authorization/routing/config rejection stops before any I/O; v0.1 accepts only `Destination: ["GitHub"]`;
+- WRITE_ERROR / WRITE_UNVERIFIED / READ_ERROR / INVALID_INPUT → FAILED receipt recorded in HISTORY, no redirect, captured commit preserved;
+- verified write with HISTORY failure → FAILED stage HISTORY, no redirect;
+- redirect only for SUCCESS + verified receipt + HISTORY_PERSISTED + valid https main UI URL;
+- Apps Script client shows CONFIRM & SYNC, receipt, and visible failure; server `confirmAndSync` currently fails closed (`SYNC_RUNTIME_NOT_BOUND`, `writeEnabled=false`).
+T-008B | NOT STARTED — Apps Script runtime binding (Core/adapter/receipt bundle, UrlFetchApp GitHub transport, History.gs wiring) + live owner-confirmed TEST_ONLY proof.
+T-008B owner-locked constraints (2026-10-03):
+- destination policy is TEST_ONLY and controlled: repository `dzuddiyn/AISYNC`, branch `main`, path `proofs/t008-confirm-sync-live.md`;
+- this is NOT the general production Record ID → GitHub path rule, which remains undecided;
+- main UI redirect URL is server-side configuration `ASC_MAIN_UI_URL` (not hard-coded, not browser-supplied);
+- no live write until the owner approves.
+Current result: IN PROGRESS — no live write, receipt, HISTORY row, or redirect has been performed for T-008.
+
+## Completed
+
 T-007 | PASS — FACTUAL WRITE RECEIPT + HISTORY
 Source: AP-006  
 Decision / Design lineage: D-004, R-003, D-014, DESIGN v1.0 § Write Receipt  
@@ -26,8 +50,6 @@ Live evidence:
 - timestamp: `2026-10-02T19:03:32.135Z`;
 - receipt_json confirms `adapter_outcome=VERIFIED_WRITE`, `write_performed=true`, and `verified=true`;
 - persisted scalar fields matched the embedded receipt after re-read.
-
-## Completed
 
 T-006 | PASS — GITHUB DESTINATION ADAPTER  
 Source: AP-005  
@@ -176,13 +198,6 @@ Verification:
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
-
-T-008 | QUEUED  
-Source: AP-003, AP-007  
-Decision / Design lineage: D-012, D-015, D-017, DESIGN v1.0 § Google Sites + Apps Script interaction flow  
-Do: Implement preview → explicit CONFIRM & SYNC → write/verify → receipt → redirect-to-main-ASC-UI flow, with truthful failure handling.  
-Depends on: T-004, T-005, T-007  
-Pass: No persistence occurs before explicit confirmation; success returns to main ASC UI after verified receipt; failure stays visibly failed and does not redirect as success.
 
 T-009 | QUEUED  
 Source: AP-003, UI data requirements  

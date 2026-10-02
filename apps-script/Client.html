@@ -77,6 +77,125 @@ function getAppsScriptLocation(callback) {
   callback(window.location);
 }
 
+const ASC_CONFIRM_ACTION = 'CONFIRM_AND_SYNC';
+let ascPendingState = null;
+
+// Confirmation is created only from an explicit user click and is bound to one request.
+function buildConfirmation(requestId) {
+  return { confirmed: true, action: ASC_CONFIRM_ACTION, requestId: requestId };
+}
+
+// Redirect only after a verified SUCCESS receipt and persisted HISTORY. Everything else stays here.
+function canRedirectAfterSync(result) {
+  return Boolean(result) &&
+    result.state === 'SYNCED' &&
+    typeof result.redirect === 'string' &&
+    /^https:\/\/[^\s]+$/.test(result.redirect) &&
+    Boolean(result.receipt) &&
+    result.receipt.status === 'SUCCESS' &&
+    result.receipt.verified === true &&
+    result.historyOutcome === 'HISTORY_PERSISTED';
+}
+
+function describeSyncResult(result) {
+  if (!result || typeof result !== 'object') {
+    return { isError: true, message: 'FAILED — no factual sync result was returned. Nothing is reported as saved.' };
+  }
+  if (canRedirectAfterSync(result)) {
+    return { isError: false, message: 'SUCCESS — verified write and HISTORY recorded. Returning to the main ASC UI…' };
+  }
+  if (result.state === 'SYNCED_REDIRECT_UNAVAILABLE') {
+    return { isError: false, message: 'SUCCESS — verified write and HISTORY recorded. Main ASC UI link is not configured.' };
+  }
+  if (result.state === 'AWAITING_CONFIRMATION') {
+    return { isError: true, message: 'Not saved — explicit CONFIRM & SYNC is required.' };
+  }
+  const code = result.error && result.error.code ? result.error.code : 'UNKNOWN';
+  const reason = result.error && result.error.message ? result.error.message : 'Sync did not complete.';
+  return { isError: true, message: 'FAILED (' + code + ') — ' + reason };
+}
+
+function renderSyncResult(result, deps) {
+  const doc = (deps && deps.document) || document;
+  const view = describeSyncResult(result);
+  const status = doc.getElementById('status');
+  status.textContent = view.message;
+  status.className = 'card' + (view.isError ? ' error' : '');
+
+  const receiptCard = doc.getElementById('receipt');
+  const receiptPre = doc.getElementById('receipt-json');
+  if (result && result.receipt) {
+    receiptPre.textContent = JSON.stringify(result.receipt, null, 2);
+    receiptCard.hidden = false;
+  }
+
+  const button = doc.getElementById('confirm-sync');
+  if (canRedirectAfterSync(result)) {
+    if (button) button.disabled = true;
+    const storage = (deps && deps.storage) || window.sessionStorage;
+    storage.removeItem(ASC_PENDING_KEY);
+    const navigate = (deps && deps.navigate) || function(url) { window.top.location.href = url; };
+    const link = doc.getElementById('main-ui-link');
+    if (link) {
+      link.href = result.redirect;
+      link.hidden = false;
+    }
+    navigate(result.redirect);
+    return 'REDIRECTED';
+  }
+
+  // Failure or incomplete: keep the pending request so the owner can see and retry it.
+  if (button) button.disabled = !(ascPendingState && ascPendingState.writeEnabled);
+  return 'STAYED';
+}
+
+function requestConfirmAndSync() {
+  if (!ascPendingState || !ascPendingState.writeEnabled) {
+    renderSyncResult({ state: 'FAILED', error: { code: 'SYNC_DISABLED', message: 'Sync is not enabled on this deployment.' } });
+    return;
+  }
+  const button = document.getElementById('confirm-sync');
+  button.disabled = true;
+  setStatus('Syncing… write is being attempted and verified. Do not treat this as saved yet.', false);
+  google.script.run
+    .withSuccessHandler(function(result) { renderSyncResult(result); })
+    .withFailureHandler(function(error) {
+      renderSyncResult({ state: 'FAILED', error: { code: 'SERVER_CALL_FAILED', message: String(error && error.message || error) } });
+    })
+    .confirmAndSync({
+      fragment: ascPendingState.fragment,
+      confirmation: buildConfirmation(ascPendingState.requestId)
+    });
+}
+
+function showConfirmControls(envelope, fragment, bootstrap) {
+  ascPendingState = {
+    fragment: fragment,
+    requestId: envelope.request_id,
+    writeEnabled: Boolean(bootstrap && bootstrap.writeEnabled === true)
+  };
+  const controls = document.getElementById('confirm-controls');
+  const button = document.getElementById('confirm-sync');
+  const note = document.getElementById('confirm-note');
+  controls.hidden = false;
+  button.disabled = !ascPendingState.writeEnabled;
+  note.textContent = ascPendingState.writeEnabled
+    ? 'Nothing is saved until you press CONFIRM & SYNC.'
+    : 'CONFIRM & SYNC is not enabled on this deployment yet. Preview only — nothing will be saved.';
+  button.onclick = requestConfirmAndSync;
+}
+
+function loadBootstrap(callback) {
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(callback)
+      .withFailureHandler(function() { callback({ writeEnabled: false }); })
+      .getBootstrapState();
+    return;
+  }
+  callback({ writeEnabled: false });
+}
+
 function bootAscPreview() {
   getAppsScriptLocation(function(locationLike) {
     const pending = preservePendingRequest(locationLike, window.sessionStorage);
@@ -94,10 +213,15 @@ function bootAscPreview() {
         '. Preview only — no write has occurred.',
         false
       );
+      loadBootstrap(function(bootstrap) {
+        showConfirmControls(envelope, pending.fragment, bootstrap);
+      });
     } catch (error) {
       setStatus('Pending request could not be decoded: ' + error.message, true);
     }
   });
 }
 
-window.addEventListener('DOMContentLoaded', bootAscPreview);
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('DOMContentLoaded', bootAscPreview);
+}

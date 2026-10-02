@@ -290,3 +290,15 @@ Finding: Remote verification independently confirmed the proof file exists on `m
 
 PF-045 | T-006 CLOSED / T-007 PROMOTED  
 Finding: T-006 pass condition is met. The GitHub adapter now has proven mock mechanics, real runtime-authenticated transport, one controlled verified repository write, and factual commit/file identifiers. Execution advances to T-007 factual Write Receipt + HISTORY persistence.
+
+PF-046 | T-007 CLOSED / T-008 PROMOTED  
+Finding: T-007 pass condition is met with externally verified HISTORY row 3. Execution advances to T-008 preview → CONFIRM & SYNC → receipt → redirect.
+
+PF-047 | T-008A RUNTIME-NEUTRAL CONFIRM/SYNC FLOW — LOCAL PASS  
+Finding: `flow/confirm-sync.mjs` composes the existing ASC Core, GitHub adapter, and T-007 receipt/HISTORY owners behind a request-bound explicit confirmation gate. Local tests prove zero persistence before confirmation, fail-closed rejection before I/O, factual FAILED receipts recorded in HISTORY without redirect, and redirect only after a verified SUCCESS receipt plus persisted HISTORY. The Apps Script server endpoint currently fails closed.
+
+PF-048 | T-008B APPS SCRIPT BINDING GAP  
+Finding: The reusable owners are Node ES modules with an async adapter boundary; Apps Script cannot load them directly, and returning an async result through `google.script.run` is unproven. T-008B must bind the same sources (not re-implement them) with a UrlFetchApp GitHub transport, Script Properties `GITHUB_TOKEN`, `History.gs`, a server-side contract → write-spec rule, and the main Google Sites ASC UI URL, then prove one owner-confirmed TEST_ONLY sync live. The main ASC UI URL is not present in the repository.
+
+PF-049 | T-008B TEST_ONLY DESTINATION POLICY — OWNER LOCKED  
+Finding: T-008B uses only a controlled TEST_ONLY write-spec policy: `dzuddiyn/AISYNC`, branch `main`, path `proofs/t008-confirm-sync-live.md`. It must not be generalized into the production Record ID → GitHub path rule. The redirect target is read server-side from `ASC_MAIN_UI_URL`; it is not hard-coded.
