@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.24  
+**Project record version:** 0.6.25  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.25 | 2026-10-02 | T-004 live provider-selection / intent-routing / method-mapping proof PASS: ChatGPT/Gemini/Copilot options, deterministic DUMP/DECIDE/DESIGN routing, user override persistence, exact Method Gateway mapping, and preview-only handoff verified; actual provider handoff remains next. |
 | 0.6.24 | 2026-10-02 | T-004 D-022 live preserve/auth/replay proof PASS: GitHub Pages static front door preserves #asc in the original tab; protected Apps Script handles authenticated preview; CONTINUE replay works without refresh after noopener regression fix; NO WRITE verified. |
 | 0.6.23 | 2026-10-02 | LOCKED D-028 receiver-facing host refinement; T-013B PASS; GitHub Pages adopted for v0.1 receiver-facing method transport; exact-URL/no-substitution guardrail recorded; T-004 resumed. |
 | 0.6.22 | 2026-10-02 | Copilot direct-read proof against the GitHub Pages ZASSIMPLE receiver URL passed. |
@@ -1228,3 +1229,60 @@ public Method Gateway URL
         ↓
 provider handoff
 ```
+
+
+## T-004 LIVE PROVIDER / ROUTING CHECKPOINT
+
+Date: 2026-10-02  
+Status: **PASS for provider-selection/routing/mapping slice; T-004 remains IN PROGRESS**
+
+Live proof verified:
+
+```text
+user draft
+    ↓
+mandatory provider
+ChatGPT / Gemini / Copilot
+    ↓
+route suggestion
+DUMP / DECIDE / DESIGN
+    ↕ explicit user override
+    ↓
+method mapping
+ZASSPILL / ZASSELECTION / ZASSIMPLE
+    ↓
+public Method Gateway URL
+    ↓
+PREPARE HANDOFF preview only
+```
+
+Evidence:
+- DUMP sample routed correctly;
+- DECIDE comparison sample routed correctly;
+- DESIGN build/architecture sample routed correctly;
+- ambiguous/default behavior remains DUMP;
+- explicit route override survived later draft edits;
+- exact route→method→gateway mappings were shown;
+- PREPARE HANDOFF required a non-empty draft, provider, and active route;
+- preview contained provider, route, method, gateway URL, and draft;
+- no provider site opened;
+- no network call or persistence/write occurred;
+- prior D-022 auth-preserve/replay regression tests remained PASS.
+
+Next T-004 slice:
+
+```text
+prepared handoff
+    ↓
+selected provider capability
+    ↓
+supported deep-link/prefill when truthfully available
+OR
+short copy/paste fallback
+    ↓
+target AI opens
+    ↓
+receiver reads exact public Method Gateway URL
+```
+
+The implementation must not claim provider capabilities that have not been proven.
