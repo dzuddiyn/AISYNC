@@ -10,35 +10,25 @@
 
 ## Current task
 
-T-013A | IN PROGRESS — METHOD REGISTRY + PROTECTED GITHUB SYNC
-Source: AP-008, D-023, D-024
-Decision / Design lineage: D-002, D-005, D-023, D-024, DESIGN v1.0.8 § Public Method Gateway / read plane
+T-013B | IN PROGRESS — PUBLIC METHOD GATEWAY + CROSS-AI PROOF
+Source: AP-008, D-023, D-024, D-025, D-026
+Decision / Design lineage: D-002, D-005, D-018, D-023, D-025, D-026, DESIGN v1.0.8 § Public Method Gateway / read plane
 Do:
-- maintain one lightweight METHODS registry in ASC DB;
-- sync the three frozen/current Malay method files from canonical GitHub;
-- pin each snapshot to the exact GitHub branch-head commit used for the fetch;
-- extract method version from the Markdown;
-- upsert snapshots without manual Markdown copy/paste.
-Built:
-- ASC DB METHODS tab with headers:
-  method_key, method, language, version, source_repo, source_path, source_commit, synced_at, content
-- `method-gateway/method-snapshot-v0.1.schema.json`
-- `method-gateway/sync/RegistrySync.gs`
-- `method-gateway/sync/appsscript.json`
+- deploy the separate public read-only Apps Script surface;
+- serve the stored METHODS snapshot itself without GitHub redirect;
+- require no login for public method reads;
+- expose traceable snapshot provenance metadata;
+- field-test the plain-text endpoint with Gemini and Copilot;
+- verify ZASSPILL can carry the gateway URL during DECIDE/DESIGN handoff.
 Pass:
-- protected sync function runs successfully;
-- three rows are present;
-- versions/content/source paths are correct;
-- all three rows identify the same real GitHub commit used for that sync;
-- re-running the sync updates/upserts instead of duplicating rows.
-Current result: IMPLEMENTATION BUILT — LIVE Apps Script RUN/VERIFICATION PENDING.
-
-D-025 implementation path is LOCKED:
-- METHODS is the v0.1 snapshot registry;
-- protected sync and public read are separate Apps Script surfaces;
-- one sync run pins all three files to one exact GitHub HEAD commit;
-- T-013A must pass before T-013B;
-- T-004 resumes only after the Method Gateway proof is sufficiently proven.
+- public endpoint returns the AI-SYNC-held Markdown snapshot itself;
+- no login is required;
+- snapshot version/source commit is identifiable;
+- Gemini can read and identify the method/version;
+- Copilot can read and identify the method/version;
+- ZASSPILL handoff can carry the gateway URL;
+- HTML compatibility view is added only if field evidence requires it.
+Current result: T-013A PASSED; T-013B LIVE DEPLOYMENT / CROSS-AI VERIFICATION PENDING.
 
 ## Paused task
 
@@ -101,6 +91,24 @@ D-027 transfer UX target is LOCKED for the later T-004 resume:
 - exact continuity-link security mechanism remains an implementation decision.
 
 ## Completed
+
+T-013A | PASS — METHOD REGISTRY + PROTECTED GITHUB SYNC
+Source: AP-008, D-023, D-024, D-025
+Decision / Design lineage: D-002, D-005, D-023, D-024, D-025, DESIGN v1.0.8 § Public Method Gateway / read plane
+Built:
+- ASC DB `METHODS` registry with the locked nine-column snapshot shape;
+- `method-gateway/method-snapshot-v0.1.schema.json`;
+- `method-gateway/sync/RegistrySync.gs`;
+- `method-gateway/sync/appsscript.json`;
+- authenticated GitHub API reads using `GITHUB_TOKEN` from Apps Script Script Properties; no token is hard-coded in the repository.
+Verification:
+- protected `syncMethodsFromGitHub()` completed successfully;
+- three Malay method snapshots were written;
+- all three snapshots were pinned to the same GitHub source commit for the sync run;
+- method version/path/content fields populated correctly;
+- second run updated existing rows without creating duplicates.
+Result: PASS — protected GitHub→METHODS sync is live and upsert behavior is verified.
+
 
 T-003 | PASS  
 Source: AP-003, PF-003, D-014  
@@ -244,7 +252,7 @@ Pass:
 - GitHub update can sync without copy/paste;
 - ZASSPILL can hand off a gateway URL.
 Constraint: do not add EN methods, public write/admin APIs, webhook complexity, or extra connectors in this proof.
-Result: STARTED — D-024 gate satisfied; T-013A implementation built, live sync verification pending.
+Result: IN PROGRESS — T-013A PASS; T-013B public gateway deployment and cross-AI proof are current.
 
 
 ### Planned slicing after D-024 gate
