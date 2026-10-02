@@ -1,11 +1,11 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.18  
+**Project record version:** 0.6.19  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
-**Status:** ARCHITECTURE CONFIRMED — implementation in progress  
+**Status:** DESIGN CONFIRMED — implementation in progress  
 **Owner:** Project Owner
 
 > AISYNC is shared infrastructure for moving, translating, writing, and verifying meaningful information produced by methods and projects. It is not itself a reasoning method.
@@ -64,7 +64,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0.5 remains CONFIRMED. D-023 adds a separate public Method Gateway/read-mirror plane while preserving the existing protected write plane and eight-field ASC Write Contract. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
+Current direction: DESIGN v1.0.8 remains CONFIRMED, with technical architecture preserved inside `DESIGN.md`. D-023 adds a separate public Method Gateway/read-mirror plane while preserving the existing protected write plane and eight-field ASC Write Contract. T-001 through T-003 have PASSED. T-013A is the current implementation task; T-004 remains paused until the Method Gateway proof is sufficiently proven.
 
 ---
 
@@ -415,7 +415,7 @@ Date: 2026-10-01
 D-014 | LOCKED  
 Decision: Lock the **v0.1 Source-of-Truth / ASC DB authority model**:
 
-- **GitHub** = canonical project artifacts and Git lineage, including ZASS-family Markdown artifacts such as working record, Action Plan, Architecture, Tasks, and commit history.
+- **GitHub** = canonical project artifacts and Git lineage, including ZASS-family Markdown artifacts such as working record, Action Plan, Design (including technical architecture where applicable), Tasks, and commit history.
 - **Google Sheets = ASC DB** = structured operational/index records used by ASC UI and transport/history views; it must not silently become a competing editable master for the same canonical artifact.
 
 Minimum ASC DB logical tables/tabs:
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.19 | 2026-10-02 | Completed ZASSIMPLE v0.3 artifact migration: `ARCHITECTURE.md` → `DESIGN.md`; preserved confirmed technical architecture/decision authority; aligned current task/design references without reopening decisions. |
 | 0.6.18 | 2026-10-02 | LOCKED D-027 ASC continuity authority + cross-AI transfer UX: SAVE returns an ASC link; intentional cross-AI continuation starts from ASC Web/project tree, produces a short bootstrap + method link + controlled continuity reference, and hides raw GitHub/fallback/packet complexity from ordinary users. |
 | 0.6.17 | 2026-10-02 | LOCKED D-026 receiver-format fallback: plain text/Markdown remains the primary Method Gateway response; clean HTML `/view` compatibility surface is added only if Gemini/Copilot field evidence requires it. |
 | 0.6.16 | 2026-10-02 | Updated AISYNC thread/project baseline to official ZASSIMPLE v0.3.0. Current surface now uses DESIGN / CONFIRM DESIGN; architecture is treated as a technical design subtype. Historical architecture confirmation remains valid. Current DO IT task remains T-013A. |
@@ -1032,3 +1033,20 @@ Same-chat method handoff remains valid inside a conversation. D-027 governs the 
 Reason: The long ZASSPILL field-test packet is useful as a transport benchmark, but it should become infrastructure hidden behind ASC rather than a routine user burden.  
 Locked by: Project Owner  
 Date: 2026-10-02
+
+
+## ZASSIMPLE v0.3 ARTIFACT MIGRATION
+
+Date: 2026-10-02
+
+The AISYNC project artifact structure now follows ZASSIMPLE v0.3.0:
+
+```text
+ACTION_PLAN.md
+DESIGN.md
+TASKS.md
+```
+
+`ARCHITECTURE.md` was renamed to `DESIGN.md`. The existing confirmed technical architecture remains inside DESIGN as a technical subtype. No LOCKED decision, confirmation authority, or current execution task was reopened by this migration.
+
+Current task remains: **T-013A**.
