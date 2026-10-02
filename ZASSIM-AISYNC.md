@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.27  
+**Project record version:** 0.6.28  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.28 | 2026-10-03 | T-006A PASS: GitHub adapter local/mock mechanics published; truthful current-SHA, commit-SHA, persisted-state verification, WRITE_UNVERIFIED, Promise/throw handling, and isolation boundaries verified; T-006 remains IN PROGRESS for controlled live write. |
 | 0.6.27 | 2026-10-03 | T-005 PASS: pure ASC Core boundary published; exact contract validation, fail-closed authorization, deep semantic isolation, destination routing, isolated adapter descriptors, and neutral receipt handoff verified; T-006 promoted. |
 | 0.6.26 | 2026-10-03 | T-004 PASS: live copy-open provider handoff verified across Gemini/ChatGPT/Copilot field cases; exact-source guardrail held; method transport proven distinct from still-open controlled project continuity; T-005 promoted. |
 | 0.6.25 | 2026-10-02 | T-004 live provider-selection / intent-routing / method-mapping proof PASS: ChatGPT/Gemini/Copilot options, deterministic DUMP/DECIDE/DESIGN routing, user override persistence, exact Method Gateway mapping, and preview-only handoff verified; actual provider handoff remains next. |
@@ -1391,3 +1392,45 @@ Boundary evidence:
 - no network, persistence/write, provider API, or ZASS reasoning.
 
 Execution advances to **T-006 — GitHub destination adapter**.
+
+## T-006A CHECKPOINT
+
+Date: 2026-10-03  
+Status: **PASS for local/mock adapter mechanics; T-006 remains IN PROGRESS**
+
+Published implementation:
+- `adapters/github/github-adapter.mjs`
+- `adapters/github/test-github-adapter.mjs`
+- `adapters/github/README.md`
+- commit `7c1dbd64328eb8ff6590374706eb7d603b0f1dc7`
+
+Proven mechanics:
+
+```text
+T-005 GitHub adapter invocation
+↓
+READ current file
+├─ missing → CREATE without SHA
+├─ exists + changed → UPDATE with exact current SHA
+└─ exists + same → NO_CHANGE
+↓
+WRITE when required
+↓
+READ persisted file again
+↓
+exact content verification
+↓
+VERIFIED_WRITE / WRITE_UNVERIFIED
+```
+
+Truthfulness boundaries:
+- existing file with no valid current SHA does not write;
+- `ok=true` without a valid commit SHA cannot become VERIFIED_WRITE;
+- persisted content SHA comes from the verification read;
+- verification failure after a write produces WRITE_UNVERIFIED;
+- captured commit SHA is preserved when a later verification step fails;
+- client sync exceptions and rejected Promises are contained;
+- no real GitHub network/PAT/credential handling yet;
+- no final Write Receipt or HISTORY entry yet.
+
+Next slice: **T-006B — one controlled real GitHub write + persisted-state verification**.
