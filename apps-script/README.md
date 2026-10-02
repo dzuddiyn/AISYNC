@@ -2,7 +2,7 @@
 
 Status:
 - T-004 PROTECTED PREVIEW — LIVE PASS (front-door preservation handled by GitHub Pages).
-- T-008 PREVIEW → CONFIRM & SYNC → RECEIPT → HISTORY → REDIRECT — LIVE PASS for the owner-locked TEST_ONLY destination only; T-008B runtime binding deployed as Apps Script version 3.
+- T-008 PREVIEW → CONFIRM & SYNC → RECEIPT → HISTORY → SUCCESS RETURN — LIVE PASS for the owner-locked TEST_ONLY destination only; D-030 defines the guaranteed v0.1 return as a user-activated `Return to main ASC UI` link/button, with automatic top-level navigation optional.
 
 ## Purpose
 
@@ -248,6 +248,12 @@ node apps-script/test-dashboard-ui.mjs
 
 Pending: deployment, Google Sites integration, live read proof.
 
+
+## D-030 successful return behavior — LOCKED / LIVE PROVEN
+
+After a verified SUCCESS receipt and persisted HISTORY, ASC v0.1 must expose a visible user-activated `Return to main ASC UI` link/button. Automatic top-level navigation may still be attempted when the hosting/browser platform permits it, but it is not required for PASS and must not be the only return mechanism. FAILED/unverified/incomplete results stay visibly non-successful.
+
+T-011 live proof established this behavior with owner-issued request `TEST_ONLY_T011_ZASSIMPLE_SAVE_20261002224115`: GitHub commit `50a3372c0540a9db021d0c0518b010836c58f247`, verified persisted payload, HISTORY row 6 SUCCESS, then user-activated return to the main ASC UI.
 
 ## T-010 security / replay binding — PASS (live)
 
