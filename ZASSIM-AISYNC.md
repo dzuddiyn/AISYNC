@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.26  
+**Project record version:** 0.6.27  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.27 | 2026-10-03 | T-005 PASS: pure ASC Core boundary published; exact contract validation, fail-closed authorization, deep semantic isolation, destination routing, isolated adapter descriptors, and neutral receipt handoff verified; T-006 promoted. |
 | 0.6.26 | 2026-10-03 | T-004 PASS: live copy-open provider handoff verified across Gemini/ChatGPT/Copilot field cases; exact-source guardrail held; method transport proven distinct from still-open controlled project continuity; T-005 promoted. |
 | 0.6.25 | 2026-10-02 | T-004 live provider-selection / intent-routing / method-mapping proof PASS: ChatGPT/Gemini/Copilot options, deterministic DUMP/DECIDE/DESIGN routing, user override persistence, exact Method Gateway mapping, and preview-only handoff verified; actual provider handoff remains next. |
 | 0.6.24 | 2026-10-02 | T-004 D-022 live preserve/auth/replay proof PASS: GitHub Pages static front door preserves #asc in the original tab; protected Apps Script handles authenticated preview; CONTINUE replay works without refresh after noopener regression fix; NO WRITE verified. |
@@ -1345,3 +1346,48 @@ Therefore:
 - no persistence/write was introduced by T-004;
 - D-027/PF-024 controlled/private continuity remains open as separate work;
 - execution advances to **T-005 — ASC Core request boundary**.
+
+## T-005 CLOSURE CHECKPOINT
+
+Date: 2026-10-03  
+Status: **PASS**
+
+Published implementation:
+- `core/asc-core.mjs`
+- `core/test-asc-core.mjs`
+- `core/README.md`
+- commit `3a56c30d8520ab6824807c76255c973a1f838450`
+
+Proven flow:
+
+```text
+ASC Write Contract
+↓
+VALIDATE
+↓
+AUTHORIZE
+↓
+PRESERVE SEMANTICS
+↓
+ROUTE
+├─ GitHub → github
+└─ ASC_DB → asc_db
+↓
+isolated adapter invocation descriptors
+↓
+neutral receipt-layer boundary
+```
+
+Boundary evidence:
+- exact eight semantic fields only;
+- authorization fails closed without explicit allow;
+- authorization receives an isolated semantic copy;
+- accepted contract remains deep-equal to original;
+- nested mutation cannot leak back into accepted/original contract;
+- destination order is preserved;
+- unknown/mixed destinations fail without partial accepted routing;
+- separate adapter invocation descriptors do not share mutable nested references;
+- provider context does not alter semantic contract or routes;
+- no network, persistence/write, provider API, or ZASS reasoning.
+
+Execution advances to **T-006 — GitHub destination adapter**.
