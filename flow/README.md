@@ -44,10 +44,6 @@ node flow/test-confirm-sync.mjs
 node apps-script/test-confirm-ui.mjs
 ```
 
-## Not yet done (T-008B)
+## T-008B binding
 
-- Apps Script binding of Core/adapter/receipt (`.mjs` ES modules are not directly loadable in Apps Script; async adapter return through `google.script.run` must be proven live).
-- Apps Script GitHub transport (UrlFetchApp, Script Properties `GITHUB_TOKEN`) and `History.gs` writer wiring.
-- Server-side v0.1 contract → GitHub write-spec translation rule.
-- Main Google Sites ASC UI URL (not present in the repository).
-- Live owner-confirmed TEST_ONLY proof re-reading GitHub and HISTORY.
+Bound into Apps Script by `apps-script/AscRuntime.gs` (generated) — see `apps-script/README.md`. Live owner-confirmed TEST_ONLY proof is still pending.

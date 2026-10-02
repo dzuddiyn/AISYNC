@@ -184,3 +184,31 @@ The protected preview now renders a CONFIRM & SYNC control, a write-receipt card
 node apps-script/test-confirm-ui.mjs
 ```
 
+
+## T-008B Apps Script runtime binding — LOCAL PASS (not deployed)
+
+Project files for the confirm-sync web app:
+
+```text
+appsscript.json   owner-only web app manifest (unchanged)
+Code.gs           doGet, bootstrap, confirmAndSync, getConfirmSyncResult, TEST_ONLY policy
+RuntimeShims.gs   Utilities-based Buffer/atob/TextDecoder shims + UrlFetchApp fetchImpl
+AscRuntime.gs     GENERATED bundle: transport, Core, GitHub adapter, REST client, receipts, flow + History.gs verbatim
+Index.html / Client.html
+```
+
+Local-only files (do not push to Apps Script): `build-runtime.mjs`, `test-*.mjs`, `README.md`.
+
+- `AscRuntime.gs` is produced mechanically by `node apps-script/build-runtime.mjs` from the existing ES-module owners; `--check` fails if it is stale. No Core/adapter/receipt/flow semantics are rewritten.
+- GitHub transport reuses `createGitHubRestClient` with a UrlFetchApp-backed `fetchImpl` restricted to `https://api.github.com/` (`muteHttpExceptions`, no redirects).
+- HISTORY persistence reuses `History.gs` `appendHistory`; its `{ ok: false }` result is surfaced as failure by the T-008A strict writer bridge.
+- Destination policy is the owner-locked TEST_ONLY target only: `dzuddiyn/AISYNC`, `main`, `proofs/t008-confirm-sync-live.md`. Authorization additionally requires owner session, `Record ID` prefix `TEST_ONLY_`, and `Destination: ["GitHub"]`.
+- Script Properties: `GITHUB_TOKEN` (required; never returned, logged, or hard-coded) and `ASC_MAIN_UI_URL` (accepted only if it starts with `https://sites.google.com/`).
+- The reused flow is async; `confirmAndSync` returns `RESULT_PENDING`, the settled result is stored in the owner's user cache, and the client fetches it via `getConfirmSyncResult`. A missing result is shown as FAILED/unknown, never success.
+
+```text
+node apps-script/build-runtime.mjs --check
+node apps-script/test-apps-script-binding.mjs
+node apps-script/test-confirm-ui.mjs
+```
+

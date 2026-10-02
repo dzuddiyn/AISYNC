@@ -302,3 +302,7 @@ Finding: The reusable owners are Node ES modules with an async adapter boundary;
 
 PF-049 | T-008B TEST_ONLY DESTINATION POLICY — OWNER LOCKED  
 Finding: T-008B uses only a controlled TEST_ONLY write-spec policy: `dzuddiyn/AISYNC`, branch `main`, path `proofs/t008-confirm-sync-live.md`. It must not be generalized into the production Record ID → GitHub path rule. The redirect target is read server-side from `ASC_MAIN_UI_URL`; it is not hard-coded.
+
+PF-050 | T-008B APPS SCRIPT BINDING — LOCAL PASS
+
+Finding: The existing ES-module owners are bundled mechanically into `apps-script/AscRuntime.gs` (namespaced, lazily initialised, freshness-checked) with Utilities-based encoding shims and a UrlFetchApp `fetchImpl`, so Apps Script reuses T-002/T-005/T-006/T-007/T-008A logic without re-implementation. Because returning a Promise through `google.script.run` is undocumented, the server returns `RESULT_PENDING` and the client collects the settled result from the owner's user cache. Local fake-service tests pass; live Apps Script behaviour (microtask settlement, UrlFetchApp headers, Session identity, scopes, Sites redirect) remains unproven until the owner-approved live TEST_ONLY run.

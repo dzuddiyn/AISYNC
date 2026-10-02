@@ -78,6 +78,7 @@ function getAppsScriptLocation(callback) {
 }
 
 const ASC_CONFIRM_ACTION = 'CONFIRM_AND_SYNC';
+const ASC_MAIN_UI_PREFIX = 'https://sites.google.com/';
 let ascPendingState = null;
 
 // Confirmation is created only from an explicit user click and is bound to one request.
@@ -90,7 +91,9 @@ function canRedirectAfterSync(result) {
   return Boolean(result) &&
     result.state === 'SYNCED' &&
     typeof result.redirect === 'string' &&
-    /^https:\/\/[^\s]+$/.test(result.redirect) &&
+    result.redirect.indexOf(ASC_MAIN_UI_PREFIX) === 0 &&
+    result.redirect.length > ASC_MAIN_UI_PREFIX.length &&
+    !/\s/.test(result.redirect) &&
     Boolean(result.receipt) &&
     result.receipt.status === 'SUCCESS' &&
     result.receipt.verified === true &&
@@ -149,6 +152,24 @@ function renderSyncResult(result, deps) {
   return 'STAYED';
 }
 
+// The server may settle asynchronously; a RESULT_PENDING reply is followed by one factual
+// result fetch. An unavailable result is shown as FAILED/unknown, never as success.
+function handleConfirmResponse(result, deps) {
+  const run = (deps && deps.run) || (typeof google !== 'undefined' && google.script && google.script.run);
+  const render = (deps && deps.render) || renderSyncResult;
+  if (result && result.state === 'RESULT_PENDING' && typeof result.requestId === 'string' && run) {
+    run
+      .withSuccessHandler(function(final) { render(final); })
+      .withFailureHandler(function(error) {
+        render({ state: 'FAILED', error: { code: 'RESULT_CALL_FAILED', message: 'Sync result could not be fetched. Check HISTORY; nothing is reported as saved.' } });
+      })
+      .getConfirmSyncResult(result.requestId);
+    return 'FETCHING_RESULT';
+  }
+  render(result);
+  return 'RENDERED';
+}
+
 function requestConfirmAndSync() {
   if (!ascPendingState || !ascPendingState.writeEnabled) {
     renderSyncResult({ state: 'FAILED', error: { code: 'SYNC_DISABLED', message: 'Sync is not enabled on this deployment.' } });
@@ -158,7 +179,7 @@ function requestConfirmAndSync() {
   button.disabled = true;
   setStatus('Syncing… write is being attempted and verified. Do not treat this as saved yet.', false);
   google.script.run
-    .withSuccessHandler(function(result) { renderSyncResult(result); })
+    .withSuccessHandler(handleConfirmResponse)
     .withFailureHandler(function(error) {
       renderSyncResult({ state: 'FAILED', error: { code: 'SERVER_CALL_FAILED', message: String(error && error.message || error) } });
     })
