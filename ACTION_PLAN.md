@@ -149,3 +149,7 @@ Finding: ASC front-door UX now requires explicit AI-provider selection, authenti
 
 PF-010 | RESOLVED BY LIVE T-004 TEST  
 Finding: The deployed Apps Script Web App correctly reads and previews `#asc` payloads after the user is already authenticated, using `google.script.url.getLocation()`. However, Google's owner-only authentication redirect does not preserve the outer `#asc` fragment from a fresh unauthenticated entry. Therefore direct `/exec#asc=...` through login is not the final flow. D-020's front-door preservation model is required: preserve draft/payload before authentication, complete login, then replay the payload into the authenticated Apps Script preview. No architecture reopening is required.
+
+
+PF-011 | RESOLVED BY D-022  
+Finding: ASC v0.1 will not attempt to force the `#asc` fragment through Google's authentication redirect. Primary auth continuation is B: preserve the pending state in the original ASC tab, authenticate in a new tab, return, then CONTINUE/replay. Fallback A is login then click the ASC link / GO / CONTINUE again. The preserved-user-state requirement is mandatory; seamless automatic cross-tab auth recovery is deferred.
