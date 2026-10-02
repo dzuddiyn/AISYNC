@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.7  
+**Project record version:** 0.6.8  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -62,7 +62,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0.1 is CONFIRMED. T-001 through T-003 have PASSED. The active ASC DB has been migrated to the intended Google owner profile `dzuddiyn Google`. T-004 Apps Script owner-only preview skeleton remains IN PROGRESS until a real deployed Google Account sign-in preserves the pending ASC request and reaches preview without a write.
+Current direction: architecture v1.0.2 remains CONFIRMED with the locked D-020 front-door addendum. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
 
 ---
 
@@ -339,6 +339,59 @@ Reason: Align the user-facing entry wording with the intended decision/design wo
 Locked by: Project Owner  
 Date: 2026-10-01
 
+
+
+D-020 | LOCKED  
+Decision: Lock the **ASC Start / Intent Routing / AI Handoff** front-door behavior.
+
+1. **AI provider selection is mandatory before GO / START.**  
+   The user must explicitly select one supported AI chat provider before pressing the blue GO/START arrow. If no provider is selected, ASC must stop and show a **red warning directly below the blue arrow**. No login, routing, or handoff should continue.
+
+2. **Authentication gate comes before intent routing.**  
+   After GO/START with a provider selected, ASC checks the current ASC login/session. If the user is not authenticated, ASC must preserve the draft message locally and attempt to open the ASC login page in a **new tab**.
+
+3. **Blocked-login fallback must protect the user's draft.**  
+   If the browser/provider cannot open the login page in a new tab, ASC must show a **red warning** telling the user to copy the current message first, then press the login/GO action again to redirect to the login page. ASC must not silently discard the draft.
+
+4. **ASC routes the first message automatically after authentication.**  
+   The user does not need to choose DUMP / DECIDE / DESIGN manually before starting.
+   - clear choice / comparison / selection intent → **DECIDE**
+   - clear build / create / design / system / project intent → **DESIGN**
+   - unclear, casual, scattered, exploratory, mixed, trial, or low-confidence intent → **DUMP**
+
+5. **DUMP is the safe default.**  
+   When ASC cannot confidently determine a more specific intent, it must route to DUMP rather than force DECIDE or DESIGN.
+
+6. **Route must remain visible and user-overridable.**  
+   After initial routing, ASC should show the chosen route. The user may override it. If intent materially changes later in the conversation, ASC should **suggest** switching modes rather than silently changing the active mode.
+
+7. **Route maps to the relevant ZASS sub-system / technique.**
+   - DUMP → **ZASSPILL**
+   - DECIDE → **ZASSELECTION / PICKS**
+   - DESIGN → **ZASSIMPLE / IDEA**
+
+   ASC selects the appropriate sub-system and its current contract/instructions; ASC must **not duplicate or redefine the method semantics** owned by the ZASS sub-system. ZASSPILL contract/behavior remains an external dependency until the ZASS SYSTEM work is completed.
+
+8. **Selected AI provider is the handoff destination.**  
+   After routing and selecting the appropriate sub-system/contract, ASC builds the handoff for the AI provider selected by the user.
+
+9. **Preferred handoff: provider launch + ASC bootstrap payload.**  
+   Where the chosen AI provider supports a safe prefilled/deep-linked/new-chat handoff, ASC should open that AI chat and include the special ASC bootstrap message/prompt needed for the selected DUMP / DECIDE / DESIGN mode so the user can continue there.
+
+10. **Mandatory fallback for providers without supported prefill/handoff.**  
+    If automatic prompt insertion or a supported deep-link is unavailable, ASC must show the generated prompt to the user for copy/paste and provide a link/button to open the selected AI provider.
+
+11. **No false automation claim.**  
+    ASC must only claim automatic prompt insertion when the target AI provider actually supports that handoff. Otherwise the copy/paste fallback is the official behavior.
+
+12. **Front-door orchestration does not change persistence authority.**  
+    This decision adds the ASC entry/router/handoff layer only. Existing boundaries remain: ZASS sub-systems own method semantics; ASC handles orchestration/transport; persistence still follows the confirmed ASC write/verification architecture.
+
+Reason: A plain user should be able to type naturally, choose only the AI service they want, press one button, and let ASC determine the appropriate level of structure without forcing the user to understand ZASSPILL, ZASSELECTION, ZASSIMPLE, PICKS, or IDEA first.  
+Locked by: Project Owner  
+Date: 2026-10-02
+
+
 D-013 | LOCKED  
 Decision: Lock the **ASC Write Contract representation** as canonical JSON with a separate ASC transport/security envelope.
 
@@ -499,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.8 | 2026-10-02 | LOCKED D-020: mandatory AI-provider selection, login-before-routing gate, automatic DUMP/DECIDE/DESIGN intent routing, visible/overridable route, ZASSPILL/ZASSELECTION/ZASSIMPLE mapping, provider handoff with supported prefill and mandatory copy/paste fallback. No code implementation started for this addendum while ZASSPILL remains pending. |
 | 0.6.7 | 2026-10-02 | Operational ownership fix: recreated and verified the active ASC DB under the intended Google owner profile `dzuddiyn Google`; replaced the repo's active Sheet URL and preserved the same T-003 schema/authority boundary. T-004 remains IN PROGRESS pending real deployment/auth verification. |
 | 0.6.6 | 2026-10-02 | DO IT T-004 partial: implemented owner-only Apps Script Web App skeleton, pending fragment/session preservation, and preview-only client; local state/decode/no-write tests PASS. Real deployed Google Account sign-in verification remains pending, so T-004 is not yet marked PASS. |
 | 0.6.5 | 2026-10-02 | DO IT T-003 PASS: created and verified native Google Sheets ASC DB v0.1 with PROJECTS / RECORDS / ACTION_PLAN / HISTORY, authority/source lineage fields, DECIDE / DESIGN validation, operational filters, and Asia/Kuala_Lumpur timezone. T-004 promoted to READY. |
