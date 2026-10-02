@@ -153,3 +153,27 @@ Finding: The deployed Apps Script Web App correctly reads and previews `#asc` pa
 
 PF-011 | RESOLVED BY D-022  
 Finding: ASC v0.1 will not attempt to force the `#asc` fragment through Google's authentication redirect. Primary auth continuation is B: preserve the pending state in the original ASC tab, authenticate in a new tab, return, then CONTINUE/replay. Fallback A is login then click the ASC link / GO / CONTINUE again. The preserved-user-state requirement is mandatory; seamless automatic cross-tab auth recovery is deferred.
+
+
+AP-008 | OPEN  
+Source: D-023  
+Action: Implement the smallest AI-SYNC Public Method Gateway proof for ZASSPILL_MY, ZASSIMPLE_MY, and ZASSELECTION_MY.  
+Dependencies: Current canonical method files in the official ZASS GitHub repository.  
+Constraint / feasibility note:
+- GitHub remains method SoT.
+- Public gateway is read-only/no-login.
+- Gateway serves AI-SYNC-held Markdown snapshots itself; no redirect-to-GitHub solution.
+- Sync/publish/configuration stays protected.
+- Start with MY only.
+- Do not modify ZASS method semantics.
+Pass / stop condition: the six D-023 proof objectives pass, including direct Gemini/Copilot readability and GitHub→gateway sync without manual copy/paste.  
+Feeds architecture: YES
+
+PF-012 | RESOLVED BY D-023  
+Finding: External receiver access to GitHub/raw/CDN/reader URLs is not a reliable method-distribution assumption. AI-SYNC therefore needs a separate public read plane.
+
+PF-013 | CONTRACT BOUNDARY  
+Finding: The eight-field ASC Write Contract v0.1 should remain unchanged. Public method distribution needs a separate Method Snapshot Record v0.1 containing method/language/version/source repo/path/commit/synced_at/content. This avoids mixing method-distribution metadata into protected semantic write requests.
+
+PF-014 | MINIMUM v0.1 STORAGE CANDIDATE  
+Finding: Current Malay method files are small enough for a minimal three-row registry proof (approximately 16k–20k characters each at review time). A simple `METHODS` tab in ASC DB is therefore a viable initial snapshot store; this is an implementation candidate, not a new Source of Truth. If method size/behavior later makes Sheets unsuitable, storage may change without changing D-023.
