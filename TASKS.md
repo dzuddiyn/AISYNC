@@ -3,19 +3,19 @@
 **Status:** EXECUTION QUEUE  
 **Method:** ZASSIMPLE v0.2.4  
 **Lifecycle stage:** DO IT  
-**Architecture:** v1.0.2 CONFIRMED  
+**Architecture:** v1.0.3 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
 
 ## Current task
 
-T-004 | IN PROGRESS — LIVE DEPLOYMENT TEST PENDING  
+T-004 | IN PROGRESS — FRONT-DOOR REPLAY REQUIRED  
 Source: AP-003, AP-007, PF-005  
 Decision / Architecture lineage: D-006, D-015, D-017, D-020, ARCH v1.0.2 § Apps Script Web App + Google Account authentication / front-door orchestration  
 Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
 Depends on: T-002  
-Pass: An unauthenticated ASC Link request survives sign-in and reaches a post-login preview state without any write occurring.  
+Pass: ASC front-door preserves the pending draft/payload before authentication, completes owner sign-in, then replays the payload into the authenticated preview with no write occurring.  
 Built:
 - `apps-script/appsscript.json` — owner-only `MYSELF`, execute as deployer
 - `apps-script/Code.gs` — preview-only web-app server
@@ -26,12 +26,16 @@ Verification completed:
 - simulated fragment → sessionStorage → fragmentless-return restoration: PASS
 - T-002 envelope decode after restore: PASS
 - no client write function exposed: PASS
-Remaining verification:
-- deploy as real Apps Script Web App
-- open a real ASC Link while unauthenticated
-- complete Google Account sign-in
-- confirm pending request reaches preview with no write
-Result: PARTIAL PASS — implementation complete, real Google auth/deployment pass condition not yet proven.
+Live verification:
+- deployed owner-only Apps Script Web App: PASS
+- authenticated `/exec#asc=<payload>` fragment read via `google.script.url.getLocation()`: PASS
+- D-019 envelope decode + preview: PASS
+- no-write preview boundary: PASS
+- fresh unauthenticated `/exec#asc=<payload>` → Google sign-in → return: FAIL; the outer fragment is not preserved through Google's auth redirect
+Finding:
+- direct fragment-through-login is not a viable persistence path
+- D-020 front-door must preserve draft/payload before launching authentication, then replay it after sign-in
+Result: PARTIAL PASS — auth gate and authenticated fragment preview are proven; front-door preserve/login/replay remains to implement.
 
 D-020 front-door behavior is LOCKED but not yet implemented:
 - mandatory AI-provider selection + red missing-provider warning
