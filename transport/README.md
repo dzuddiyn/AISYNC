@@ -43,7 +43,7 @@ T-002 does not yet enforce:
 - nonce/replay protection;
 - authentication or authorization.
 
-Those security controls belong to T-010. The current integrity field reserves the architecture slot without pretending the security implementation already exists.
+Those security controls belong to T-010. The current integrity field reserves the design/security slot without pretending the security implementation already exists.
 
 ## T-002 pass condition
 
