@@ -24,13 +24,19 @@ T-008A | LOCAL PASS — runtime-neutral flow + client gating:
 - verified write with HISTORY failure → FAILED stage HISTORY, no redirect;
 - redirect only for SUCCESS + verified receipt + HISTORY_PERSISTED + valid https main UI URL;
 - Apps Script client shows CONFIRM & SYNC, receipt, and visible failure; server `confirmAndSync` currently fails closed (`SYNC_RUNTIME_NOT_BOUND`, `writeEnabled=false`).
-T-008B | NOT STARTED — Apps Script runtime binding (Core/adapter/receipt bundle, UrlFetchApp GitHub transport, History.gs wiring) + live owner-confirmed TEST_ONLY proof.
+T-008B | IN PROGRESS — Apps Script runtime binding LOCAL PASS; not deployed; live TEST_ONLY proof not performed:
+- `apps-script/AscRuntime.gs` generated mechanically from transport/Core/GitHub adapter/REST client/receipts/flow + `History.gs` verbatim (`build-runtime.mjs --check`);
+- GitHub transport = existing REST client over UrlFetchApp `fetchImpl` restricted to `https://api.github.com/`; `GITHUB_TOKEN` read from Script Properties only;
+- `ASC_MAIN_UI_URL` read from Script Properties and accepted only with prefix `https://sites.google.com/`;
+- TEST_ONLY authorization: owner session + `Record ID` prefix `TEST_ONLY_` + `Destination: ["GitHub"]`;
+- async flow result returned via `RESULT_PENDING` → user cache → `getConfirmSyncResult`; unavailable result shown as FAILED/unknown;
+- `node apps-script/test-apps-script-binding.mjs`: PASS with fake Apps Script services (no network/Sheets).
 T-008B owner-locked constraints (2026-10-03):
 - destination policy is TEST_ONLY and controlled: repository `dzuddiyn/AISYNC`, branch `main`, path `proofs/t008-confirm-sync-live.md`;
 - this is NOT the general production Record ID → GitHub path rule, which remains undecided;
 - main UI redirect URL is server-side configuration `ASC_MAIN_UI_URL` (not hard-coded, not browser-supplied);
 - no live write until the owner approves.
-Current result: IN PROGRESS — no live write, receipt, HISTORY row, or redirect has been performed for T-008.
+Current result: IN PROGRESS — no deployment, live write, receipt, HISTORY row, or redirect has been performed for T-008.
 
 ## Completed
 

@@ -3,7 +3,6 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 
 const clientCode = fs.readFileSync(new URL('./Client.html', import.meta.url), 'utf8');
-const codeGs = fs.readFileSync(new URL('./Code.gs', import.meta.url), 'utf8');
 
 class FakeStorage {
   constructor() { this.map = new Map(); }
@@ -29,7 +28,7 @@ const verifiedReceipt = {
   adapter_outcome: 'VERIFIED_WRITE', commit_or_record_id: 'commit-sha-1'
 };
 const synced = {
-  state: 'SYNCED', redirect: 'https://example.test/asc-main-ui',
+  state: 'SYNCED', redirect: 'https://sites.google.com/view/aisync-asc',
   receipt: verifiedReceipt, historyOutcome: 'HISTORY_PERSISTED', error: null
 };
 
@@ -53,7 +52,10 @@ const nonRedirecting = [
   { ...synced, receipt: undefined },
   { ...synced, historyOutcome: 'HISTORY_WRITE_FAILED' },
   { ...synced, redirect: 'javascript:alert(1)' },
-  { ...synced, redirect: 'http://insecure.test' }
+  { ...synced, redirect: 'http://insecure.test' },
+  { ...synced, redirect: 'https://example.test/asc-main-ui' },
+  { ...synced, redirect: 'https://sites.google.com.evil.test/x' },
+  { ...synced, redirect: 'https://sites.google.com/' }
 ];
 for (const result of nonRedirecting) {
   assert.equal(sandbox.canRedirectAfterSync(result), false, JSON.stringify(result));
@@ -67,7 +69,7 @@ for (const result of nonRedirecting) {
   const navigations = [];
   const outcome = sandbox.renderSyncResult(synced, { document: doc, storage, navigate: (u) => navigations.push(u) });
   assert.equal(outcome, 'REDIRECTED');
-  assert.deepStrictEqual(navigations, ['https://example.test/asc-main-ui']);
+  assert.deepStrictEqual(navigations, ['https://sites.google.com/view/aisync-asc']);
   assert.equal(storage.getItem('asc.pending.fragment.v0.1'), null);
   assert.equal(doc.els.receipt.hidden, false);
   assert.match(doc.els['receipt-json'].textContent, /commit-sha-1/);
@@ -77,7 +79,7 @@ for (const result of nonRedirecting) {
 // Failure paths: visibly FAILED, receipt shown when present, pending request kept, no navigation.
 for (const result of [
   { state: 'FAILED', stage: 'WRITE', redirect: null, error: { code: 'WRITE_NOT_VERIFIED', message: 'Adapter write was not verified as persisted.' }, receipt: { status: 'FAILED', verified: false, commit_or_record_id: 'commit-sha-1' } },
-  { state: 'FAILED', stage: 'HISTORY', redirect: 'https://example.test/asc-main-ui', error: { code: 'HISTORY_NOT_PERSISTED', message: 'x' }, receipt: verifiedReceipt, historyOutcome: 'HISTORY_WRITE_FAILED' },
+  { state: 'FAILED', stage: 'HISTORY', redirect: 'https://sites.google.com/view/aisync-asc', error: { code: 'HISTORY_NOT_PERSISTED', message: 'x' }, receipt: verifiedReceipt, historyOutcome: 'HISTORY_WRITE_FAILED' },
   { state: 'FAILED', stage: 'CONFIG', redirect: null, writePerformed: false, error: { code: 'SYNC_RUNTIME_NOT_BOUND', message: 'Nothing was saved.' } },
   null
 ]) {
@@ -110,15 +112,23 @@ for (const result of [
 assert.doesNotMatch(clientCode, /api\.github\.com|UrlFetchApp|SpreadsheetApp|GITHUB_TOKEN/);
 assert.equal(typeof sandbox.writeToGitHub, 'undefined');
 
-// Current Apps Script server binding fails closed (T-008B pending).
-const gs = { HtmlService: {} };
-vm.createContext(gs);
-vm.runInContext(codeGs, gs);
-assert.equal(gs.getBootstrapState().writeEnabled, false);
-const serverResult = gs.confirmAndSync({ fragment: '#asc=abc', confirmation: sandbox.buildConfirmation('req-1') });
-assert.equal(serverResult.state, 'FAILED');
-assert.equal(serverResult.writePerformed, false);
-assert.equal(serverResult.redirect, null);
-assert.equal(sandbox.canRedirectAfterSync(serverResult), false);
+// RESULT_PENDING triggers exactly one factual result fetch; other replies render directly.
+{
+  const rendered = [];
+  const calls = [];
+  const run = {
+    withSuccessHandler(fn) { this.ok = fn; return this; },
+    withFailureHandler(fn) { this.fail = fn; return this; },
+    getConfirmSyncResult(id) { calls.push(id); this.ok({ state: 'FAILED', error: { code: 'SYNC_RESULT_UNAVAILABLE', message: 'x' } }); }
+  };
+  const r1 = sandbox.handleConfirmResponse({ state: 'RESULT_PENDING', requestId: 'req-1', redirect: null }, { run, render: (x) => rendered.push(x) });
+  assert.equal(r1, 'FETCHING_RESULT');
+  assert.deepStrictEqual(calls, ['req-1']);
+  assert.equal(rendered[0].state, 'FAILED');
+  assert.equal(sandbox.canRedirectAfterSync(rendered[0]), false);
+  const r2 = sandbox.handleConfirmResponse({ state: 'FAILED', error: { code: 'X' } }, { run, render: (x) => rendered.push(x) });
+  assert.equal(r2, 'RENDERED');
+  assert.equal(calls.length, 1);
+}
 
-console.log('T-008A confirm UI test: PASS');
+console.log('T-008A/B confirm UI test: PASS');
