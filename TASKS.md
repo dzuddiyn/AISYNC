@@ -3,7 +3,7 @@
 **Status:** EXECUTION QUEUE  
 **Method:** ZASSIMPLE v0.2.4  
 **Lifecycle stage:** DO IT  
-**Architecture:** v1.0.3 CONFIRMED  
+**Architecture:** v1.0.5 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
@@ -174,3 +174,26 @@ Closure checks:
 - Verified: PARTIAL — T-001, T-002, and T-003 verified
 - Matches architecture: YES FOR T-001, T-002, AND T-003
 - Recorded: YES — task queue created
+
+
+T-013 | QUEUED — PUBLIC METHOD GATEWAY v0.1 PROOF  
+Source: AP-008, D-023  
+Decision / Architecture lineage: D-002, D-005, D-018, D-023, ARCH v1.0.5 § Public Method Gateway / read plane  
+Do: Prove the smallest public AI-readable method mirror for the three Malay methods only:
+1. add a lightweight Method Registry snapshot store;
+2. sync canonical GitHub method content without manual copy/paste;
+3. expose public read-only Markdown endpoints that serve the stored content themselves;
+4. expose traceable source version/commit metadata;
+5. field-test Gemini and Copilot readability;
+6. verify ZASSPILL can carry the gateway URL for DECIDE/DESIGN handoff.
+Depends on: D-023; ZASSPILL_MY.md ready enough for field proof.  
+Pass:
+- GitHub remains canonical SoT;
+- snapshot source commit/version is identifiable;
+- endpoint serves Markdown itself without GitHub redirect;
+- public read requires no login;
+- Gemini and Copilot can read the endpoint;
+- GitHub update can sync without copy/paste;
+- ZASSPILL can hand off a gateway URL.
+Constraint: do not add EN methods, public write/admin APIs, webhook complexity, or extra connectors in this proof.
+Result: NOT STARTED.
