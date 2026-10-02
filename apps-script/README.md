@@ -172,3 +172,15 @@ NO WRITE
 The protected preview correctly rendered the D-028 TEST_ONLY contract after replay. No persistence handler was exposed or invoked.
 
 T-004 is not fully complete yet: provider selection, visible/user-overridable DUMP / DECIDE / DESIGN routing, and AI handoff remain to implement.
+
+
+## T-008A confirm/sync UI — LOCAL PASS
+
+The protected preview now renders a CONFIRM & SYNC control, a write-receipt card, and a main-ASC-UI return link. The client builds a request-bound confirmation only from an explicit click, redirects only when the server returns `SYNCED` with a verified SUCCESS receipt and `HISTORY_PERSISTED`, and otherwise keeps the pending request and a visible FAILED state.
+
+`Code.gs` keeps `writeEnabled=false` and `confirmAndSync()` fails closed with `SYNC_RUNTIME_NOT_BOUND` until T-008B binds `flow/confirm-sync.mjs` into the Apps Script runtime. No live deployment of this version has been tested.
+
+```text
+node apps-script/test-confirm-ui.mjs
+```
+
