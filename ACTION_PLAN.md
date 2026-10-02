@@ -252,3 +252,12 @@ Finding: Live browser proof passed for mandatory provider selection (ChatGPT / G
 
 PF-033 | T-004 NEXT SLICE — PROVIDER HANDOFF  
 Finding: The next smallest implementation slice is capability-aware provider handoff from the prepared preview. It must use the selected provider, active route, public Method Gateway URL, and user draft; it must not claim unsupported prefill/deep-link capability and must retain the no-write boundary.
+
+PF-034 | T-004 LIVE PROVIDER HANDOFF — PASS  
+Finding: The v0.1 copy-open fallback passed live. Gemini fetched the exact ZASSIMPLE Method Gateway and continued; ChatGPT also fetched the exact gateway and continued; Copilot failed to fetch the exact gateway in one session but obeyed the no-substitution guardrail and stopped. This satisfies the T-004 capability-aware handoff boundary without claiming unsupported provider prefill.
+
+PF-035 | METHOD TRANSPORT ≠ PROJECT CONTINUITY  
+Finding: Gemini's live response showed that method transport alone is insufficient for accurate project continuation: it followed ZASSIMPLE but invented generic AISYNC architecture assumptions because no controlled project continuity was supplied. ChatGPT's stronger project alignment cannot be treated as portable-continuity proof because ambient account/project context may have contributed. D-027/PF-024 controlled continuity remains open and should be implemented separately.
+
+PF-036 | T-004 CLOSED / T-005 PROMOTED  
+Finding: T-004 pass criteria are met: auth preservation/replay, visible/user-overridable routing, exact method mapping, capability-aware copy-open provider handoff, truthful exact-source failure behavior, and no persistence. Execution advances to T-005 ASC Core.
