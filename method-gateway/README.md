@@ -1,6 +1,6 @@
 # AI-SYNC Public Method Gateway — v0.1 Proof Plan
 
-**Status:** PLANNED — NOT IMPLEMENTED  
+**Status:** PLANNED — NOT IMPLEMENTED / HELD BY D-024  
 **Architecture:** D-023 / ASC v1.0.5  
 **Scope:** Malay method proof only
 
@@ -160,3 +160,27 @@ Do not merge these two representations.
 - additional CDN mirrors
 - changing ZASSPILL/ZASSELECTION/ZASSIMPLE semantics
 - making AI-SYNC a second method Source of Truth
+
+
+## Execution-order gate
+
+D-024 locks sequencing only. Do not implement this plan yet.
+
+```text
+T-004 paused
+T-013 planned / unpromoted
+        ↓
+wait for official ZASSPILL
+        ↓
+review actual ZASSPILL handoff contract
+        ↓
+owner decides whether to promote T-013
+        ↓
+T-013A → registry + protected sync
+        ↓
+T-013B → public gateway + cross-AI proof
+        ↓
+resume T-004
+```
+
+This prevents AISYNC from guessing unfinished ZASSPILL semantics.
