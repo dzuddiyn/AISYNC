@@ -1,6 +1,6 @@
 # ASC Apps Script Web App — T-004
 
-Status: IMPLEMENTED SKELETON — LOCAL TEST PASS — LIVE DEPLOYMENT TEST PENDING
+Status: PROTECTED PREVIEW LIVE PASS — front-door preservation handled by GitHub Pages
 
 ## Purpose
 
@@ -34,7 +34,7 @@ The client follows this order:
 5. render the semantic contract as preview;
 6. do not expose any write function.
 
-This protects the request across same-tab navigation after the ASC page has loaded. The actual Google sign-in redirect behavior still requires a deployed owner-only Web App test before T-004 can be marked fully PASS.
+This protects the request after the protected ASC page has loaded. Live testing proved that Google sign-in itself does not preserve the incoming fragment, so pre-auth preservation is handled by the static GitHub Pages front door under `docs/asc/`.
 
 ## Explicit non-goal
 
@@ -141,3 +141,34 @@ NO WRITE
 ```
 
 The authenticated fragment-reading mechanism itself is verified and should remain unchanged.
+
+
+## D-022 live preserve/auth/replay proof
+
+Date: 2026-10-02  
+Result: **PASS**
+
+Field-proven split:
+
+```text
+GitHub Pages static front door
+/public /asc/#asc=<payload>
+        ↓ preserve in original tab
+SIGN IN
+        ↓
+protected owner-only Apps Script
+        ↓ Google auth
+return to original static tab
+        ↓
+CONTINUE
+        ↓
+protected /exec#asc=<stored-payload>
+        ↓
+decode + preview
+        ↓
+NO WRITE
+```
+
+The protected preview correctly rendered the D-028 TEST_ONLY contract after replay. No persistence handler was exposed or invoked.
+
+T-004 is not fully complete yet: provider selection, visible/user-overridable DUMP / DECIDE / DESIGN routing, and AI handoff remain to implement.
