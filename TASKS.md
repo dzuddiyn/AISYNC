@@ -10,44 +10,36 @@
 
 ## Current task
 
-T-004 | IN PROGRESS — FRONT-DOOR / AUTH PRESERVE / ROUTING / HANDOFF  
-Source: AP-003, AP-007, PF-005, D-020, D-021, D-022, D-027, D-028  
-Decision / Design lineage: D-006, D-015, D-017, D-020, D-021, D-022, D-027, D-028, DESIGN v1.0.9 § Apps Script Web App / continuity / receiver-facing host refinement  
-Do:
-- preserve the pending draft/request in the original ASC tab before authentication;
-- launch Google sign-in in a new tab when possible, with the existing safe redirect fallback;
-- replay the preserved request after authentication into the authenticated preview;
-- route DUMP / DECIDE / DESIGN to ZASSPILL / ZASSELECTION / ZASSIMPLE;
-- use the public Method Gateway receiver links defined by D-028;
-- keep provider handoff capability-aware and use short copy/paste fallback where prefill is unsupported;
-- keep the no-write preview boundary until later write tasks explicitly add persistence.
-Built / proven already:
-- owner-only Apps Script Web App skeleton;
-- authenticated `/exec#asc=<payload>` fragment read via `google.script.url.getLocation()`;
-- D-019 envelope decode + preview;
-- no-write preview boundary;
-- direct fragment-through-login failure identified;
-- D-022 original-tab preservation strategy locked;
-- public receiver-facing method transport proven by T-013;
-- static GitHub Pages front door at `/asc/` proven live for fragment preservation;
-- protected Apps Script preview proven live for authenticated replay;
-- SIGN IN → return to original tab → CONTINUE works without refresh;
-- replayed D-028 TEST_ONLY payload reached protected preview with NO WRITE;
-- live provider selection proof supports exactly ChatGPT / Gemini / Copilot;
-- live deterministic route suggestion passed for DUMP / DECIDE / DESIGN;
-- explicit user route override remains active after draft changes;
-- route → method → public Method Gateway mapping passed live;
-- PREPARE HANDOFF produces preview only and opens no AI provider.
-Pass:
-- user draft/request is preserved across the auth step;
-- authenticated CONTINUE/replay restores the pending request into preview;
-- route is visible and user-overridable;
-- DUMP / DECIDE / DESIGN map to the correct ZASS subsystem;
-- provider handoff uses the public Method Gateway URL and does not falsely claim unsupported auto-prefill;
-- no persistence occurs before an explicit later write/confirm task.
-Current result: D-022 auth-preserve/replay PASS and provider-selection + visible/user-overridable routing + method-mapping proof PASS live. T-004 remains IN PROGRESS; next smallest slice is actual capability-aware provider handoff using the prepared bootstrap while preserving the no-write boundary.
+T-005 | IN PROGRESS — ASC CORE REQUEST BOUNDARY  
+Source: AP-004  
+Decision / Design lineage: D-002, D-004, D-014, DESIGN v1.0 § ASC Core  
+Do: Implement the ASC Core request boundary: validate semantic contract, authorize request, preserve meaning, route by destination, and expose adapter/receipt interfaces.  
+Depends on: T-001  
+Pass: The same valid contract can enter Core independently of which AI app produced it, and Core contains no ZASS reasoning/validator logic.  
+Current result: PROMOTED after T-004 PASS.
 
 ## Completed
+
+T-004 | PASS — FRONT-DOOR / AUTH PRESERVE / ROUTING / HANDOFF  
+Source: AP-003, AP-007, PF-005, D-020, D-021, D-022, D-027, D-028  
+Decision / Design lineage: D-006, D-015, D-017, D-020, D-021, D-022, D-027, D-028, DESIGN v1.0.9  
+Built / proven:
+- static GitHub Pages front door preserves pending #asc state in the original tab;
+- owner-only Apps Script remains the protected authenticated preview;
+- SIGN IN → Google auth → return → CONTINUE replay passed live without refresh;
+- mandatory provider selection supports ChatGPT / Gemini / Copilot;
+- deterministic DUMP / DECIDE / DESIGN suggestion + explicit override passed live;
+- exact route → ZASSPILL / ZASSELECTION / ZASSIMPLE → public Method Gateway mapping passed;
+- PREPARE HANDOFF creates a short receiver bootstrap;
+- COPY HANDOFF + OPEN PROVIDER use the v0.1 copy-open fallback only;
+- provider base URLs carry no draft, method URL, #asc payload, or prompt query;
+- changing draft/provider/override invalidates prepared state and requires PREPARE again;
+- no persistence/write occurs in this task.
+Receiver field evidence:
+- Gemini fetched the exact ZASSIMPLE Method Gateway and continued, but without controlled project continuity it produced generic/inaccurate project assumptions;
+- ChatGPT fetched the exact gateway and continued with a project-aligned response, but that session may have had ambient project context and therefore is not a clean portability proof;
+- Copilot could not fetch the exact gateway in the tested session and correctly stopped rather than substituting repository search/raw GitHub/another source.
+Result: PASS — all T-004 pass criteria met. Receiver fetch variability and controlled/private project continuity remain separate concerns under D-027/PF-024, not blockers to the front-door/provider-handoff proof.
 
 T-013B | PASS — PUBLIC METHOD GATEWAY + CROSS-AI PROOF  
 Source: T-013A, D-023, D-025, D-026, D-028  
@@ -141,13 +133,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-005 | QUEUED  
-Source: AP-004  
-Decision / Design lineage: D-002, D-004, D-014, DESIGN v1.0 § ASC Core  
-Do: Implement the ASC Core request boundary: validate semantic contract, authorize request, preserve meaning, route by destination, and expose adapter/receipt interfaces.  
-Depends on: T-001  
-Pass: The same valid contract can enter Core independently of which AI app produced it, and Core contains no ZASS reasoning/validator logic.
-
 T-006 | QUEUED  
 Source: AP-005  
 Decision / Design lineage: D-007, D-016, DESIGN v1.0 § GitHub adapter  
@@ -200,10 +185,10 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001, T-002, T-003, T-013A, T-013B, and partial verified slices of T-004.
+Implementation evidence exists for T-001, T-002, T-003, T-004, T-013A, and T-013B.
 
 Closure checks:
-- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-013A, and T-013B complete
+- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-013A, and T-013B complete
 - Verified: PARTIAL PROJECT — those completed slices are verified
 - Matches design: YES FOR COMPLETED SLICES
 - Recorded: YES — task queue created
