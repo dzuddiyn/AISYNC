@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.28  
+**Project record version:** 0.6.29  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.29 | 2026-10-03 | T-006 PASS: real GitHub Contents API adapter completed one controlled VERIFIED_WRITE; commit and persisted file SHA independently verified; AP-005 done and T-007 promoted. |
 | 0.6.28 | 2026-10-03 | T-006A PASS: GitHub adapter local/mock mechanics published; truthful current-SHA, commit-SHA, persisted-state verification, WRITE_UNVERIFIED, Promise/throw handling, and isolation boundaries verified; T-006 remains IN PROGRESS for controlled live write. |
 | 0.6.27 | 2026-10-03 | T-005 PASS: pure ASC Core boundary published; exact contract validation, fail-closed authorization, deep semantic isolation, destination routing, isolated adapter descriptors, and neutral receipt handoff verified; T-006 promoted. |
 | 0.6.26 | 2026-10-03 | T-004 PASS: live copy-open provider handoff verified across Gemini/ChatGPT/Copilot field cases; exact-source guardrail held; method transport proven distinct from still-open controlled project continuity; T-005 promoted. |
@@ -1434,3 +1435,54 @@ Truthfulness boundaries:
 - no final Write Receipt or HISTORY entry yet.
 
 Next slice: **T-006B — one controlled real GitHub write + persisted-state verification**.
+
+## T-006 CLOSURE CHECKPOINT
+
+Date: 2026-10-03  
+Status: **PASS**
+
+T-006A proved adapter mechanics locally. T-006B then attached the real GitHub REST transport and executed one controlled live write.
+
+Live proof:
+
+```text
+T-005 adapter invocation
+↓
+GitHub adapter
+↓
+GET current target
+↓
+CREATE through GitHub Contents API
+↓
+commit returned
+↓
+GET persisted target
+↓
+exact content compare
+↓
+VERIFIED_WRITE
+```
+
+Verified facts:
+- repository: `dzuddiyn/AISYNC`;
+- branch: `main`;
+- path: `proofs/t006b-github-adapter-live.md`;
+- commit SHA: `95e019604e6edd778acd0ee252c506d2729f2d09`;
+- persisted/content SHA: `3be4eed97840c9414207f1cb4f33e7f5021847bf`;
+- writePerformed: `true`;
+- verified: `true`;
+- remote file content independently re-read and matched exactly;
+- runtime token was not committed;
+- no final Write Receipt or HISTORY entry was produced.
+
+Interpretation:
+
+```text
+GitHub adapter mechanics     = PROVEN
+real GitHub transport        = PROVEN
+real persisted write         = PROVEN
+post-write exact verification= PROVEN
+final receipt + HISTORY      = NEXT (T-007)
+```
+
+Execution advances to **T-007 — factual Write Receipt + HISTORY persistence**.
