@@ -84,3 +84,60 @@ The first live deployment showed that reading `window.location.hash` inside the 
 The client now uses the Apps Script-supported `google.script.url.getLocation()` API, which is specifically intended to expose web-app URL parameters and fragments from IFRAME-based Apps Script HTML. Local tests retain a `window.location` fallback.
 
 A new deployment version must be tested before T-004 can be marked PASS.
+
+
+## Live auth redirect finding
+
+Real deployment verification established two different behaviors:
+
+### Authenticated entry — PASS
+
+```text
+already signed in
+    ↓
+/exec#asc=<payload>
+    ↓
+google.script.url.getLocation()
+    ↓
+decode envelope
+    ↓
+preview D-019
+    ↓
+NO WRITE
+```
+
+### Unauthenticated entry — fragment not preserved
+
+```text
+fresh browser
+    ↓
+/exec#asc=<payload>
+    ↓
+Google Account sign-in
+    ↓
+return to /exec
+    ↓
+#asc payload absent
+```
+
+Therefore T-004 must not rely on the Apps Script login redirect to carry the ASC fragment.
+
+The locked D-020 front-door flow is now the implementation path:
+
+```text
+ASC front door
+    ↓
+preserve draft/payload locally
+    ↓
+launch owner authentication
+    ↓
+authenticated return
+    ↓
+replay payload into /exec#asc=<payload>
+    ↓
+preview
+    ↓
+NO WRITE
+```
+
+The authenticated fragment-reading mechanism itself is verified and should remain unchanged.
