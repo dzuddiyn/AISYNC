@@ -210,7 +210,7 @@ Verified:
 5. method version/path/content are populated;
 6. a second run upserts existing rows without duplicates.
 
-Current work: **T-013B** — Apps Script was proven public to browsers but was not fetchable by Gemini or Copilot as a receiver-facing host, even with an HTML compatibility view. A GitHub Pages proof surface was then deployed. Gemini successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and correctly identified ZASSIMPLE v0.3.0 plus method semantics. Copilot readability and ZASSPILL handoff proof remain.
+Current work: **T-013B** — Apps Script was proven public to browsers but was not fetchable by Gemini or Copilot as a receiver-facing host, even with an HTML compatibility view. A GitHub Pages proof surface was then deployed. Gemini successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and correctly identified ZASSIMPLE v0.3.0 plus method semantics. Copilot direct-read proof also PASSED. Remaining proof: ZASSPILL handoff carrying the public gateway URL.
 
 ## Locked implementation path — D-025
 
@@ -284,3 +284,14 @@ Interpretation:
 - Apps Script remains suitable for protected sync/backend functions.
 - For receiver-facing method transport, a standard static host is currently more compatible.
 - This is a transport finding only; GitHub remains the method Source of Truth and method semantics are unchanged.
+
+
+Copilot proof:
+- direct fetch of `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/`: PASS;
+- receiver correctly identified the method information from the public page.
+
+Current receiver-facing result:
+- Browser: PASS
+- Gemini: PASS
+- Copilot: PASS
+- ZASSPILL gateway-link handoff: PENDING
