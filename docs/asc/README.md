@@ -1,6 +1,6 @@
 # GitHub Pages ASC Front Door Proof
 
-Status: local T-004 routing proof; deployment pending.
+Status: LIVE T-004 routing proof PASS; actual provider handoff pending.
 
 Target public URL after GitHub Pages deployment:
 
@@ -97,3 +97,24 @@ NO WRITE
 The first live attempt exposed a false popup-failure state because `window.open(..., 'noopener')` may successfully open a new tab while returning `null`. The regression fix stopped using that return value as proof of failure, preserved `noopener`, and kept a valid CONTINUE state intact.
 
 This proof validates the D-022 original-tab preservation/replay slice and the local T-004 provider-selection/routing/method-preview slice. Actual provider handoff remains later T-004 work.
+
+
+## Live routing verification — 2026-10-02
+
+Result: **PASS**
+
+Live browser proof verified:
+
+- provider selection is mandatory and limited to ChatGPT / Gemini / Copilot;
+- `aku nak sembang pasal idea kebun aku` → DUMP;
+- `bandingkan ChatGPT dengan Gemini untuk projek ini` → DECIDE;
+- `bina architecture untuk sistem AISYNC` → DESIGN;
+- DUMP → ZASSPILL → `https://dzuddiyn.github.io/AISYNC/method/zasspill/my/`;
+- DECIDE → ZASSELECTION → `https://dzuddiyn.github.io/AISYNC/method/zasselection/my/`;
+- DESIGN → ZASSIMPLE → `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/`;
+- explicit route override remained active after the draft changed;
+- PREPARE HANDOFF showed only provider, route, method, public Method Gateway URL, and user draft;
+- no provider website opened;
+- no network call or persistence/write occurred.
+
+This closes the provider-selection / intent-routing / method-mapping proof slice. Actual provider handoff remains the next T-004 slice.
