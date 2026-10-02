@@ -1,25 +1,37 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** EXECUTION QUEUE  
+**Status:** ASC v0.1 CORE/FALLBACK DELIVERED — deferred queue remains  
 **Method:** ZASSIMPLE v0.3.0  
-**Lifecycle stage:** DO IT  
-**Design:** v1.0.9 CONFIRMED  
+**Lifecycle stage:** DELIVERED !!  
+**Design:** v1.0.10 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
 
 ## Current task
 
-T-011 | CURRENT — NOT STARTED  
-Source: AP-001 through AP-007  
-Decision / Design lineage: D-002 through D-018, ARCH v1.0  
-Do: Run the minimum end-to-end ASC v0.1 proof using a real ZASSIMPLE SAVE request from AI output through ASC Link → Google sign-in → preview → confirm → GitHub write → verification/receipt → Sheets HISTORY → redirect to main UI.  
-Depends on: T-001 through T-010 — satisfied.  
-Pass: The complete fallback flow succeeds without direct AI→GitHub integration, produces a real verified commit and factual receipt, updates operational history, and preserves the confirmed architecture boundaries.  
-Starting point: T-010 security/replay controls are live and proven on Apps Script deployment version 6.  
-Current result: NOT STARTED.
+None — no unblocked current task.
+
+ASC v0.1 core/fallback proof is delivered. T-012 remains **BLOCKED / LATER** until ZASS SYSTEM GitHub CI exists; do not invent or duplicate that validation layer inside ASC.
 
 ## Completed
+
+T-011 | PASS — MINIMUM END-TO-END ASC v0.1 ZASSIMPLE SAVE PROOF  
+Source: AP-001 through AP-007  
+Decision / Design lineage: D-002 through D-018, D-029, D-030, DESIGN v1.0.10  
+Do: Run the minimum end-to-end ASC v0.1 proof using a real owner-issued ZASSIMPLE SAVE request through ASC Link → protected Google owner session → preview → explicit CONFIRM & SYNC → GitHub write → verification/receipt → Sheets HISTORY → successful return path to main ASC UI.  
+Depends on: T-001 through T-010 — satisfied.  
+Pass: The complete fallback flow succeeds without direct AI→GitHub integration, produces a real verified commit and factual receipt, updates operational history, and preserves the confirmed design boundaries.  
+Live evidence:
+- Owner issued the real ZASSIMPLE command `SAVE`.
+- Secure request: `TEST_ONLY_T011_ZASSIMPLE_SAVE_20261002224115`, Source method `ZASSIMPLE`, Operation `SAVE`.
+- Protected owner-authenticated Apps Script preview required explicit `CONFIRM & SYNC`; T-011 reused the already-authenticated owner session, while the login/auth preservation path had already been proven by T-004.
+- GitHub write outcome: `VERIFIED_WRITE`, commit `50a3372c0540a9db021d0c0518b010836c58f247`, affected resource `dzuddiyn/AISYNC/proofs/t008-confirm-sync-live.md`.
+- Persisted GitHub content was independently re-read and matched the T-011 ZASSIMPLE SAVE payload; blob SHA `b021e31686be01df064b1f13992f33d7fc2c5bc3`.
+- HISTORY row 6: `SUCCESS`, `write_performed=true`, `verified=true`, matching commit ID and request ID.
+- Success page exposed `Return to main ASC UI`; owner reported that a user click was required. D-030 locks this as the guaranteed v0.1 return behavior; automatic top-level navigation is optional rather than a pass requirement.
+Scope limit: this remains the owner-locked TEST_ONLY destination policy; general production Record ID → GitHub path mapping is still not defined by this proof.  
+Current result: PASS. ASC v0.1 core/fallback proof is delivered; T-012 remains BLOCKED / LATER.
 
 T-010 | PASS — SECURITY / REPLAY CONTROLS  
 Source: AP-007  
@@ -255,13 +267,14 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001, T-002, T-003, T-004, T-005, T-006, T-007, T-008, T-013A, and T-013B.
+Implementation evidence exists for T-001 through T-011 and T-013A/B. T-012 remains blocked/later.
 
 Closure checks:
-- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-005, T-006, T-007, T-008, T-013A, and T-013B complete
-- Verified: PARTIAL PROJECT — those completed slices are verified
-- Matches design: YES FOR COMPLETED SLICES
-- Recorded: YES — task queue created
+- Built: YES — ASC v0.1 core/fallback path and method gateway slices required through T-011 are implemented
+- Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY
+- Matches design: YES — including D-029 security/replay and D-030 successful-return refinement
+- Recorded: YES — canonical GitHub tracking/evidence updated
+- Deferred: T-012 only, blocked pending external ZASS GitHub CI
 
 
 T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  
