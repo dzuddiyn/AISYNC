@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aisync.local/method-gateway/method-snapshot-v0.1.schema.json",
+  "title": "AI-SYNC Method Snapshot Record v0.1",
+  "description": "Read-plane snapshot metadata for a ZASS method mirrored by AI-SYNC. GitHub remains the authoritative source.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "method",
+    "language",
+    "version",
+    "source_repo",
+    "source_path",
+    "source_commit",
+    "synced_at",
+    "content"
+  ],
+  "properties": {
+    "method": { "type": "string", "minLength": 1 },
+    "language": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "minLength": 1 },
+    "source_repo": { "type": "string", "minLength": 1 },
+    "source_path": { "type": "string", "minLength": 1 },
+    "source_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "synced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "content": { "type": "string", "minLength": 1 }
+  }
+}
