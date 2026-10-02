@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.9  
+**Project record version:** 0.6.10  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -552,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.10 | 2026-10-02 | T-004 live finding: authenticated Apps Script fragment preview PASS via `google.script.url.getLocation()`, but fresh unauthenticated `/exec#asc=...` loses the fragment across Google sign-in. D-020 front-door preserve → login → replay is therefore required; architecture remains confirmed. |
 | 0.6.9 | 2026-10-02 | LOCKED D-021 User-First UX: user types naturally, chooses only the AI provider, and ASC handles auth/routing/sub-system/contract/handoff behind the simple DUMP / DECIDE / DESIGN surface. DUMP implementation remains pending ZASSPILL. |
 | 0.6.8 | 2026-10-02 | LOCKED D-020: mandatory AI-provider selection, login-before-routing gate, automatic DUMP/DECIDE/DESIGN intent routing, visible/overridable route, ZASSPILL/ZASSELECTION/ZASSIMPLE mapping, provider handoff with supported prefill and mandatory copy/paste fallback. No code implementation started for this addendum while ZASSPILL remains pending. |
 | 0.6.7 | 2026-10-02 | Operational ownership fix: recreated and verified the active ASC DB under the intended Google owner profile `dzuddiyn Google`; replaced the repo's active Sheet URL and preserved the same T-003 schema/authority boundary. T-004 remains IN PROGRESS pending real deployment/auth verification. |
