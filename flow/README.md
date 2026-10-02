@@ -1,6 +1,6 @@
-# ASC Confirm & Sync Flow — T-008A
+# ASC Confirm & Sync Flow — T-008
 
-Status: T-008A LOCAL PASS — runtime-neutral orchestration and client gating tested; Apps Script runtime binding and live proof (T-008B) not yet done.
+Status: T-008A LOCAL PASS — runtime-neutral orchestration and client gating tested. T-008B LIVE PASS — bound into Apps Script (deployment version 3) and proven with one owner-confirmed TEST_ONLY sync.
 
 ## Boundary
 
@@ -46,4 +46,8 @@ node apps-script/test-confirm-ui.mjs
 
 ## T-008B binding
 
-Bound into Apps Script by `apps-script/AscRuntime.gs` (generated) — see `apps-script/README.md`. Live owner-confirmed TEST_ONLY proof is still pending.
+Bound into Apps Script by `apps-script/AscRuntime.gs` (generated) and deployed as Apps Script version 3 — see `apps-script/README.md`.
+
+Live owner-confirmed TEST_ONLY proof — PASS: request `TEST_ONLY_T008B_LIVE_20261003_0415` → commit `fb1da42abaac61d5568548ec254e48c1a1b5aa6b` (remote re-read matched) → receipt `VERIFIED_WRITE` → HISTORY `SUCCESS` → redirect to the main Google Sites ASC UI.
+
+The live run used only the owner-locked TEST_ONLY destination (`dzuddiyn/AISYNC` / `main` / `proofs/t008-confirm-sync-live.md`). No production Record ID → GitHub path mapping exists; it remains undecided. `resolveGitHubWriteSpec` stays an injected server-side dependency.

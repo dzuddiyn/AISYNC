@@ -10,35 +10,41 @@
 
 ## Current task
 
-T-008 | IN PROGRESS — PREVIEW → CONFIRM & SYNC → RECEIPT → REDIRECT  
-Source: AP-003, AP-007  
-Decision / Design lineage: D-012, D-015, D-017, DESIGN v1.0 § Google Sites + Apps Script interaction flow  
-Do: Implement preview → explicit CONFIRM & SYNC → write/verify → receipt → redirect-to-main-ASC-UI flow, with truthful failure handling.  
-Depends on: T-004 PASS, T-005 PASS, T-007 PASS — satisfied.  
-Pass: No persistence occurs before explicit confirmation; success returns to main ASC UI after verified receipt; failure stays visibly failed and does not redirect as success.  
-T-008A | LOCAL PASS — runtime-neutral flow + client gating:
-- `flow/confirm-sync.mjs` composes ASC Core → GitHub adapter → factual receipt → HISTORY without duplicating them;
-- request-bound explicit confirmation required; preview and missing/invalid confirmation perform zero GitHub/HISTORY calls;
-- Core/authorization/routing/config rejection stops before any I/O; v0.1 accepts only `Destination: ["GitHub"]`;
-- WRITE_ERROR / WRITE_UNVERIFIED / READ_ERROR / INVALID_INPUT → FAILED receipt recorded in HISTORY, no redirect, captured commit preserved;
-- verified write with HISTORY failure → FAILED stage HISTORY, no redirect;
-- redirect only for SUCCESS + verified receipt + HISTORY_PERSISTED + valid https main UI URL;
-- Apps Script client shows CONFIRM & SYNC, receipt, and visible failure; server `confirmAndSync` currently fails closed (`SYNC_RUNTIME_NOT_BOUND`, `writeEnabled=false`).
-T-008B | IN PROGRESS — Apps Script runtime binding LOCAL PASS; not deployed; live TEST_ONLY proof not performed:
-- `apps-script/AscRuntime.gs` generated mechanically from transport/Core/GitHub adapter/REST client/receipts/flow + `History.gs` verbatim (`build-runtime.mjs --check`);
-- GitHub transport = existing REST client over UrlFetchApp `fetchImpl` restricted to `https://api.github.com/`; `GITHUB_TOKEN` read from Script Properties only;
-- `ASC_MAIN_UI_URL` read from Script Properties and accepted only with prefix `https://sites.google.com/`;
-- TEST_ONLY authorization: owner session + `Record ID` prefix `TEST_ONLY_` + `Destination: ["GitHub"]`;
-- async flow result returned via `RESULT_PENDING` → user cache → `getConfirmSyncResult`; unavailable result shown as FAILED/unknown;
-- `node apps-script/test-apps-script-binding.mjs`: PASS with fake Apps Script services (no network/Sheets).
-T-008B owner-locked constraints (2026-10-03):
-- destination policy is TEST_ONLY and controlled: repository `dzuddiyn/AISYNC`, branch `main`, path `proofs/t008-confirm-sync-live.md`;
-- this is NOT the general production Record ID → GitHub path rule, which remains undecided;
-- main UI redirect URL is server-side configuration `ASC_MAIN_UI_URL` (not hard-coded, not browser-supplied);
-- no live write until the owner approves.
-Current result: IN PROGRESS — no deployment, live write, receipt, HISTORY row, or redirect has been performed for T-008.
+T-009 | CURRENT — NOT STARTED\
+Source: AP-003, UI data requirements\
+Decision / Design lineage: D-005, D-006, D-012, D-014, D-019, DESIGN v1.0 § Google Sites ASC UI\
+Do: Implement the read/dashboard path: DECIDE/DESIGN landing, project list with progress + latest update, and project detail with the seven locked sections.\
+Depends on: T-003 PASS, T-004 PASS — satisfied.\
+Pass: The UI can display Project progress bar, Progress summary, Next Action Plan summary, Next stage summary, Action Plan table, ZASS table, and History from ASC DB/index data without inventing method semantics.\
+Starting point: the minimum owner-only Google Sites shell created as a T-008 redirect prerequisite (`https://sites.google.com/view/aisync-asc/laman-utama`) exists; no dashboard content has been built.\
+Current result: NOT STARTED.
 
 ## Completed
+
+T-008 | PASS — PREVIEW → CONFIRM & SYNC → RECEIPT → REDIRECT\
+Source: AP-003, AP-007\
+Decision / Design lineage: D-012, D-015, D-017, DESIGN v1.0 § Google Sites + Apps Script interaction flow\
+Do: Implement preview → explicit CONFIRM & SYNC → write/verify → receipt → redirect-to-main-ASC-UI flow, with truthful failure handling.\
+Depends on: T-004, T-005, T-007 — all PASS.\
+Pass: No persistence occurs before explicit confirmation; success returns to main ASC UI after verified receipt; failure stays visibly failed and does not redirect as success.\
+Built / proven:
+- T-008A | LOCAL PASS — `flow/confirm-sync.mjs` composes ASC Core → GitHub adapter → factual receipt → HISTORY without duplicating them; request-bound explicit confirmation required (zero GitHub/HISTORY calls before it); Core/authorization/routing/config rejection stops before any I/O; READ_ERROR / WRITE_ERROR / WRITE_UNVERIFIED / INVALID_INPUT → FAILED receipt recorded in HISTORY with no redirect; verified write with HISTORY failure → FAILED with no redirect; redirect only after SUCCESS + verified receipt + HISTORY_PERSISTED (PR #1, commit `fbd7e2d284164b2c2ffd88441088ce599c737511`);
+- T-008B | LOCAL PASS + LIVE PASS — `apps-script/AscRuntime.gs` mechanically bundles transport/Core/GitHub adapter/REST client/receipts/flow + `History.gs` verbatim; UrlFetchApp `fetchImpl` restricted to `https://api.github.com/`; `GITHUB_TOKEN` and `ASC_MAIN_UI_URL` read from Script Properties only; redirect accepted only with prefix `https://sites.google.com/`; TEST_ONLY authorization (owner session + `Record ID` prefix `TEST_ONLY_` + `Destination: ["GitHub"]`); `RESULT_PENDING` → user cache → `getConfirmSyncResult`, with stale-result clearing per request ID and fail-closed cache handling (PR #2, commits `7774018f49948e0c1493a3cc9703e98da0ec5ee5`, `12917e595bb95ed4fbcccb180fbfbb49ea8d8175`; merge `b0261b02e3fdf7a93eb210e78bd0f33d8ad8d956`).
+Live evidence (owner-verified unless noted):
+- Apps Script deployment: version 3, "T-008B Apps Script runtime binding";
+- owner explicitly granted the required Google permissions;
+- request_id: `TEST_ONLY_T008B_LIVE_20261003_0415`;
+- target: `dzuddiyn/AISYNC`, branch `main`, path `proofs/t008-confirm-sync-live.md` (owner-locked TEST_ONLY policy);
+- GitHub commit: `fb1da42abaac61d5568548ec254e48c1a1b5aa6b` (parent `b0261b0`; message `TEST_ONLY T-008B confirm sync TEST_ONLY_T008B_LIVE`; changes only the proof file) — repository-verified;
+- remote GitHub file content independently re-read and matched; remote blob SHA `1cc83134ff94793a2e7e0726b36aa928fdca6a6f` equals the committed blob — repository-verified;
+- HISTORY row 4: `SUCCESS`;
+- receipt: `adapter_outcome=VERIFIED_WRITE`, `write_performed=true`, `verified=true`;
+- successful flow redirected to `https://sites.google.com/view/aisync-asc/laman-utama`.
+Scope limits:
+- the TEST_ONLY destination policy is a controlled proof policy, NOT the production mapping; general Record ID → GitHub path mapping remains undecided;
+- only `Destination: ["GitHub"]` is supported; ASC_DB record destination and replay/expiry/integrity controls (T-010) are not implemented;
+- live failure paths (FAILED/unverified writes not redirecting) are proven by local tests, not by a live forced failure.
+Result: PASS — explicit confirmation preceded persistence, a real verified GitHub commit produced a factual SUCCESS receipt and HISTORY row, and the flow returned to the main Google Sites ASC UI.
 
 T-007 | PASS — FACTUAL WRITE RECEIPT + HISTORY
 Source: AP-006  
@@ -205,13 +211,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-009 | QUEUED  
-Source: AP-003, UI data requirements  
-Decision / Design lineage: D-005, D-006, D-012, D-014, D-019, DESIGN v1.0 § Google Sites ASC UI  
-Do: Implement the read/dashboard path: DECIDE/DESIGN landing, project list with progress + latest update, and project detail with the seven locked sections.  
-Depends on: T-003, T-004  
-Pass: The UI can display Project progress bar, Progress summary, Next Action Plan summary, Next stage summary, Action Plan table, ZASS table, and History from ASC DB/index data without inventing method semantics.
-
 T-010 | QUEUED  
 Source: AP-007  
 Decision / Design lineage: D-003, D-013, D-015, D-016, D-017  
@@ -236,10 +235,10 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001, T-002, T-003, T-004, T-005, T-006, T-013A, and T-013B.
+Implementation evidence exists for T-001, T-002, T-003, T-004, T-005, T-006, T-007, T-008, T-013A, and T-013B.
 
 Closure checks:
-- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-005, T-006, T-013A, and T-013B complete
+- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-005, T-006, T-007, T-008, T-013A, and T-013B complete
 - Verified: PARTIAL PROJECT — those completed slices are verified
 - Matches design: YES FOR COMPLETED SLICES
 - Recorded: YES — task queue created
