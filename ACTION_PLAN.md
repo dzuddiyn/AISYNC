@@ -56,12 +56,13 @@ Pass / stop condition: A ZASSIMPLE project with no AI→GitHub integration can S
 Result: PASS — T-006A adapter mechanics + T-006B real Contents API transport produced verified live commit `95e019604e6edd778acd0ee252c506d2729f2d09`; final receipt semantics remain AP-006/T-007.  
 Feeds design: YES
 
-AP-006 | OPEN  
+AP-006 | DONE
 Source: D-004, R-003  
 Action: Define the factual ASC Write Receipt.  
 Dependencies: AP-004, AP-005.  
 Constraint / feasibility note: Must distinguish proposed state from actually persisted state.  
 Pass / stop condition: Receipt clearly reports success/failure, destination, affected resource, record/commit identifier where applicable, and failure reason when not successful.  
+Result: PASS — local receipt/HISTORY boundary tests passed; external live verification re-read HISTORY row 3 and confirmed all eleven persisted fields exactly, including SUCCESS status, GitHub destination/resource, commit identifier, request ID, timestamp, and receipt JSON verification fields.
 Feeds design: YES
 
 AP-007 | OPEN  

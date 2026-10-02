@@ -10,13 +10,22 @@
 
 ## Current task
 
-T-007 | IN PROGRESS — FACTUAL WRITE RECEIPT + HISTORY  
+T-007 | PASS — FACTUAL WRITE RECEIPT + HISTORY
 Source: AP-006  
 Decision / Design lineage: D-004, R-003, D-014, DESIGN v1.0 § Write Receipt  
 Do: Implement the factual ASC Write Receipt and HISTORY persistence.  
 Depends on: T-003, T-006  
 Pass: SUCCESS and FAILED writes are distinguishable; successful GitHub writes record destination, affected resource, commit/record identifier, request identity/time, and HISTORY entry.  
-Current result: PROMOTED after T-006 PASS.
+Current result: PASS — local receipt/HISTORY boundary tests passed; external live verification confirmed HISTORY row 3 with all 11 persisted fields exactly re-read and consistent with the embedded factual receipt.
+Live evidence:
+- request_id: `TEST_ONLY_T007_HISTORY_20261003_01`;
+- status: `SUCCESS`;
+- destination: `GitHub`;
+- affected_resource: `dzuddiyn/AISYNC/proofs/t006b-github-adapter-live.md`;
+- commit_or_record_id: `95e019604e6edd778acd0ee252c506d2729f2d09`;
+- timestamp: `2026-10-02T19:03:32.135Z`;
+- receipt_json confirms `adapter_outcome=VERIFIED_WRITE`, `write_performed=true`, and `verified=true`;
+- persisted scalar fields matched the embedded receipt after re-read.
 
 ## Completed
 
