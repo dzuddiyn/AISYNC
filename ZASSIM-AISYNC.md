@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.16  
+**Project record version:** 0.6.17  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.17 | 2026-10-02 | LOCKED D-026 receiver-format fallback: plain text/Markdown remains the primary Method Gateway response; clean HTML `/view` compatibility surface is added only if Gemini/Copilot field evidence requires it. |
 | 0.6.16 | 2026-10-02 | Updated AISYNC thread/project baseline to official ZASSIMPLE v0.3.0. Current surface now uses DESIGN / CONFIRM DESIGN; architecture is treated as a technical design subtype. Historical architecture confirmation remains valid. Current DO IT task remains T-013A. |
 | 0.6.15 | 2026-10-02 | LOCKED D-025 Method Gateway v0.1 implementation path: existing Write Contract unchanged; METHODS registry + protected exact-commit GitHub sync + separate public read gateway; execute T-013A → T-013B → resume T-004. |
 | 0.6.14 | 2026-10-02 | D-024 gate satisfied by official ZASSPILL v0.1.0 Phase 1 freeze. T-013 promoted as next implementation work. METHODS registry created in ASC DB; Method Snapshot Record v0.1 schema, protected GitHub sync worker, and separate public read gateway code added. T-004 remains paused. |
@@ -849,3 +850,35 @@ Current behavioral alignment:
 - architecture remains valid as a technical subtype of DESIGN for this software/infrastructure project.
 - historical AISYNC architecture confirmation under `YA, CONFIRM ARCHITECTURE` is preserved as project history and is not reopened by this method baseline update.
 - current stage remains DO IT; current implementation task remains T-013A.
+
+
+D-026 | LOCKED  
+Decision: Lock the **Method Gateway receiver-format fallback strategy** for T-013B.
+
+1. **Primary receiver endpoint remains clean plain text / Markdown.**
+   Intended primary route shape:
+   - `/method/zasspill/my`
+   - `/method/zassimple/my`
+   - `/method/zasselection/my`
+
+   These routes serve the AI-SYNC-held method snapshot itself as clean text/Markdown and do not redirect to GitHub.
+
+2. **Do not build HTML first.**
+   T-013B must field-test the plain-text endpoint with Gemini and Copilot before adding a second representation.
+
+3. **HTML compatibility view is an evidence-triggered fallback only.**
+   If a receiver cannot reliably read the plain-text endpoint but can read a normal webpage, AI-SYNC may add a clean HTML view, for example:
+   - `/method/zassimple/my/view`
+
+4. **HTML fallback must preserve method content and semantics.**
+   It is a transport/rendering compatibility layer only. It must not summarize, rewrite, transform, or redefine ZASS method semantics.
+
+5. **Avoid unnecessary dual-surface complexity.**
+   If the plain-text endpoint works across the required receivers, no HTML compatibility endpoint is needed for v0.1.
+
+6. **GitHub authority and D-023/D-025 boundaries remain unchanged.**
+   GitHub remains method SoT; AI-SYNC remains the snapshot/read transport layer.
+
+Reason: The observed problem is receiver accessibility, not Markdown semantics. Plain text is the smallest machine-readable surface; HTML should exist only if field evidence shows it improves receiver compatibility.  
+Locked by: Project Owner  
+Date: 2026-10-02
