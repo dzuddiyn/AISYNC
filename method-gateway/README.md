@@ -1,6 +1,6 @@
 # AI-SYNC Public Method Gateway — v0.1 Proof Plan
 
-**Status:** IMPLEMENTATION STARTED — T-013A LIVE VERIFICATION PENDING  
+**Status:** T-013A PASS — T-013B LIVE DEPLOYMENT / CROSS-AI PROOF PENDING  
 **Design lineage:** D-023 / ASC DESIGN v1.0.8  
 **Scope:** Malay method proof only
 
@@ -200,16 +200,17 @@ The protected sync worker first resolves the canonical repository's `main` branc
 
 ## Current implementation checkpoint
 
-T-013A is not PASS yet.
+T-013A: **PASS**.
 
-Next verification step:
-1. create/copy the protected sync Apps Script project from the repo files;
-2. run `syncMethodsFromGitHub()` once;
-3. verify three METHODS rows and real GitHub commit/version/content;
-4. run it a second time and verify upsert/no duplicate.
+Verified:
+1. protected sync Apps Script runs successfully;
+2. GitHub reads are authenticated with `GITHUB_TOKEN` stored in Apps Script Script Properties;
+3. three METHODS snapshots are present;
+4. one sync run pins all three snapshots to one GitHub source commit;
+5. method version/path/content are populated;
+6. a second run upserts existing rows without duplicates.
 
-Only after that should T-013B public deployment be field-tested.
-
+Current work: **T-013B** — deploy the separate public read-only Apps Script gateway and field-test the plain-text snapshot endpoint with Gemini and Copilot. Add the HTML `/view` compatibility surface only if receiver evidence requires it.
 
 ## Locked implementation path — D-025
 
