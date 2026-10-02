@@ -1169,11 +1169,10 @@ D-030 | LOCKED
 
 Decision: ASC v0.1 successful post-sync return behavior is a guaranteed **user-activated `Return to main ASC UI` link/button** after a verified SUCCESS write and persisted HISTORY.
 
-1. After `VERIFIED SUCCESS` + HISTORY persistence, ASC must expose a visible, usable return control to the configured main ASC UI.
-2. Automatic top-level navigation may be attempted when the hosting/browser platform permits it, but it is not a v0.1 pass requirement and must not be relied on as the only return mechanism.
-3. The success UI must not claim that automatic navigation definitely occurred when the platform blocks or ignores it.
-4. FAILED, unverified, or incomplete writes must remain visibly non-successful and must not offer a return path in a way that falsely implies persistence succeeded.
-5. This refines the post-sync wording in D-015 / D-017 without changing the existing confirmation, verification, receipt, HISTORY, authentication, or destination-credential boundaries.
+1. After `VERIFIED SUCCESS` + HISTORY persistence, ASC must provide a visible user-activated return control to the configured main ASC UI.
+2. Automatic top-level navigation may be attempted when the hosting/browser platform permits it, but it is not a v0.1 pass requirement.
+3. FAILED, unverified, or incomplete writes must remain visibly non-successful and must not offer the return control in a way that falsely implies persistence succeeded.
+4. This refines the post-sync wording in D-015 / D-017 without changing the existing confirmation, verification, receipt, HISTORY, authentication, or destination-credential boundaries.
 
 Live basis: T-011 owner-issued ZASSIMPLE SAVE completed a verified GitHub write and HISTORY persistence, then remained on the Apps Script success page until the owner activated `Return to main ASC UI`.
 
