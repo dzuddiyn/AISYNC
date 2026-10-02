@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.17  
+**Project record version:** 0.6.18  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.18 | 2026-10-02 | LOCKED D-027 ASC continuity authority + cross-AI transfer UX: SAVE returns an ASC link; intentional cross-AI continuation starts from ASC Web/project tree, produces a short bootstrap + method link + controlled continuity reference, and hides raw GitHub/fallback/packet complexity from ordinary users. |
 | 0.6.17 | 2026-10-02 | LOCKED D-026 receiver-format fallback: plain text/Markdown remains the primary Method Gateway response; clean HTML `/view` compatibility surface is added only if Gemini/Copilot field evidence requires it. |
 | 0.6.16 | 2026-10-02 | Updated AISYNC thread/project baseline to official ZASSIMPLE v0.3.0. Current surface now uses DESIGN / CONFIRM DESIGN; architecture is treated as a technical design subtype. Historical architecture confirmation remains valid. Current DO IT task remains T-013A. |
 | 0.6.15 | 2026-10-02 | LOCKED D-025 Method Gateway v0.1 implementation path: existing Write Contract unchanged; METHODS registry + protected exact-commit GitHub sync + separate public read gateway; execute T-013A → T-013B → resume T-004. |
@@ -880,5 +881,154 @@ Decision: Lock the **Method Gateway receiver-format fallback strategy** for T-01
    GitHub remains method SoT; AI-SYNC remains the snapshot/read transport layer.
 
 Reason: The observed problem is receiver accessibility, not Markdown semantics. Plain text is the smallest machine-readable surface; HTML should exist only if field evidence shows it improves receiver compatibility.  
+Locked by: Project Owner  
+Date: 2026-10-02
+
+
+D-027 | LOCKED  
+Decision: Lock **ASC as the continuity authority and transfer hub for ordinary user cross-AI continuation**, while keeping method distribution and private project continuity as separate transport surfaces.
+
+### 1. SAVE UX benchmark
+
+After ASC is complete enough for ordinary use, the user should not need to paste a long ZASSPILL/ZASSELECTION/ZASSIMPLE handover packet into another AI merely to save current state.
+
+Normal save experience:
+
+```text
+user works in AI
+        ↓
+SAVE
+        ↓
+AI gives ASC save link
+        ↓
+ASC preview
+        ↓
+CONFIRM & SYNC
+        ↓
+persisted state
+```
+
+Benchmark:
+
+> **If an ordinary user still has to paste a long continuity/method packet after ASC is complete, ASC has not achieved its UX purpose.**
+
+### 2. Cross-AI transfer begins from ASC Web
+
+When the user wants to continue or move work to another AI, ASC Web is the preferred transfer origin.
+
+Target UX:
+
+```text
+ASC Web
+        ↓
+Project Tree
+        ↓
+select project
+        ↓
+select saved thread/state
+(DUMP / DECIDE / DESIGN)
+        ↓
+state appears in transfer/chat box
+        ↓
+select target AI
+        ↓
+TRANSFER PAGE
+```
+
+### 3. Transfer page output
+
+The transfer page should provide the minimum portable continuation material:
+
+- short receiving instruction;
+- AI-SYNC method link for the required receiving method;
+- controlled continuity/handoff link or equivalent scoped reference;
+- COPY action;
+- target-AI open action/link when supported;
+- fallback allowing the user to open the target AI app/site manually and paste the short instruction/link.
+
+The target AI may support a safe prefilled/deep-link path. If not, copy/paste of the short bootstrap is the official fallback. ASC must not falsely claim automatic insertion where the provider does not support it.
+
+### 4. AI-to-AI transfer is not the authority
+
+The source AI is not required to serialize or carry the full transfer packet itself. Its normal role may be only to point the user to ASC.
+
+Conceptually:
+
+```text
+Source AI
+  ↓
+ASC link
+  ↓
+ASC continuity state
+  ↓
+target AI
+```
+
+ASC is the continuity transfer authority; individual AI chats are consumers/producers around that authority.
+
+### 5. Public method vs controlled continuity boundary
+
+Public method distribution:
+
+```text
+/method/<method>/<language>
+→ public, read-only
+→ reusable by receiver AIs
+```
+
+Project/thread continuity:
+
+```text
+/handoff/<reference>
+or equivalent
+→ controlled/private/scoped
+→ carries project/thread state
+```
+
+Method content may be public. Project continuity must not automatically become a permanent public URL.
+
+The exact v0.1 protection mechanism for continuity links — authenticated access, scoped token, expiry, temporary package, short ID, or another minimal mechanism — remains an implementation decision and is not locked by D-027.
+
+### 6. Method complexity stays hidden from ordinary users
+
+A normal user transferring work should not need to understand or manually manage:
+
+- ZASSPILL/ZASSELECTION/ZASSIMPLE internals;
+- raw GitHub URLs;
+- GitHub browser fallbacks;
+- Method Snapshot metadata;
+- long handover packet structure;
+- transport-specific fallback logic.
+
+Second UX benchmark:
+
+> **If moving to another AI still requires the user to understand method internals, raw GitHub/fallback URLs, or packet structure, ASC has not hidden enough transport complexity.**
+
+### 7. Default transfer interaction
+
+Target user-facing flow:
+
+```text
+select thread
+        ↓
+select AI
+        ↓
+TRANSFER
+        ↓
+copy/open
+        ↓
+continue
+```
+
+Same-chat method handoff remains valid inside a conversation. D-027 governs the preferred experience when the user intentionally continues/transfers through ASC across AI providers/apps.
+
+### 8. Relationship to current tasks
+
+- T-013 remains focused on proving the public Method Gateway.
+- T-004 remains the paused ASC front-door/routing/handoff implementation and will resume after the Method Gateway proof.
+- D-027 refines the target UX/authority model for T-004 and later continuity transport; it does not require premature implementation before T-013 passes.
+- Existing D-020/D-021 provider selection, routing, handoff and user-first principles remain compatible.
+
+Reason: The long ZASSPILL field-test packet is useful as a transport benchmark, but it should become infrastructure hidden behind ASC rather than a routine user burden.  
 Locked by: Project Owner  
 Date: 2026-10-02
