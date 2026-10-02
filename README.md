@@ -2,7 +2,7 @@
 
 > Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** DESIGN CONFIRMED — DO IT in progress; current task T-013A  
+**Status:** DESIGN CONFIRMED — DO IT in progress; current task T-004  
 **Method used to develop this project:** ZASSIMPLE v0.3.0  
 **Repository:** AISYNC
 
@@ -21,7 +21,7 @@ AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DO IT** — DESIGN is confirmed, with technical architecture contained inside `DESIGN.md`; implementation is in progress and current task is **T-013A**.
+Current stage: **DO IT** — DESIGN is confirmed, with technical architecture contained inside `DESIGN.md`; T-013 Method Gateway proof is complete and current task is **T-004**.
 
 The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, design/technical architecture, executable tasks, verification, and delivery.
 
@@ -572,27 +572,35 @@ ASC v0.1 uses a reliability-first B + A strategy:
 
 ## Public Method Gateway
 
-ASC also has a separate public read use case: portable delivery of ZASS methods to receiver AIs.
+ASC has a separate public read use case: portable delivery of ZASS methods to receiver AIs.
 
 ```text
 GitHub method SoT
       ↓
-AI-SYNC snapshot sync
+protected Apps Script sync
       ↓
-public read-only Method Gateway
+ASC DB / METHODS snapshot registry
+      ↓
+receiver-facing static Method Gateway
+(GitHub Pages for v0.1 proof)
       ↓
 receiver AI
 ```
 
-The gateway serves its own synced Markdown snapshot and does not redirect the receiver to GitHub.
+v0.1 receiver URLs:
+- `https://dzuddiyn.github.io/AISYNC/method/zasspill/my/`
+- `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/`
+- `https://dzuddiyn.github.io/AISYNC/method/zasselection/my/`
 
-Initial receiving routes are intended to be:
-- `/method/zasspill/my`
-- `/method/zassimple/my`
-- `/method/zasselection/my`
+Field result:
+- browser: PASS
+- Gemini direct read: PASS
+- Copilot direct read: PASS
+- ZASSPILL → DESIGN → ZASSIMPLE method-link handoff: PASS with Gemini end-to-end
 
-This read plane is separate from the protected ASC write/auth/admin flow.
+Receiver guardrail: if the exact gateway URL cannot be fetched, report the failure and do not silently substitute repository search, raw GitHub, or another source as authoritative method content.
 
+GitHub remains the canonical method Source of Truth. The public pages are transport mirrors, not a second editable method authority.
 
 ## Continuity and transfer UX
 
