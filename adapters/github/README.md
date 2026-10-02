@@ -140,3 +140,30 @@ node adapters/github/test-github-adapter.mjs
 The T-006A test uses an in-memory fake client and covers create, update, no-change, call order, structured failures, post-write verification, commit preservation on unverified writes, and the no-network/no-credential/no-receipt boundary.
 
 The T-006B REST client test uses fake fetch only and covers URL/branch encoding, headers, exact UTF-8 Base64 transport, 404 missing files, HTTP/malformed/fetch failures, create/update request bodies, and token secrecy.
+
+## T-006B live verification — 2026-10-03
+
+Result: **PASS**
+
+Controlled target:
+
+```text
+repository: dzuddiyn/AISYNC
+branch: main
+path: proofs/t006b-github-adapter-live.md
+```
+
+Observed adapter result:
+
+```text
+outcome: VERIFIED_WRITE
+writePerformed: true
+commitSha: 95e019604e6edd778acd0ee252c506d2729f2d09
+contentSha: 3be4eed97840c9414207f1cb4f33e7f5021847bf
+persistedSha: 3be4eed97840c9414207f1cb4f33e7f5021847bf
+verified: true
+```
+
+Independent remote verification confirmed the proof file exists on `main` with exact deterministic content and matching file SHA.
+
+T-006B used `GITHUB_TOKEN` only at runtime. No credential was committed. T-006 does not create the final ASC Write Receipt or HISTORY record; those belong to T-007.
