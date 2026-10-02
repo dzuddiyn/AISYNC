@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.20  
+**Project record version:** 0.6.21  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -1077,3 +1077,36 @@ Gemini + Copilot field proof
 ↓
 ZASSPILL gateway-link handoff proof
 ```
+
+
+## T-013B RECEIVER-HOST FIELD TEST
+
+Date: 2026-10-02  
+Status: **PARTIAL PASS**
+
+Evidence:
+- Apps Script public method output was readable in a normal browser;
+- Apps Script plain-text and HTML receiver surfaces were not directly readable by Gemini;
+- Copilot also failed to fetch the Apps Script HTML receiver surface;
+- Gemini successfully fetched a normal control webpage, so receiver web access was available;
+- GitHub Pages proof surface was deployed from `/docs`;
+- browser read of `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/`: PASS;
+- Gemini direct read of that GitHub Pages URL: PASS;
+- Gemini correctly identified ZASSIMPLE v0.3.0, the full lifecycle, and PROCEED/LOCK semantics.
+
+Current interpretation:
+```text
+GitHub method SoT
+↓
+protected sync / provenance backend
+↓
+receiver-facing static public host
+↓
+Gemini / Copilot / other AI receivers
+```
+
+Apps Script remains useful for protected sync/backend behavior, but the current evidence does not support using Apps Script as the receiver-facing public host.
+
+Remaining T-013B proof:
+1. Copilot direct read of the GitHub Pages method URL;
+2. ZASSPILL handoff carrying the public gateway URL.
