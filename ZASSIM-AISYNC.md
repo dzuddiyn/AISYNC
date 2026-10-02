@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.23  
+**Project record version:** 0.6.24  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.24 | 2026-10-02 | T-004 D-022 live preserve/auth/replay proof PASS: GitHub Pages static front door preserves #asc in the original tab; protected Apps Script handles authenticated preview; CONTINUE replay works without refresh after noopener regression fix; NO WRITE verified. |
 | 0.6.23 | 2026-10-02 | LOCKED D-028 receiver-facing host refinement; T-013B PASS; GitHub Pages adopted for v0.1 receiver-facing method transport; exact-URL/no-substitution guardrail recorded; T-004 resumed. |
 | 0.6.22 | 2026-10-02 | Copilot direct-read proof against the GitHub Pages ZASSIMPLE receiver URL passed. |
 | 0.6.21 | 2026-10-02 | Gemini direct-read proof against the GitHub Pages ZASSIMPLE receiver URL passed after Apps Script receiver fetches failed. |
@@ -1111,8 +1112,7 @@ Gemini / Copilot / other AI receivers
 
 Apps Script remains useful for protected sync/backend behavior, but the current evidence does not support using Apps Script as the receiver-facing public host.
 
-Remaining T-013B proof:
-1. ZASSPILL handoff carrying the public gateway URL.
+T-013B remaining proof was later completed by the ZASSPILL gateway-link handoff and Gemini end-to-end continuation; see the T-013B closure checkpoint below.
 
 
 ### Copilot receiver proof
@@ -1123,7 +1123,7 @@ Remaining T-013B proof:
   - Gemini: PASS
   - Copilot: PASS
 
-Only the ZASSPILL gateway-link handoff proof remains before T-013B can close.
+T-013B subsequently closed after the ZASSPILL gateway-link handoff proof passed.
 
 
 D-028 | LOCKED  
@@ -1174,4 +1174,57 @@ CONTINUE / replay
 visible DUMP / DECIDE / DESIGN route
 ↓
 provider handoff using public Method Gateway
+```
+
+
+## T-004 D-022 LIVE AUTH-PRESERVE CHECKPOINT
+
+Date: 2026-10-02  
+Status: **PASS for preserve/auth/replay slice; T-004 remains IN PROGRESS**
+
+Field finding:
+- a public Apps Script front door opened anonymously but lost the incoming `#asc` fragment before client preservation;
+- GitHub Pages static front door at `/asc/` preserved the fragment directly from `window.location.hash`;
+- the original tab stored the complete pending fragment in `sessionStorage`;
+- SIGN IN opened the protected owner-only Apps Script base URL in a new tab without carrying the payload;
+- Google authentication completed in the protected tab;
+- returning to the original static front-door tab preserved the pending request;
+- after fixing the `window.open(..., 'noopener')` false-failure regression, CONTINUE remained enabled without refresh;
+- CONTINUE replayed the stored fragment into protected `/exec#asc=<payload>`;
+- protected preview rendered the D-028 TEST_ONLY contract;
+- NO WRITE occurred.
+
+Current proven topology:
+
+```text
+GitHub Pages static front door
+        ↓ preserve #asc in original tab
+SIGN IN
+        ↓
+owner-only Apps Script
+        ↓ Google auth
+return to original tab
+        ↓
+CONTINUE
+        ↓
+protected Apps Script #asc replay
+        ↓
+preview
+        ↓
+NO WRITE
+```
+
+Next T-004 slice:
+
+```text
+mandatory AI provider selection
+        ↓
+visible + user-overridable intent route
+DUMP / DECIDE / DESIGN
+        ↓
+ZASSPILL / ZASSELECTION / ZASSIMPLE
+        ↓
+public Method Gateway URL
+        ↓
+provider handoff
 ```
