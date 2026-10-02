@@ -32,10 +32,10 @@ Result: PASS — envelope schema + fragment-only Base64URL link encoder/decoder 
 Feeds architecture: YES
 
 AP-003 | OPEN  
-Source: D-006, D-009, D-012, D-019  
-Action: Implement the locked Google Sites + Apps Script UI flow, including preview/confirm/write behavior and redirect back to the main ASC UI after a successful confirmed update (D-015).  
+Source: D-006, D-009, D-012, D-019, D-020  
+Action: Implement the locked Google Sites + Apps Script UI flow, including the D-020 provider-selection/auth/intent-routing/AI-handoff front door, preview/confirm/write behavior, and redirect back to the main ASC UI after a successful confirmed update (D-015).  
 Dependencies: D-012 UI information architecture.  
-Constraint / feasibility note: Landing must stay simple: DECIDE / DESIGN. Project detail carries the richer lineage views.  
+Constraint / feasibility note: Landing must stay simple: DUMP / DECIDE / DESIGN. User does not need to choose a mode before starting; AI-provider selection is mandatory, then ASC auto-routes after authentication. Project detail carries the richer lineage views.  
 Pass / stop condition: The UI can represent the locked navigation and project-detail sections without forcing users to inspect raw Markdown.  
 Feeds architecture: YES
 
@@ -141,3 +141,7 @@ Finding: ASC DB v0.1 exists as a native Google Sheet with PROJECTS, RECORDS, ACT
 
 PF-008 | OPEN — T-004 DEPLOYMENT VERIFICATION  
 Finding: The Apps Script Web App skeleton is implemented using owner-only Google Account deployment semantics (`MYSELF` / `USER_DEPLOYING`). Pending `#asc` state restoration and preview-only behavior pass local tests. T-004 cannot be closed until the real deployed Google authentication redirect is verified with an actual ASC Link; no write handler exists yet.
+
+
+PF-009 | RESOLVED BY D-020  
+Finding: ASC front-door UX now requires explicit AI-provider selection, authentication before routing, automatic DUMP/DECIDE/DESIGN classification, visible/overridable route, and capability-aware handoff to the selected AI app. DUMP maps to ZASSPILL, DECIDE to ZASSELECTION/PICKS, and DESIGN to ZASSIMPLE/IDEA. ASC selects the subsystem/contract but does not own or duplicate its semantics. ZASSPILL remains an external dependency before the DUMP path can be finalized.
