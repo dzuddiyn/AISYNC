@@ -261,3 +261,12 @@ Finding: Gemini's live response showed that method transport alone is insufficie
 
 PF-036 | T-004 CLOSED / T-005 PROMOTED  
 Finding: T-004 pass criteria are met: auth preservation/replay, visible/user-overridable routing, exact method mapping, capability-aware copy-open provider handoff, truthful exact-source failure behavior, and no persistence. Execution advances to T-005 ASC Core.
+
+PF-037 | T-005 PURE ASC CORE — PASS  
+Finding: The ASC Core boundary is implemented as a pure method-agnostic module. Validation, fail-closed authorization, semantic preservation, destination routing, adapter invocation descriptors, and neutral receipt-layer handoff all pass without network or persistence side effects.
+
+PF-038 | CORE ISOLATION — PASS  
+Finding: Nested semantic data is deep-isolated from authorization policy mutation; GitHub and ASC_DB adapter invocation descriptors are independent copies; mixed supported/unsupported destinations fail without partial acceptance.
+
+PF-039 | T-005 CLOSED / T-006 PROMOTED  
+Finding: T-005 pass condition is met and published at commit `3a56c30d8520ab6824807c76255c973a1f838450`. Execution advances to T-006 GitHub destination adapter.
