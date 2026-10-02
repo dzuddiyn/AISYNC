@@ -80,7 +80,7 @@ function getAppsScriptLocation(callback) {
 const ASC_CONFIRM_ACTION = 'CONFIRM_AND_SYNC';
 const ASC_MAIN_UI_PREFIX = 'https://sites.google.com/';
 // Pre-claim failures where the same request_id was never consumed.
-const ASC_RETRYABLE_CODES = ['RESULT_CACHE_UNAVAILABLE', 'REPLAY_STORE_UNAVAILABLE'];
+const ASC_RETRYABLE_CODES = ['RESULT_CACHE_UNAVAILABLE'];
 let ascPendingState = null;
 
 // Confirmation is created only from an explicit user click and is bound to one request.
@@ -149,9 +149,10 @@ function renderSyncResult(result, deps) {
     return 'REDIRECTED';
   }
 
-  // Failure or incomplete: keep the pending request visible. T-010: a confirmed attempt
-  // consumes its request_id, so the button stays disabled; only pre-claim server/config
-  // failures may be retried, and the server re-validates and rejects replays anyway.
+  // Failure or incomplete: keep the pending request visible. T-010: after CONFIRM, any
+  // replay-store uncertainty is fail-closed because the request_id may already be consumed.
+  // Only RESULT_CACHE_UNAVAILABLE is safely retryable here because it occurs before the
+  // confirm/sync flow and before any replay claim.
   if (button) {
     const code = result && result.error && result.error.code;
     const retryable = ASC_RETRYABLE_CODES.indexOf(code) >= 0;
