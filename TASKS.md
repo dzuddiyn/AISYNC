@@ -10,7 +10,7 @@
 
 ## Current task
 
-T-004 | IN PROGRESS — FRONT-DOOR REPLAY REQUIRED  
+T-004 | PAUSED — VERIFIED BOUNDARY / WAITING D-024 GATE  
 Source: AP-003, AP-007, PF-005  
 Decision / Architecture lineage: D-006, D-015, D-017, D-020, D-021, D-022, ARCH v1.0.4 § Apps Script Web App + Google Account authentication / front-door orchestration  
 Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
@@ -36,6 +36,13 @@ Finding:
 - direct fragment-through-login is not a viable persistence path
 - D-020 front-door must preserve draft/payload before launching authentication, then replay it after sign-in
 Result: PARTIAL PASS — auth gate and authenticated fragment preview are proven; front-door preserve/login/replay remains to implement.
+
+Execution gate: D-024
+- no further T-004 implementation now;
+- wait for official ZASSPILL;
+- review its real handoff contract;
+- owner then decides whether T-013 becomes the next current task;
+- after a successful Method Gateway proof, return to the remaining T-004 front-door/routing/handoff work.
 
 D-020 front-door behavior is LOCKED but not yet implemented:
 - mandatory AI-provider selection + red missing-provider warning
@@ -176,7 +183,7 @@ Closure checks:
 - Recorded: YES — task queue created
 
 
-T-013 | QUEUED — PUBLIC METHOD GATEWAY v0.1 PROOF  
+T-013 | QUEUED / HELD — PUBLIC METHOD GATEWAY v0.1 PROOF  
 Source: AP-008, D-023  
 Decision / Architecture lineage: D-002, D-005, D-018, D-023, ARCH v1.0.5 § Public Method Gateway / read plane  
 Do: Prove the smallest public AI-readable method mirror for the three Malay methods only:
@@ -186,7 +193,7 @@ Do: Prove the smallest public AI-readable method mirror for the three Malay meth
 4. expose traceable source version/commit metadata;
 5. field-test Gemini and Copilot readability;
 6. verify ZASSPILL can carry the gateway URL for DECIDE/DESIGN handoff.
-Depends on: D-023; ZASSPILL_MY.md ready enough for field proof.  
+Depends on: D-023, D-024; official ZASSPILL ready enough for contract/handoff review and owner promotion decision.  
 Pass:
 - GitHub remains canonical SoT;
 - snapshot source commit/version is identifiable;
@@ -196,4 +203,16 @@ Pass:
 - GitHub update can sync without copy/paste;
 - ZASSPILL can hand off a gateway URL.
 Constraint: do not add EN methods, public write/admin APIs, webhook complexity, or extra connectors in this proof.
-Result: NOT STARTED.
+Result: NOT STARTED — held by D-024 until official ZASSPILL review and explicit owner promotion.
+
+
+### Planned slicing after D-024 gate
+
+No implementation starts until the owner reviews the official ZASSPILL dependency.
+
+If T-013 is promoted:
+
+- **T-013A — Registry + sync:** create the minimal METHODS snapshot store and protected GitHub→AI-SYNC sync; verify source commit/version/content without manual copy-paste.
+- **T-013B — Public gateway proof:** serve the stored Markdown publicly without login/redirect, test Gemini and Copilot readability, and prove ZASSPILL can carry the gateway URL during handoff.
+
+After those pass sufficiently, resume the remaining T-004 front-door/routing/handoff work.
