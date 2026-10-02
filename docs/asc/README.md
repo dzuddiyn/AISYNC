@@ -1,6 +1,6 @@
 # GitHub Pages ASC Front Door Proof
 
-Status: LIVE PROOF PASS — D-022 preserve/auth/replay verified.
+Status: local T-004 routing proof; deployment pending.
 
 Target public URL after GitHub Pages deployment:
 
@@ -38,6 +38,25 @@ protected preview URL#asc=<payload>
 
 SIGN IN never receives the fragment, payload, or a query-string copy of the payload. The front door does not infer popup failure from the return value of `window.open` when `noopener` is used; it leaves a valid CONTINUE state intact and shows a neutral return-and-continue message. The page performs no persistence and contains no CONFIRM & SYNC, GitHub/Sheets write, or DUMP/DECIDE/DESIGN routing logic.
 
+## Routing proof
+
+The user can enter a natural first message, select one required proof provider (`ChatGPT`, `Gemini`, or `Copilot`), and receive a visible route suggestion. The route can be explicitly overridden and the active route remains visible.
+
+The deterministic proof router uses only small Malay/English cue matching:
+
+- unclear, casual, or scattered input -> `DUMP`;
+- choice or comparison input -> `DECIDE`;
+- build, create, or design input -> `DESIGN`.
+
+The active route maps to the public method gateway as follows:
+
+```text
+DUMP   -> ZASSPILL     -> https://dzuddiyn.github.io/AISYNC/method/zasspill/my/
+DECIDE -> ZASSELECTION -> https://dzuddiyn.github.io/AISYNC/method/zasselection/my/
+DESIGN -> ZASSIMPLE    -> https://dzuddiyn.github.io/AISYNC/method/zassimple/my/
+```
+
+The user draft, selected provider, and explicit route override are stored only in `sessionStorage`. PREPARE HANDOFF creates a local preview containing provider, route, method, gateway URL, and draft. It does not open a provider, send a request, or persist anything outside sessionStorage.
 ## Local verification
 
 Run only this proof test:
@@ -46,7 +65,7 @@ Run only this proof test:
 node docs/asc/test-front-door.mjs
 ```
 
-The test covers fragment capture, sessionStorage restoration, the clean protected sign-in URL, `noopener` sign-in behavior when `window.open` returns `null`, exact replay URL construction, and absence of persistence/write/routing functions.
+The test covers the existing D-022 fragment capture/restoration and replay flow, provider requirement/options, sample route suggestions, exact method mappings, explicit override preservation, handoff readiness/preview, no provider/network call, and absence of persistence/write functions.
 
 
 ## Live verification — 2026-10-02
@@ -77,4 +96,4 @@ NO WRITE
 
 The first live attempt exposed a false popup-failure state because `window.open(..., 'noopener')` may successfully open a new tab while returning `null`. The regression fix stopped using that return value as proof of failure, preserved `noopener`, and kept a valid CONTINUE state intact.
 
-This proof validates the D-022 original-tab preservation/replay slice only. Provider selection, intent routing, method selection, and AI handoff remain later T-004 work.
+This proof validates the D-022 original-tab preservation/replay slice and the local T-004 provider-selection/routing/method-preview slice. Actual provider handoff remains later T-004 work.

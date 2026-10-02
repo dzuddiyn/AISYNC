@@ -60,6 +60,48 @@
       cursor: not-allowed;
       opacity: 0.45;
     }
+
+    label {
+      display: block;
+      margin-top: 1.25rem;
+      font-weight: 700;
+    }
+
+    textarea,
+    select {
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      border: 1px solid #aebfba;
+      font: inherit;
+      color: inherit;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 7rem;
+      resize: vertical;
+    }
+
+    .route-state,
+    .handoff-preview {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      border: 1px solid #b7c9c1;
+      background: #f7faf8;
+    }
+
+    .route-state p,
+    .handoff-preview p {
+      margin: 0.4rem 0;
+    }
+
+    .handoff-preview pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: inherit;
+    }
   </style>
 </head>
 <body>
@@ -67,10 +109,45 @@
     <h1>ASC Public Front Door</h1>
     <p id="status">Checking for a pending ASC request...</p>
     <p>Sign in in a new tab, return here, then continue the pending request.</p>
+    <label for="draft">USER DRAFT</label>
+    <textarea id="draft" placeholder="Type your natural first message..."></textarea>
+
+    <label for="provider">AI PROVIDER</label>
+    <select id="provider">
+      <option value="">Select a provider</option>
+      <option value="ChatGPT">ChatGPT</option>
+      <option value="Gemini">Gemini</option>
+      <option value="Copilot">Copilot</option>
+    </select>
+
+    <label for="routeOverride">ROUTE OVERRIDE</label>
+    <select id="routeOverride">
+      <option value="">Use suggested route</option>
+      <option value="DUMP">DUMP</option>
+      <option value="DECIDE">DECIDE</option>
+      <option value="DESIGN">DESIGN</option>
+    </select>
+
+    <section class="route-state" aria-live="polite">
+      <p>Suggested route: <strong id="suggestedRoute">DUMP</strong></p>
+      <p>Active route: <strong id="activeRoute">DUMP</strong></p>
+    </section>
+
     <div class="actions">
       <button id="signIn" type="button">SIGN IN</button>
       <button id="continue" type="button" disabled>CONTINUE</button>
+      <button id="prepareHandoff" type="button" disabled>PREPARE HANDOFF</button>
     </div>
+
+    <section id="handoffPreview" class="handoff-preview" hidden aria-live="polite">
+      <h2>Handoff preview</h2>
+      <p>Provider: <strong id="previewProvider"></strong></p>
+      <p>Route: <strong id="previewRoute"></strong></p>
+      <p>Method: <strong id="previewMethod"></strong></p>
+      <p>Public Method Gateway URL: <a id="previewGateway" href=""></a></p>
+      <p>User draft:</p>
+      <pre id="previewDraft"></pre>
+    </section>
   </main>
   <script src="./client.js"></script>
 </body>

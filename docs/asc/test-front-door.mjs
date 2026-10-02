@@ -8,6 +8,7 @@ class FakeStorage {
   constructor() { this.map = new Map(); }
   getItem(key) { return this.map.has(key) ? this.map.get(key) : null; }
   setItem(key, value) { this.map.set(key, String(value)); }
+  removeItem(key) { this.map.delete(key); }
 }
 
 const payload = Buffer.from(JSON.stringify({
@@ -26,11 +27,14 @@ const ui = {
   continueButton: { disabled: false }
 };
 let signInCall;
+let openCount = 0;
+let networkCalls = 0;
 const sandbox = {
   console,
   window: {
     addEventListener() {},
     open(url, target, features) {
+      openCount += 1;
       signInCall = { url, target, features };
       return null;
     }
@@ -39,6 +43,9 @@ const sandbox = {
     getElementById(id) {
       return id === 'status' ? ui.status : ui.continueButton;
     }
+  },
+  fetch() {
+    networkCalls += 1;
   }
 };
 vm.createContext(sandbox);
@@ -77,11 +84,90 @@ assert.equal(
 const replayUrl = sandbox.buildProtectedReplayUrl(signInUrl, restored.fragment);
 assert.equal(replayUrl, signInUrl + fragment);
 
+assert.equal(
+  JSON.stringify(sandbox.getSupportedProviders()),
+  JSON.stringify(['ChatGPT', 'Gemini', 'Copilot'])
+);
+assert.equal(sandbox.canPrepareHandoff({ draft: '', provider: 'ChatGPT', route: 'DUMP' }), false);
+assert.equal(sandbox.canPrepareHandoff({ draft: '   \t\n', provider: 'ChatGPT', route: 'DUMP' }), false);
+assert.equal(sandbox.canPrepareHandoff({ draft: 'hello', provider: '', route: 'DUMP' }), false);
+assert.equal(sandbox.canPrepareHandoff({ draft: 'hello', provider: 'ChatGPT', route: '' }), false);
+
+assert.equal(sandbox.suggestRoute('aku nak sembang pasal idea kebun aku'), 'DUMP');
+assert.equal(sandbox.suggestRoute('bandingkan ChatGPT dengan Gemini untuk projek ini'), 'DECIDE');
+assert.equal(sandbox.suggestRoute('bina architecture untuk sistem AISYNC'), 'DESIGN');
+assert.equal(sandbox.suggestRoute('hello, apa khabar?'), 'DUMP');
+
+assert.equal(
+  JSON.stringify(sandbox.getRouteConfig('DUMP')),
+  JSON.stringify({
+    route: 'DUMP',
+    method: 'ZASSPILL',
+    methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zasspill/my/'
+  })
+);
+assert.equal(
+  JSON.stringify(sandbox.getRouteConfig('DECIDE')),
+  JSON.stringify({
+    route: 'DECIDE',
+    method: 'ZASSELECTION',
+    methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zasselection/my/'
+  })
+);
+assert.equal(
+  JSON.stringify(sandbox.getRouteConfig('DESIGN')),
+  JSON.stringify({
+    route: 'DESIGN',
+    method: 'ZASSIMPLE',
+    methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zassimple/my/'
+  })
+);
+
+assert.equal(sandbox.getActiveRoute('DESIGN', 'DUMP'), 'DUMP');
+assert.equal(sandbox.getActiveRoute('DUMP', ''), 'DUMP');
+const changedDraftSuggestion = sandbox.suggestRoute('bina architecture untuk sistem AISYNC');
+assert.equal(changedDraftSuggestion, 'DESIGN');
+assert.equal(sandbox.getActiveRoute(changedDraftSuggestion, 'DECIDE'), 'DECIDE');
+
+const routingStorage = new FakeStorage();
+sandbox.writeRoutingState(routingStorage, {
+  draft: 'bina architecture',
+  provider: 'Gemini',
+  routeOverride: 'DECIDE'
+});
+assert.equal(
+  JSON.stringify(sandbox.readRoutingState(routingStorage)),
+  JSON.stringify({
+    draft: 'bina architecture',
+    provider: 'Gemini',
+    routeOverride: 'DECIDE'
+  })
+);
+
+const handoffPreview = sandbox.createHandoffPreview({
+  draft: '  bina architecture untuk sistem AISYNC  ',
+  provider: 'Copilot',
+  route: 'DESIGN'
+});
+assert.equal(
+  JSON.stringify(handoffPreview),
+  JSON.stringify({
+    provider: 'Copilot',
+    route: 'DESIGN',
+    method: 'ZASSIMPLE',
+    methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zassimple/my/',
+    draft: 'bina architecture untuk sistem AISYNC'
+  })
+);
+assert.equal(openCount, 1);
+assert.equal(networkCalls, 0);
+
 assert.equal(typeof sandbox.confirmAndSync, 'undefined');
 assert.equal(typeof sandbox.writeToGitHub, 'undefined');
 assert.equal(typeof sandbox.writeToSheets, 'undefined');
 assert.equal(typeof sandbox.persistRequest, 'undefined');
 assert.equal(typeof sandbox.routeRequest, 'undefined');
+assert.equal(typeof sandbox.providerHandoff, 'undefined');
 
 console.log('GitHub Pages front-door preserve/login/replay test: PASS');
 console.log('sign-in URL is clean: yes');
