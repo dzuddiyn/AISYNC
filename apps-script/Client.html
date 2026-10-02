@@ -79,6 +79,8 @@ function getAppsScriptLocation(callback) {
 
 const ASC_CONFIRM_ACTION = 'CONFIRM_AND_SYNC';
 const ASC_MAIN_UI_PREFIX = 'https://sites.google.com/';
+// Pre-claim failures where the same request_id was never consumed.
+const ASC_RETRYABLE_CODES = ['RESULT_CACHE_UNAVAILABLE', 'REPLAY_STORE_UNAVAILABLE'];
 let ascPendingState = null;
 
 // Confirmation is created only from an explicit user click and is bound to one request.
@@ -147,8 +149,14 @@ function renderSyncResult(result, deps) {
     return 'REDIRECTED';
   }
 
-  // Failure or incomplete: keep the pending request so the owner can see and retry it.
-  if (button) button.disabled = !(ascPendingState && ascPendingState.writeEnabled);
+  // Failure or incomplete: keep the pending request visible. T-010: a confirmed attempt
+  // consumes its request_id, so the button stays disabled; only pre-claim server/config
+  // failures may be retried, and the server re-validates and rejects replays anyway.
+  if (button) {
+    const code = result && result.error && result.error.code;
+    const retryable = ASC_RETRYABLE_CODES.indexOf(code) >= 0;
+    button.disabled = !(retryable && ascPendingState && ascPendingState.writeEnabled);
+  }
   return 'STAYED';
 }
 
@@ -189,32 +197,53 @@ function requestConfirmAndSync() {
     });
 }
 
-function showConfirmControls(envelope, fragment, bootstrap) {
+// T-010: the local decode is transport UX only. CONFIRM & SYNC is enabled only after the
+// server preview check (structure, expiry, SHA-256 integrity, owner) for this exact request.
+function describeServerPreview(serverPreview, envelope) {
+  const valid = Boolean(serverPreview) &&
+    serverPreview.securityValid === true &&
+    Boolean(envelope) &&
+    serverPreview.requestId === envelope.request_id;
+  if (!valid) {
+    const code = serverPreview && serverPreview.error && serverPreview.error.code ? serverPreview.error.code : 'SERVER_PREVIEW_UNAVAILABLE';
+    const reason = serverPreview && serverPreview.error && serverPreview.error.message ? serverPreview.error.message : 'Server security check did not pass.';
+    return { enabled: false, isError: true, note: 'REJECTED (' + code + ') — ' + reason + ' CONFIRM & SYNC is disabled; nothing will be saved.' };
+  }
+  if (serverPreview.writeEnabled !== true) {
+    return { enabled: false, isError: false, note: 'Request is security-valid, but CONFIRM & SYNC is not enabled on this deployment. Preview only — nothing will be saved.' };
+  }
+  return { enabled: true, isError: false, note: 'Security check passed (expires ' + serverPreview.expiresAt + '). Nothing is saved until you press CONFIRM & SYNC.' };
+}
+
+function showConfirmControls(envelope, fragment, serverPreview) {
+  const view = describeServerPreview(serverPreview, envelope);
   ascPendingState = {
     fragment: fragment,
     requestId: envelope.request_id,
-    writeEnabled: Boolean(bootstrap && bootstrap.writeEnabled === true)
+    writeEnabled: view.enabled
   };
   const controls = document.getElementById('confirm-controls');
   const button = document.getElementById('confirm-sync');
   const note = document.getElementById('confirm-note');
   controls.hidden = false;
-  button.disabled = !ascPendingState.writeEnabled;
-  note.textContent = ascPendingState.writeEnabled
-    ? 'Nothing is saved until you press CONFIRM & SYNC.'
-    : 'CONFIRM & SYNC is not enabled on this deployment yet. Preview only — nothing will be saved.';
+  button.disabled = !view.enabled;
+  note.textContent = view.note;
+  note.className = view.isError ? 'error' : 'muted';
+  if (view.isError) setStatus(view.note, true);
   button.onclick = requestConfirmAndSync;
+  return view;
 }
 
-function loadBootstrap(callback) {
+function loadServerPreview(fragment, callback) {
+  const unavailable = { securityValid: false, writeEnabled: false, error: { code: 'SERVER_PREVIEW_UNAVAILABLE', message: 'Server security check could not be run.' } };
   if (typeof google !== 'undefined' && google.script && google.script.run) {
     google.script.run
       .withSuccessHandler(callback)
-      .withFailureHandler(function() { callback({ writeEnabled: false }); })
-      .getBootstrapState();
+      .withFailureHandler(function() { callback(unavailable); })
+      .previewAscRequest({ fragment: fragment });
     return;
   }
-  callback({ writeEnabled: false });
+  callback(unavailable);
 }
 
 function bootAscPreview() {
@@ -234,8 +263,8 @@ function bootAscPreview() {
         '. Preview only — no write has occurred.',
         false
       );
-      loadBootstrap(function(bootstrap) {
-        showConfirmControls(envelope, pending.fragment, bootstrap);
+      loadServerPreview(pending.fragment, function(serverPreview) {
+        showConfirmControls(envelope, pending.fragment, serverPreview);
       });
     } catch (error) {
       setStatus('Pending request could not be decoded: ' + error.message, true);

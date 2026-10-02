@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { sealEnvelope } from '../transport/envelope-security.mjs';
 import {
   CONFIRM_ACTION,
   confirmAndSyncRequest,
@@ -22,15 +24,34 @@ const contract = {
   Destination: ['GitHub']
 };
 
-function envelopeFor(c, requestId = 'TEST_ONLY_T008A_001') {
-  return {
+const sha256Hex = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
+
+// T-010: every write-capable envelope is sealed (SHA-256) and has a <= 30 minute lifetime.
+function envelopeFor(c, requestId = 'TEST_ONLY_T008A_001', times = {}) {
+  return sealEnvelope({
     envelope_version: '0.1',
     request_id: requestId,
-    expires_at: '2026-10-04T00:00:00Z',
+    issued_at: times.issuedAt || '2026-10-03T02:55:00Z',
+    expires_at: times.expiresAt || '2026-10-03T03:20:00Z',
     integrity: { algorithm: 'SHA-256', digest: null },
     contract: c
+  }, sha256Hex);
+}
+
+function replayStore({ mode = 'ok' } = {}) {
+  const claimed = new Set();
+  return {
+    claimed,
+    claimReplay: async (requestId) => {
+      if (mode === 'throw') throw new Error('store down');
+      if (mode === 'unknown') return { claimed: false };
+      if (claimed.has(requestId)) return { claimed: false, code: 'REPLAY_REJECTED' };
+      claimed.add(requestId);
+      return { claimed: true };
+    }
   };
 }
+const verifyOwner = (ctx) => Boolean(ctx) && ctx.owner === true;
 
 const confirm = (requestId = 'TEST_ONLY_T008A_001') => ({
   confirmed: true,
@@ -84,9 +105,11 @@ function fakeHistory({ mode = 'ok' } = {}) {
 function deps(overrides = {}) {
   const github = overrides.github || fakeGitHub();
   const history = overrides.history || fakeHistory();
+  const replay = overrides.replay || replayStore();
   return {
     github,
     history,
+    replay,
     args: {
       envelope: envelopeFor(contract),
       confirmation: confirm(),
@@ -96,6 +119,9 @@ function deps(overrides = {}) {
       githubClient: github,
       historyWriter: history,
       now: () => TIMESTAMP,
+      sha256Hex,
+      verifyOwner,
+      claimReplay: replay.claimReplay,
       mainUiUrl: MAIN_UI,
       ...(overrides.args || {})
     }
@@ -104,8 +130,9 @@ function deps(overrides = {}) {
 
 // 1. Preview is pure and awaits confirmation.
 {
-  const p = previewRequest(envelopeFor(contract));
+  const p = previewRequest(envelopeFor(contract), { now: () => TIMESTAMP, sha256Hex, authorizationContext: { owner: true }, verifyOwner });
   assert.equal(p.state, 'AWAITING_CONFIRMATION');
+  assert.equal(p.security.verified, true);
   assert.equal(p.writePerformed, false);
   assert.equal(p.redirect, null);
   assert.deepStrictEqual(p.contract, contract);
@@ -128,6 +155,7 @@ for (const confirmation of [
   assert.equal(r.redirect, null);
   assert.equal(d.github.calls.read + d.github.calls.write, 0, 'no GitHub I/O before confirmation');
   assert.equal(d.history.rows.length, 0, 'no HISTORY before confirmation');
+  assert.equal(d.replay.claimed.size, 0, 'no replay claim without explicit confirmation');
 }
 assert.equal(isExplicitConfirmation(confirm(), 'TEST_ONLY_T008A_001'), true);
 
@@ -215,12 +243,13 @@ for (const [label, args] of rejectCases) {
 }
 
 // 8. Missing server config fails closed before I/O; no fabricated timestamp.
-for (const args of [{ now: undefined }, { resolveGitHubWriteSpec: undefined }]) {
+for (const args of [{ now: undefined }, { resolveGitHubWriteSpec: undefined }, { verifyOwner: undefined }, { claimReplay: undefined }]) {
   const d = deps({ args });
   const r = await confirmAndSyncRequest(d.args);
   assert.equal(r.state, 'FAILED');
   assert.equal(r.stage, 'CONFIG');
   assert.equal(d.github.calls.read + d.github.calls.write, 0);
+  assert.equal(d.replay.claimed.size, 0);
 }
 
 // 9. Verified sync without a configured main UI URL is not relabelled FAILED and not redirected.
@@ -250,4 +279,83 @@ for (const mainUiUrl of [undefined, '', 'javascript:alert(1)', 'http://insecure.
   assert.equal(JSON.stringify(env), snapshot);
 }
 
-console.log('T-008A confirm/sync flow test: PASS');
+// 12. T-010 — preview validates security + owner without claiming replay or doing I/O.
+{
+  const opts = { now: () => TIMESTAMP, sha256Hex, authorizationContext: { owner: true }, verifyOwner };
+  const tampered = envelopeFor(contract);
+  tampered.contract = { ...contract, 'Content/change': 'changed' };
+  const expired = envelopeFor(contract, 'X', { issuedAt: '2026-10-03T02:00:00Z', expiresAt: '2026-10-03T02:30:00Z' });
+  assert.equal(previewRequest(tampered, opts).error.code, 'INTEGRITY_MISMATCH');
+  assert.equal(previewRequest(expired, opts).error.code, 'REQUEST_EXPIRED');
+  assert.equal(previewRequest(envelopeFor(contract), { ...opts, authorizationContext: { owner: false } }).error.code, 'OWNER_REQUIRED');
+  assert.equal(previewRequest(envelopeFor(contract), { ...opts, verifyOwner: undefined }).error.code, 'MISSING_OWNER_POLICY');
+  assert.equal(previewRequest(envelopeFor(contract), { ...opts, sha256Hex: undefined }).error.code, 'SECURITY_CONFIG_MISSING');
+  for (const r of [previewRequest(tampered, opts), previewRequest(expired, opts)]) {
+    assert.equal(r.state, 'FAILED');
+    assert.equal(r.writePerformed, false);
+  }
+}
+
+// 13. T-010 — confirm re-validates security; expiry between preview and confirm is rejected.
+{
+  const env = envelopeFor(contract);
+  assert.equal(previewRequest(env, { now: () => TIMESTAMP, sha256Hex, authorizationContext: { owner: true }, verifyOwner }).state, 'AWAITING_CONFIRMATION');
+  const d = deps({ args: { envelope: env, now: () => '2026-10-03T03:20:00.000Z' } });
+  const r = await confirmAndSyncRequest(d.args);
+  assert.equal(r.state, 'FAILED');
+  assert.equal(r.stage, 'SECURITY');
+  assert.equal(r.error.code, 'REQUEST_EXPIRED');
+  assert.equal(r.writePerformed, false);
+  assert.equal(d.github.calls.read + d.github.calls.write + d.history.rows.length + d.replay.claimed.size, 0);
+
+  const unsealed = { ...envelopeFor(contract), integrity: { algorithm: 'SHA-256', digest: null } };
+  const d2 = deps({ args: { envelope: unsealed } });
+  const r2 = await confirmAndSyncRequest(d2.args);
+  assert.equal(r2.error.code, 'INTEGRITY_DIGEST_INVALID');
+  assert.equal(d2.github.calls.read + d2.history.rows.length + d2.replay.claimed.size, 0);
+}
+
+// 14. T-010 — non-owner never claims replay and causes zero I/O.
+{
+  const d = deps({ args: { authorizationContext: { owner: false } } });
+  const r = await confirmAndSyncRequest(d.args);
+  assert.equal(r.stage, 'OWNER');
+  assert.equal(r.error.code, 'OWNER_REQUIRED');
+  assert.equal(d.replay.claimed.size, 0);
+  assert.equal(d.github.calls.read + d.github.calls.write + d.history.rows.length, 0);
+}
+
+// 15. T-010 — replay: first claim wins; second is REPLAY_REJECTED with zero I/O; failed attempt stays consumed.
+{
+  const replay = replayStore();
+  const github = fakeGitHub({ writeOk: false });
+  const history = fakeHistory();
+  const first = await confirmAndSyncRequest(deps({ replay, github, history }).args);
+  assert.equal(first.state, 'FAILED');
+  assert.equal(first.stage, 'WRITE');
+  assert.equal(replay.claimed.has('TEST_ONLY_T008A_001'), true);
+  const callsBefore = github.calls.read + github.calls.write;
+  const rowsBefore = history.rows.length;
+  const second = await confirmAndSyncRequest(deps({ replay, github: fakeGitHub(), history }).args);
+  assert.equal(second.state, 'FAILED');
+  assert.equal(second.stage, 'REPLAY');
+  assert.equal(second.error.code, 'REPLAY_REJECTED');
+  assert.equal(second.writePerformed, false);
+  assert.equal(second.redirect, null);
+  assert.equal(history.rows.length, rowsBefore, 'no HISTORY for replay rejection');
+  assert.equal(github.calls.read + github.calls.write, callsBefore);
+
+  const other = await confirmAndSyncRequest(deps({ replay, args: { envelope: envelopeFor(contract, 'TEST_ONLY_T008A_002'), confirmation: confirm('TEST_ONLY_T008A_002') } }).args);
+  assert.equal(other.state, 'SYNCED', 'a different request_id can proceed');
+}
+
+// 16. T-010 — uncertain replay state fails closed with zero destination I/O.
+for (const mode of ['throw', 'unknown']) {
+  const d = deps({ replay: replayStore({ mode }) });
+  const r = await confirmAndSyncRequest(d.args);
+  assert.equal(r.error.code, 'REPLAY_STORE_UNAVAILABLE', mode);
+  assert.equal(r.writePerformed, false);
+  assert.equal(d.github.calls.read + d.github.calls.write + d.history.rows.length, 0);
+}
+
+console.log('T-008A + T-010 confirm/sync flow test: PASS');

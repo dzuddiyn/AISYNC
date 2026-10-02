@@ -131,4 +131,52 @@ assert.equal(typeof sandbox.writeToGitHub, 'undefined');
   assert.equal(calls.length, 1);
 }
 
-console.log('T-008A/B confirm UI test: PASS');
+// T-010: CONFIRM & SYNC enabled only after server-side security validation of this exact request.
+{
+  const env = { request_id: 'req-1' };
+  const ok = { securityValid: true, writeEnabled: true, requestId: 'req-1', expiresAt: '2026-10-03T03:20:00Z', error: null };
+  assert.equal(sandbox.describeServerPreview(ok, env).enabled, true);
+  for (const bad of [
+    null,
+    undefined,
+    { ...ok, securityValid: false, error: { code: 'REQUEST_EXPIRED', message: 'ASC request has expired.' } },
+    { ...ok, securityValid: false, error: { code: 'INTEGRITY_MISMATCH', message: 'x' } },
+    { ...ok, securityValid: 'true' },
+    { ...ok, requestId: 'other' },
+    { ...ok, writeEnabled: false }
+  ]) {
+    assert.equal(sandbox.describeServerPreview(bad, env).enabled, false, JSON.stringify(bad));
+  }
+  assert.match(sandbox.describeServerPreview({ securityValid: false, error: { code: 'REQUEST_EXPIRED', message: 'ASC request has expired.' } }, env).note, /^REJECTED \(REQUEST_EXPIRED\)/);
+  assert.match(sandbox.describeServerPreview(null, env).note, /SERVER_PREVIEW_UNAVAILABLE/);
+
+  const doc = fakeDocument();
+  for (const id of ['confirm-controls', 'confirm-note']) doc.els[id] = { id, textContent: '', className: '', hidden: true, disabled: false };
+  sandbox.document = doc;
+  doc.els['confirm-sync'].disabled = true;
+  const rejected = sandbox.showConfirmControls(env, '#asc=abc', { securityValid: false, error: { code: 'INTEGRITY_MISMATCH', message: 'Envelope content does not match its SHA-256 digest.' } });
+  assert.equal(rejected.enabled, false);
+  assert.equal(doc.els['confirm-sync'].disabled, true, 'bad request never write-enabled');
+  assert.match(doc.els.status.textContent, /^REJECTED \(INTEGRITY_MISMATCH\)/);
+  assert.match(doc.els.status.className, /error/);
+  sandbox.showConfirmControls(env, '#asc=abc', ok);
+  assert.equal(doc.els['confirm-sync'].disabled, false);
+
+  // After a confirmed attempt the request_id is consumed: button stays disabled, except pre-claim retryable failures.
+  const storage = new FakeStorage();
+  sandbox.renderSyncResult({ state: 'FAILED', error: { code: 'REPLAY_REJECTED', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  assert.equal(doc.els['confirm-sync'].disabled, true);
+  sandbox.renderSyncResult({ state: 'FAILED', stage: 'WRITE', error: { code: 'WRITE_NOT_VERIFIED', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  assert.equal(doc.els['confirm-sync'].disabled, true);
+  sandbox.renderSyncResult({ state: 'FAILED', error: { code: 'REPLAY_STORE_UNAVAILABLE', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  assert.equal(doc.els['confirm-sync'].disabled, false);
+
+  // Without the Apps Script runtime the server preview is unavailable → disabled.
+  let got;
+  sandbox.loadServerPreview('#asc=abc', (r) => { got = r; });
+  assert.equal(got.securityValid, false);
+  assert.equal(got.error.code, 'SERVER_PREVIEW_UNAVAILABLE');
+  assert.doesNotMatch(clientCode, /getBootstrapState/, 'enablement no longer comes from bootstrap alone');
+}
+
+console.log('T-008A/B + T-010B confirm UI test: PASS');

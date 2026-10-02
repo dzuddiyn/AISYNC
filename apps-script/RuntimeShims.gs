@@ -74,6 +74,16 @@ function ascBtoa_(binary) {
   return Utilities.base64Encode(ascToSignedBytes_(bytes));
 }
 
+// T-010 — SHA-256 of the UTF-8 encoding of `text`, as lowercase hex. Injected into the
+// runtime-neutral envelope security layer; carries no ASC semantics.
+function ascSha256Hex_(text) {
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(text), Utilities.Charset.UTF_8);
+  return Array.prototype.map.call(bytes, function (b) {
+    const v = b & 0xff;
+    return (v < 16 ? '0' : '') + v.toString(16);
+  }).join('');
+}
+
 function ascRuntimeShims_() {
   return {
     Buffer: AscBuffer_,

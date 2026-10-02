@@ -31,6 +31,15 @@ const ASC_TEST_ONLY_RECORD_PREFIX_ = 'TEST_ONLY_';
 const ASC_MAIN_UI_PREFIX_ = 'https://sites.google.com/';
 const ASC_RESULT_CACHE_PREFIX_ = 'asc.t008.result.';
 const ASC_RESULT_CACHE_SECONDS_ = 600;
+// T-010 (D-029): replay authority = Script Properties under a script lock. CacheService is
+// result delivery only. Key = prefix + SHA-256(request_id): bounded and collision-safe.
+const ASC_REPLAY_PROPERTY_PREFIX_ = 'asc.replay.v1.';
+const ASC_REPLAY_LOCK_TIMEOUT_MS_ = 10000;
+
+// Server clock (ISO). Single clock for expiry checks and receipt timestamps.
+function ascNow_() {
+  return new Date().toISOString();
+}
 
 function ascScriptProperty_(name) {
   const value = PropertiesService.getScriptProperties().getProperty(name);
@@ -58,7 +67,7 @@ function getBootstrapState() {
     writeEnabled: ascHasGitHubToken_(),
     redirectConfigured: ascMainUiUrl_() !== null,
     destinationPolicy: 'TEST_ONLY',
-    appVersion: '0.1-t008b'
+    appVersion: '0.1-t010'
   };
 }
 
@@ -70,9 +79,15 @@ function ascAuthorizationContext_() {
   };
 }
 
-function ascTestOnlyAuthorizationPolicy_(contract, context) {
-  const owner = Boolean(context) && context.activeUser.length > 0 &&
+// v0.1 owner identity: non-empty active user equal to the effective (deploying) owner.
+// Shared by the T-010 owner gate and the ASC Core authorization policy.
+function ascIsOwner_(context) {
+  return Boolean(context) && typeof context.activeUser === 'string' && context.activeUser.length > 0 &&
     context.activeUser === context.effectiveUser;
+}
+
+function ascTestOnlyAuthorizationPolicy_(contract, context) {
+  const owner = ascIsOwner_(context);
   const testOnly = typeof contract['Record ID'] === 'string' &&
     contract['Record ID'].indexOf(ASC_TEST_ONLY_RECORD_PREFIX_) === 0;
   const githubOnly = Array.isArray(contract.Destination) &&
@@ -137,6 +152,89 @@ function ascDecodeFragment_(fragment) {
   return ascRuntime_().transport.decodeEnvelope(fragment.slice('#asc='.length));
 }
 
+function ascReplayKey_(requestId) {
+  return ASC_REPLAY_PROPERTY_PREFIX_ + ascSha256Hex_(String(requestId));
+}
+
+// Atomic one-time claim: lock → inspect → reject if claimed → persist claim → release.
+// Any uncertainty (no lock, property read/write error, unverifiable write) fails closed.
+function ascClaimReplay_(requestId) {
+  let lock;
+  try {
+    lock = LockService.getScriptLock();
+  } catch (error) {
+    return { claimed: false, code: 'REPLAY_STORE_UNAVAILABLE' };
+  }
+  let locked = false;
+  try {
+    locked = lock.tryLock(ASC_REPLAY_LOCK_TIMEOUT_MS_) === true;
+  } catch (error) {
+    locked = false;
+  }
+  if (!locked) {
+    return { claimed: false, code: 'REPLAY_STORE_UNAVAILABLE' };
+  }
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const key = ascReplayKey_(requestId);
+    if (props.getProperty(key) !== null) {
+      return { claimed: false, code: 'REPLAY_REJECTED' };
+    }
+    const marker = JSON.stringify({ state: 'CLAIMED', claimed_at: ascNow_() });
+    props.setProperty(key, marker);
+    if (props.getProperty(key) !== marker) {
+      return { claimed: false, code: 'REPLAY_STORE_UNAVAILABLE' };
+    }
+    return { claimed: true };
+  } catch (error) {
+    return { claimed: false, code: 'REPLAY_STORE_UNAVAILABLE' };
+  } finally {
+    try { lock.releaseLock(); } catch (error) { /* lock expires on its own */ }
+  }
+}
+
+// T-010 server-side preview security check. Never claims replay state, never writes.
+// Returns only safe, non-credential fields; CONFIRM & SYNC may be enabled only when
+// securityValid and writeEnabled are both true.
+function previewAscRequest(request) {
+  let envelope;
+  try {
+    envelope = ascDecodeFragment_(request && request.fragment);
+  } catch (error) {
+    return ascPreviewResult_(ascFailed_('PREVIEW', 'INVALID_FRAGMENT', 'Pending ASC request could not be decoded.'));
+  }
+  try {
+    const result = ascRuntime_().flow.previewRequest(envelope, {
+      now: ascNow_,
+      sha256Hex: ascSha256Hex_,
+      authorizationContext: ascAuthorizationContext_(),
+      verifyOwner: ascIsOwner_
+    });
+    return ascPreviewResult_(result);
+  } catch (error) {
+    return ascPreviewResult_(ascFailed_('PREVIEW', 'PREVIEW_VALIDATION_FAILED', 'Request could not be validated. CONFIRM & SYNC stays disabled.'));
+  }
+}
+
+function ascPreviewResult_(result) {
+  const securityValid = Boolean(result) && result.state === 'AWAITING_CONFIRMATION' &&
+    Boolean(result.security) && result.security.verified === true;
+  return {
+    state: securityValid ? 'SECURITY_VALID' : 'REJECTED',
+    stage: result && result.stage ? result.stage : 'PREVIEW',
+    requestId: result && typeof result.requestId === 'string' ? result.requestId : null,
+    securityValid: securityValid,
+    writeEnabled: securityValid && ascHasGitHubToken_(),
+    issuedAt: securityValid ? result.security.issuedAt : null,
+    expiresAt: securityValid ? result.security.expiresAt : null,
+    writePerformed: false,
+    error: securityValid ? null : {
+      code: result && result.error && result.error.code ? result.error.code : 'UNKNOWN',
+      message: result && result.error && result.error.message ? result.error.message : 'Request was rejected.'
+    }
+  };
+}
+
 // Server entry for CONFIRM & SYNC. The T-008A flow enforces the explicit confirmation gate.
 // Apps Script I/O is synchronous but the reused flow is async; the settled result is stored
 // in the owner's user cache and collected by getConfirmSyncResult(requestId).
@@ -181,7 +279,10 @@ function confirmAndSync(request) {
     resolveGitHubWriteSpec: ascTestOnlyWriteSpec_,
     githubClient: runtime.githubRest.createGitHubRestClient({ token: token, fetchImpl: ascUrlFetchImpl_ }),
     historyWriter: { appendHistory: appendHistory },
-    now: function () { return new Date().toISOString(); },
+    now: ascNow_,
+    sha256Hex: ascSha256Hex_,
+    verifyOwner: ascIsOwner_,
+    claimReplay: ascClaimReplay_,
     sourceCommit: null,
     mainUiUrl: ascMainUiUrl_()
   }).then(function (result) {
