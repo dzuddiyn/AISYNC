@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.12  
+**Project record version:** 0.6.13  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -552,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.13 | 2026-10-02 | LOCKED D-024 execution-order gate: pause T-004 at its verified boundary; keep T-013 planned but unpromoted; wait for official ZASSPILL, then review its real handoff contract and let the owner decide whether to run T-013A → T-013B before resuming T-004. |
 | 0.6.12 | 2026-10-02 | LOCKED D-023 Public Method Gateway: GitHub remains method SoT; AI-SYNC holds identifiable method snapshots and serves Markdown itself through public read-only receiving URLs. Write Contract v0.1 remains unchanged; Method Snapshot Record is a separate read-plane representation. |
 | 0.6.11 | 2026-10-02 | LOCKED D-022: ASC v0.1 auth preservation uses B + A fallback — preserve draft/pending state in the original ASC tab, authenticate in a new tab, return and CONTINUE; if that flow is unavailable, login then click the ASC link/GO/CONTINUE again. Seamless automatic auth recovery is deferred. |
 | 0.6.10 | 2026-10-02 | T-004 live finding: authenticated Apps Script fragment preview PASS via `google.script.url.getLocation()`, but fresh unauthenticated `/exec#asc=...` loses the fragment across Google sign-in. D-020 front-door preserve → login → replay is therefore required; architecture remains confirmed. |
@@ -685,5 +686,45 @@ Decision: Establish the **AI-SYNC Public Method Gateway / Read Mirror** as the p
     The eight-field semantic Write Contract is a protected write-plane handoff and is not expanded with Method Gateway metadata. Method snapshots use a separate read-plane registry record.
 
 Reason: cross-AI field testing showed that direct external method URLs cannot be assumed readable across receiver platforms. This is a transport/readability problem and belongs to AI-SYNC, while GitHub remains canonical and ZASS methods remain semantically unchanged.  
+Locked by: Project Owner  
+Date: 2026-10-02
+
+
+D-024 | LOCKED  
+Decision: Lock the **post-D-023 execution-order gate**. This locks sequencing only; it does not start implementation.
+
+1. **Do not implement further ASC front-door or Method Gateway code yet.**
+2. **T-004 is paused at its current verified boundary.** Its authenticated preview path is proven; preserve/login/replay and DUMP/DECIDE/DESIGN front-door work remain pending.
+3. **T-013 remains planned/queued and is not promoted yet.**
+4. Wait until **ZASSPILL is official enough to act as the real DUMP/handoff dependency**.
+5. When the official ZASSPILL is available, review its actual receiving-method link/handoff contract and then let the Project Owner decide whether T-013 should become the next current task.
+6. If T-013 is promoted, execute it in two smallest slices:
+   - **T-013A:** create the minimal METHODS registry snapshot store + protected GitHub→AI-SYNC sync; no public endpoint proof yet.
+   - **T-013B:** expose the public read-only Markdown gateway and prove Gemini/Copilot readability plus ZASSPILL DECIDE/DESIGN handoff.
+7. Only after the Method Gateway proof is sufficiently proven should ASC resume the remaining **T-004 front-door/routing/handoff** implementation.
+8. Do not speculate about, duplicate, or alter ZASSPILL semantics while waiting.
+
+Locked execution sequence:
+
+```text
+NOW
+T-004 paused at verified boundary
+T-013 planned / not promoted
+        ↓
+WAIT FOR OFFICIAL ZASSPILL
+        ↓
+review real ZASSPILL handoff contract
+        ↓
+OWNER DECIDES
+        ↓
+if T-013 promoted:
+T-013A → METHODS registry + GitHub sync
+        ↓
+T-013B → public Method Gateway + cross-AI proof
+        ↓
+resume T-004 front-door / routing / handoff
+```
+
+Reason: Avoid implementing transport assumptions against an unfinished ZASSPILL contract, while preserving the D-023 architecture and the already proven T-004 work.  
 Locked by: Project Owner  
 Date: 2026-10-02
