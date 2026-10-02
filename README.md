@@ -560,3 +560,27 @@ ASC v0.1 uses a reliability-first B + A strategy:
 - The user's work must not be lost.
 - The URL fragment itself does not need to survive Google's authentication redirect.
 - Fully automatic invisible auth recovery is a later enhancement, not a v0.1 requirement.
+
+
+## Public Method Gateway
+
+ASC also has a separate public read use case: portable delivery of ZASS methods to receiver AIs.
+
+```text
+GitHub method SoT
+      ↓
+AI-SYNC snapshot sync
+      ↓
+public read-only Method Gateway
+      ↓
+receiver AI
+```
+
+The gateway serves its own synced Markdown snapshot and does not redirect the receiver to GitHub.
+
+Initial receiving routes are intended to be:
+- `/method/zasspill/my`
+- `/method/zassimple/my`
+- `/method/zasselection/my`
+
+This read plane is separate from the protected ASC write/auth/admin flow.
