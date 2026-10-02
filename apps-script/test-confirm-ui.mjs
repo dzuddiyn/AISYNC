@@ -169,7 +169,9 @@ assert.equal(typeof sandbox.writeToGitHub, 'undefined');
   sandbox.renderSyncResult({ state: 'FAILED', stage: 'WRITE', error: { code: 'WRITE_NOT_VERIFIED', message: 'x' } }, { document: doc, storage, navigate: () => {} });
   assert.equal(doc.els['confirm-sync'].disabled, true);
   sandbox.renderSyncResult({ state: 'FAILED', error: { code: 'REPLAY_STORE_UNAVAILABLE', message: 'x' } }, { document: doc, storage, navigate: () => {} });
-  assert.equal(doc.els['confirm-sync'].disabled, false);
+  assert.equal(doc.els['confirm-sync'].disabled, true, 'uncertain replay state must require a new request_id');
+  sandbox.renderSyncResult({ state: 'FAILED', error: { code: 'RESULT_CACHE_UNAVAILABLE', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  assert.equal(doc.els['confirm-sync'].disabled, false, 'cache clear failure occurs before replay claim and is safe to retry');
 
   // Without the Apps Script runtime the server preview is unavailable → disabled.
   let got;
