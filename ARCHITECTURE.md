@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0.3  
+**Version:** 1.0.4  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-021 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-022 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 
@@ -416,3 +416,48 @@ Default visible modes remain:
 - DESIGN — help me build
 
 Internal method names and contracts remain hidden by default. The DUMP route will adopt ZASSPILL once ZASSPILL is finalized in ZASS SYSTEM.
+
+
+### Authentication-state preservation — B + A
+
+D-022 locks the v0.1 auth continuation strategy:
+
+```text
+PRIMARY B
+
+ASC original tab
+↓
+preserve draft / pending request
+↓
+open Google login in new tab
+↓
+login succeeds
+↓
+return to original ASC tab
+↓
+CONTINUE
+↓
+replay into authenticated Apps Script
+↓
+preview
+```
+
+Fallback:
+
+```text
+A
+
+login required
+↓
+complete login
+↓
+click ASC link / GO / CONTINUE again
+↓
+authenticated entry
+↓
+preview
+```
+
+The system must preserve the user's work; the URL fragment itself does not have to survive Google's redirect.
+
+A fully automatic invisible auth-return/recovery flow is deferred beyond v0.1.
