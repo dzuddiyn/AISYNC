@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.22  
+**Project record version:** 0.6.23  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -24,7 +24,7 @@ DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
 Current project stage: **DO IT**  
-Reason: ASC technical architecture/design was explicitly confirmed by the Project Owner on 2026-10-01. The project is now in active DO IT execution; T-013A has PASSED and current work is T-013B.
+Reason: ASC technical architecture/design was explicitly confirmed by the Project Owner on 2026-10-01. The project is now in active DO IT execution; T-013A and T-013B have PASSED and current work has resumed at T-004.
 
 Current command surface:
 
@@ -554,6 +554,10 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.23 | 2026-10-02 | LOCKED D-028 receiver-facing host refinement; T-013B PASS; GitHub Pages adopted for v0.1 receiver-facing method transport; exact-URL/no-substitution guardrail recorded; T-004 resumed. |
+| 0.6.22 | 2026-10-02 | Copilot direct-read proof against the GitHub Pages ZASSIMPLE receiver URL passed. |
+| 0.6.21 | 2026-10-02 | Gemini direct-read proof against the GitHub Pages ZASSIMPLE receiver URL passed after Apps Script receiver fetches failed. |
+| 0.6.20 | 2026-10-02 | T-013A PASS: protected GitHub→METHODS sync live, exact-commit snapshot batch verified, authenticated GitHub read configured, and second run confirmed upsert/no duplicates. |
 | 0.6.19 | 2026-10-02 | Completed ZASSIMPLE v0.3 artifact migration: `ARCHITECTURE.md` → `DESIGN.md`; preserved confirmed technical architecture/decision authority; aligned current task/design references without reopening decisions. |
 | 0.6.18 | 2026-10-02 | LOCKED D-027 ASC continuity authority + cross-AI transfer UX: SAVE returns an ASC link; intentional cross-AI continuation starts from ASC Web/project tree, produces a short bootstrap + method link + controlled continuity reference, and hides raw GitHub/fallback/packet complexity from ordinary users. |
 | 0.6.17 | 2026-10-02 | LOCKED D-026 receiver-format fallback: plain text/Markdown remains the primary Method Gateway response; clean HTML `/view` compatibility surface is added only if Gemini/Copilot field evidence requires it. |
@@ -1049,7 +1053,7 @@ TASKS.md
 
 `ARCHITECTURE.md` was renamed to `DESIGN.md`. The existing confirmed technical architecture remains inside DESIGN as a technical subtype. No LOCKED decision, confirmation authority, or current execution task was reopened by this migration.
 
-Current task: **T-013B**. T-013A is PASS.
+Current task: **T-004**. T-013A and T-013B are PASS.
 
 
 ## T-013A LIVE VERIFICATION CHECKPOINT
@@ -1120,3 +1124,54 @@ Remaining T-013B proof:
   - Copilot: PASS
 
 Only the ZASSPILL gateway-link handoff proof remains before T-013B can close.
+
+
+D-028 | LOCKED  
+Decision: Refine the Method Gateway receiver-facing host based on live field evidence.
+
+1. Protected GitHub→METHODS sync remains in Apps Script.
+2. Apps Script is not the official receiver-facing host for v0.1 because Gemini/Copilot could not reliably fetch it, including the tested HTML compatibility surface.
+3. GitHub Pages is the v0.1 receiver-facing static host under `https://dzuddiyn.github.io/AISYNC/method/<method>/my/`.
+4. GitHub remains the canonical method Source of Truth; the Pages files are transport snapshots only.
+5. Receiver-facing MY routes cover ZASSPILL, ZASSIMPLE, and ZASSELECTION.
+6. Receiver guardrail: use the exact Method Gateway URL supplied by the handoff. If fetch fails, report failure and do not substitute repository search, raw GitHub, or another source as authoritative method content.
+7. Gemini passed the end-to-end ZASSPILL → DESIGN → ZASSIMPLE handoff. Copilot passed a dedicated direct-read test but showed retrieval variability in one later end-to-end session; this is a receiver caveat, not a semantic change.
+8. T-013 closes the v0.1 transport proof. Automatic republishing of static pages after future registry refreshes remains later hardening unless evidence requires it sooner.
+
+Locked by: Project Owner  
+Date: 2026-10-02
+
+
+## T-013B CLOSURE CHECKPOINT
+
+Date: 2026-10-02  
+Status: **PASS**
+
+Evidence:
+- browser anonymous read of the GitHub Pages receiver surface: PASS;
+- Gemini direct read of the ZASSIMPLE receiver page: PASS;
+- Copilot direct read of the ZASSIMPLE receiver page: PASS;
+- ZASSPILL generated a DESIGN → ZASSIMPLE handoff carrying the exact public Method Gateway URL: PASS;
+- Gemini consumed that handoff and continued under ZASSIMPLE using the supplied explicit test context: PASS;
+- Copilot showed one receiver-specific retrieval failure in a later handoff session and incorrectly substituted repository search; D-028 therefore requires exact-URL/no-substitution behavior.
+
+Scope:
+- method-link handoff is proven;
+- controlled/private ASC continuity transport is not yet proven and remains later work under D-027/T-004-related evolution.
+
+Execution returns to:
+
+```text
+T-004
+front-door
+↓
+preserve draft/request
+↓
+Google auth
+↓
+CONTINUE / replay
+↓
+visible DUMP / DECIDE / DESIGN route
+↓
+provider handoff using public Method Gateway
+```
