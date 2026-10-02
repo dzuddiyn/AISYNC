@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE DESIGN
 
-**Version:** 1.0.8  
+**Version:** 1.0.9  
 **Status:** CONFIRMED  
 **Design Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.3.0  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-027 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-028 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 >
@@ -603,6 +603,38 @@ FALLBACK
 
 The HTML fallback is transport-only. It must preserve the same method content/semantics and must not become a second editable representation or method authority.
 
+
+## Receiver-facing host refinement
+
+D-028 | LOCKED
+
+Field testing refined the Method Gateway transport without changing method authority or semantics.
+
+1. **Protected sync remains Apps Script + METHODS.**
+   Canonical GitHub method content is still fetched by the protected sync worker, pinned to one exact source commit, and stored/indexed in the METHODS registry.
+
+2. **Apps Script is not the official receiver-facing host for v0.1.**
+   Browser access worked, but Gemini and Copilot could not reliably fetch the Apps Script receiver surface, including the evidence-triggered HTML compatibility view.
+
+3. **The v0.1 receiver-facing Method Gateway uses a standard static public host.**
+   Current proof host: GitHub Pages under `https://dzuddiyn.github.io/AISYNC/method/<method>/my/`.
+
+4. **GitHub remains the canonical method Source of Truth.**
+   The GitHub Pages files are transport snapshots/mirrors only. They do not become a second editable method authority.
+
+5. **The MY receiver surface covers all three methods.**
+   - ZASSPILL
+   - ZASSIMPLE
+   - ZASSELECTION
+
+6. **Receiver-source guardrail.**
+   A receiver must use the exact Method Gateway URL supplied by the handoff. If that fetch fails, it must report the failure and must not silently substitute repository search, raw GitHub, or another source as authoritative method content.
+
+7. **Field-evidence interpretation.**
+   Gemini passed the end-to-end ZASSPILL → DESIGN → ZASSIMPLE handoff. Copilot passed a dedicated direct-read test but later showed retrieval variability in one end-to-end handoff session. That variability is recorded as a receiver caveat, not as a change to method semantics.
+
+8. **Proof vs hardening boundary.**
+   T-013 closes the v0.1 transport proof. Automatic regeneration/publishing of the static receiver pages after every future METHODS refresh is a later hardening concern unless evidence makes it necessary sooner.
 
 ## ASC continuity authority and cross-AI transfer
 
