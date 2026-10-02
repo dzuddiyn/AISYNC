@@ -16,7 +16,17 @@ Decision / Design lineage: D-007, D-016, DESIGN v1.0 § GitHub adapter
 Do: Implement the first GitHub destination adapter for current-file/SHA fetch, create/update, persisted-state verification, and commit result capture.  
 Depends on: T-005  
 Pass: A controlled test update produces a real verified GitHub commit and returns factual identifiers needed by the receipt layer.  
-Current result: PROMOTED after T-005 PASS.
+Current result: **T-006A PASS** — local/mock adapter mechanics published at commit `7c1dbd64328eb8ff6590374706eb7d603b0f1dc7`.
+Verified in T-006A:
+- create/update/no-change mechanics;
+- current-file SHA required before update;
+- exact read → write → read verification path;
+- persisted content SHA taken from verification read;
+- successful write without valid commit SHA cannot become VERIFIED_WRITE;
+- post-write verification failure returns WRITE_UNVERIFIED while preserving captured commit SHA;
+- sync throws and rejected Promises are contained as truthful structured outcomes;
+- no real network, PAT, credential, final receipt, or HISTORY write.
+Next smallest slice: **T-006B — controlled real GitHub write proof** using the same adapter boundary with a real injected GitHub transport, then verify persisted state and factual commit identifiers. T-006 remains IN PROGRESS until this live proof passes.
 
 ## Completed
 
