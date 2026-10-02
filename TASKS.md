@@ -10,23 +10,35 @@
 
 ## Current task
 
-T-010 | CURRENT — IN PROGRESS\
-Source: AP-007  
-Decision / Design lineage: D-003, D-013, D-015, D-016, D-017, D-029\
-Do: Add v0.1 security/replay controls around link requests, owner identity, server-side destination credentials, expiry/integrity checks, and failure-safe behavior.  
-Depends on: T-002, T-004, T-005, T-006 — satisfied.  
-Pass: The prototype does not expose destination credentials, does not silently write, rejects/flags invalid or expired requests according to the chosen v0.1 rules, and preserves explicit owner confirmation.  
-Starting point: T-009 read/dashboard path is live and embedded in the published Google Sites ASC UI.\
-Rules: D-029 | LOCKED (owner-approved v0.1 security/replay rules).
-
-- T-010A | LOCAL PASS — runtime-neutral `transport/envelope-security.mjs`: canonical JSON, integrity payload, injected SHA-256 verification, structural validation, `issued_at` / `expires_at` with ≤ 30-minute lifetime, factual failure codes (`REQUEST_EXPIRED`, `INTEGRITY_MISMATCH`, …); no network/persistence. Bundled mechanically into `AscRuntime.gs`; reused by `flow/confirm-sync.mjs` for both preview and confirm.
-- T-010B | LOCAL PASS — Apps Script binding: server-side `previewAscRequest` (security + owner, no replay claim, no write) gates CONFIRM & SYNC enablement; confirm re-validates security, then explicit confirmation, owner identity, and an atomic `LockService` + Script Properties `request_id` claim before any GitHub/HISTORY I/O; `REPLAY_REJECTED` / `REPLAY_STORE_UNAVAILABLE` fail closed with zero destination calls; `GITHUB_TOKEN` stays server-side only.
-- Tests: `node transport/test-envelope-security.mjs`, `node flow/test-confirm-sync.mjs`, `node apps-script/test-apps-script-binding.mjs`, `node apps-script/test-confirm-ui.mjs` — PASS with fake services; T-008/T-009 regressions PASS.
-
-Pending: Apps Script deployment and live proof (valid preview → confirmed TEST_ONLY sync, expired/tampered rejection, replay rejection). Not deployed; no live write performed.\
-Current result: IN PROGRESS — not PASS.
+T-011 | CURRENT — NOT STARTED  
+Source: AP-001 through AP-007  
+Decision / Design lineage: D-002 through D-018, ARCH v1.0  
+Do: Run the minimum end-to-end ASC v0.1 proof using a real ZASSIMPLE SAVE request from AI output through ASC Link → Google sign-in → preview → confirm → GitHub write → verification/receipt → Sheets HISTORY → redirect to main UI.  
+Depends on: T-001 through T-010 — satisfied.  
+Pass: The complete fallback flow succeeds without direct AI→GitHub integration, produces a real verified commit and factual receipt, updates operational history, and preserves the confirmed architecture boundaries.  
+Starting point: T-010 security/replay controls are live and proven on Apps Script deployment version 6.  
+Current result: NOT STARTED.
 
 ## Completed
+
+T-010 | PASS — SECURITY / REPLAY CONTROLS  
+Source: AP-007  
+Decision / Design lineage: D-003, D-013, D-015, D-016, D-017, D-029  
+Do: Add v0.1 security/replay controls around link requests, owner identity, server-side destination credentials, expiry/integrity checks, and failure-safe behavior.  
+Depends on: T-002, T-004, T-005, T-006 — satisfied.  
+Pass: The prototype does not expose destination credentials, does not silently write, rejects/flags invalid or expired requests according to D-029, and preserves explicit owner confirmation.  
+Built / proven:
+- T-010A | PASS — runtime-neutral envelope security validator with canonical JSON, ≤30-minute issued/expiry window, SHA-256 integrity consistency, factual failure codes, and no network/persistence side effects.
+- T-010B | PASS — Apps Script server preview revalidates security + owner before enabling CONFIRM & SYNC; confirm revalidates again, requires explicit request-bound confirmation, checks owner, atomically claims request_id with LockService + Script Properties, then enters the existing verified T-008 write/receipt/HISTORY flow.
+- Credential boundary | PASS — GITHUB_TOKEN remains server-side Script Property only.
+- Deployment | LIVE PASS — Apps Script version 6, "T-010 security and replay controls", on the existing protected deployment ID.
+Live evidence:
+- Valid secure request `TEST_ONLY_T010_LIVE_20261002221136` → VERIFIED_WRITE, GitHub commit `62f576194dada61584f07752b17c91ee6865d12c`, persisted proof content independently re-read, HISTORY row 5 SUCCESS, verified=true, write_performed=true.
+- Reusing the same request_id → `REPLAY_REJECTED`; owner UI showed failure and HISTORY remained a single row for that request.
+- Expired request `TEST_ONLY_T010_EXPIRED_20261002221136` → `REQUEST_EXPIRED`; CONFIRM & SYNC disabled; no HISTORY row.
+- Tampered request `TEST_ONLY_T010_TAMPER_20261002221136` → `INTEGRITY_MISMATCH`; CONFIRM & SYNC disabled; no HISTORY row.
+Boundary: SHA-256 here is integrity consistency/error detection only, not sender authentication; owner identity + explicit confirmation remain the write authority. Replay markers are not cleaned up in v0.1.  
+Current result: PASS. Execution advances to T-011 end-to-end ASC v0.1 proof.
 
 T-009 | PASS — MAIN ASC UI / DASHBOARD  
 Source: AP-003, UI data requirements  
@@ -232,13 +244,6 @@ Verification:
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
-
-T-011 | QUEUED  
-Source: AP-001 through AP-007  
-Decision / Design lineage: D-002 through D-018, ARCH v1.0  
-Do: Run the minimum end-to-end ASC v0.1 proof using a real ZASSIMPLE SAVE request from AI output through ASC Link → Google sign-in → preview → confirm → GitHub write → verification/receipt → Sheets HISTORY → redirect to main UI.  
-Depends on: T-001 through T-010  
-Pass: The complete fallback flow succeeds without direct AI→GitHub integration, produces a real verified commit and factual receipt, updates operational history, and preserves the confirmed architecture boundaries.
 
 T-012 | BLOCKED / LATER  
 Source: PF-006, D-018  
