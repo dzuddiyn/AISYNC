@@ -549,3 +549,14 @@ The route is visible and user-overridable. Ambiguous intent defaults to DUMP.
 ### User-first principle
 
 The user should not have to understand ZASS internals before using ASC. The default start experience is: type naturally → choose AI provider → GO. ASC then handles authentication, routing, method/contract selection, and handoff behind the DUMP / DECIDE / DESIGN surface.
+
+
+### Authentication continuation
+
+ASC v0.1 uses a reliability-first B + A strategy:
+
+- **Primary:** preserve the user's draft/pending request in the original ASC tab, open Google login in a new tab, then return and press **CONTINUE**.
+- **Fallback:** after login, click the ASC link / GO / CONTINUE again.
+- The user's work must not be lost.
+- The URL fragment itself does not need to survive Google's authentication redirect.
+- Fully automatic invisible auth recovery is a later enhancement, not a v0.1 requirement.
