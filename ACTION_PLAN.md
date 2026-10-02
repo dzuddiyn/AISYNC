@@ -208,3 +208,7 @@ Finding: Lock the smallest Method Gateway implementation topology: existing ASC 
 
 PF-021 | ZASSIMPLE v0.3.0 BASELINE  
 Finding: AISYNC now follows official ZASSIMPLE v0.3.0. DESIGN is the generic design surface; architecture remains a technical subtype appropriate to AISYNC. Existing confirmed architecture and LOCKED decisions remain valid. Current execution remains T-013A in DO IT.
+
+
+PF-022 | RESOLVED BY D-026  
+Finding: T-013B should not pre-build both Markdown and HTML surfaces. Field-test clean text/Markdown first. Add a clean HTML `/view` compatibility fallback only if a required receiver fails the primary endpoint but can read a normal webpage.
