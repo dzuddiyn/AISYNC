@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.14  
+**Project record version:** 0.6.15  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -552,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.15 | 2026-10-02 | LOCKED D-025 Method Gateway v0.1 implementation path: existing Write Contract unchanged; METHODS registry + protected exact-commit GitHub sync + separate public read gateway; execute T-013A → T-013B → resume T-004. |
 | 0.6.14 | 2026-10-02 | D-024 gate satisfied by official ZASSPILL v0.1.0 Phase 1 freeze. T-013 promoted as next implementation work. METHODS registry created in ASC DB; Method Snapshot Record v0.1 schema, protected GitHub sync worker, and separate public read gateway code added. T-004 remains paused. |
 | 0.6.13 | 2026-10-02 | LOCKED D-024 execution-order gate: pause T-004 at its verified boundary; keep T-013 planned but unpromoted; wait for official ZASSPILL, then review its real handoff contract and let the owner decide whether to run T-013A → T-013B before resuming T-004. |
 | 0.6.12 | 2026-10-02 | LOCKED D-023 Public Method Gateway: GitHub remains method SoT; AI-SYNC holds identifiable method snapshots and serves Markdown itself through public read-only receiving URLs. Write Contract v0.1 remains unchanged; Method Snapshot Record is a separate read-plane representation. |
@@ -760,3 +761,66 @@ Implementation evidence already created:
 - `method-gateway/public/appsscript.json`
 
 T-004 remains paused at its verified boundary.
+
+
+D-025 | LOCKED  
+Decision: Lock the **AI-SYNC Method Gateway v0.1 implementation path** selected after the architecture audit.
+
+1. **Keep the existing ASC Write Contract v0.1 unchanged.**  
+   The Method Gateway remains a separate public read-plane subsystem.
+
+2. **Use one lightweight `METHODS` registry in the existing ASC DB for v0.1 snapshots.**  
+   Locked columns:
+   - method_key
+   - method
+   - language
+   - version
+   - source_repo
+   - source_path
+   - source_commit
+   - synced_at
+   - content
+
+3. **Use two separate Apps Script surfaces.**
+   - Protected sync project: canonical GitHub → METHODS.
+   - Public read project: METHODS → public Markdown/plain-text endpoint.
+   The public deployment must not expose sync/admin/write functions.
+
+4. **Pin one sync run to one exact GitHub branch-head commit.**  
+   Resolve the canonical ZASS repository `main` HEAD first, then fetch all three method files at that exact commit so a snapshot batch is internally consistent and traceable.
+
+5. **v0.1 scope remains three Malay methods only.**
+   - ZASSPILL_MY.md
+   - ZASSIMPLE_MY.md
+   - ZASSELECTION_MY.md
+
+6. **Normal sync must not require manual Markdown copy-paste.**  
+   The protected sync worker fetches canonical content, extracts version metadata, and upserts the registry.
+
+7. **Execution order is locked as:**
+   ```text
+   T-013A
+   METHODS registry + protected GitHub sync
+           ↓
+   T-013B
+   public Method Gateway + Gemini/Copilot proof
+           ↓
+   resume T-004
+   front-door / routing / handoff
+   ```
+
+8. **Public route shape is directional, not a production-domain lock.**
+   Intended route equivalents:
+   - /method/zasspill/my
+   - /method/zassimple/my
+   - /method/zasselection/my
+
+9. **No overbuild in v0.1.**
+   Do not add complex auth, multi-user product behavior, broad registry UI, extra connectors, webhook infrastructure, EN methods, or production URL hardening before the vertical slice proves readability.
+
+10. **Acceptance authority remains D-023.**  
+    This decision locks how the proof is implemented; it does not weaken the requirement that GitHub remains authoritative and that Gemini/Copilot must actually read the served snapshot before T-013 passes.
+
+Reason: This is the smallest implementation compatible with current ASC boundaries while keeping public read, protected sync, GitHub authority, and method semantics cleanly separated.  
+Locked by: Project Owner  
+Date: 2026-10-02
