@@ -249,11 +249,16 @@ node apps-script/test-dashboard-ui.mjs
 Pending: deployment, Google Sites integration, live read proof.
 
 
-## T-010B security / replay binding — LOCAL PASS (not deployed)
+## T-010 security / replay binding — PASS (live)
 
 - `previewAscRequest({ fragment })` validates the envelope server-side (structure, ≤ 30-minute lifetime, expiry, SHA-256 integrity, owner identity) and returns only safe fields. It never claims replay state and never writes. The client enables CONFIRM & SYNC only when this returns `securityValid` and `writeEnabled` for the same `request_id`; rejected requests are shown as `REJECTED (<code>)`.
 - `confirmAndSync` re-validates in order: decode → security/expiry/integrity → explicit request-bound confirmation → owner → atomic replay claim → existing T-008 flow (Core → GitHub verify → receipt → HISTORY → redirect).
 - Replay authority: `LockService.getScriptLock()` + Script Properties key `asc.replay.v1.<sha256(request_id)>` with marker `{state, claimed_at}`. CacheService only delivers results. Already claimed → `REPLAY_REJECTED`; lock/property uncertainty → `REPLAY_STORE_UNAVAILABLE`; both with zero GitHub/HISTORY calls. A confirmed attempt stays consumed even if the write fails; retry needs a new `request_id`. No marker cleanup in v0.1.
 - `GITHUB_TOKEN` is read from Script Properties only and never returned, rendered, stored client-side, or logged.
 
-Pending: deployment and live proof.
+Live proof:
+- Apps Script version 6 ("T-010 security and replay controls") is deployed on the existing protected deployment.
+- Valid secure request `TEST_ONLY_T010_LIVE_20261002221136` produced a verified GitHub write (commit `62f576194dada61584f07752b17c91ee6865d12c`) and HISTORY row 5 SUCCESS.
+- Reusing the same request_id returned `REPLAY_REJECTED` with no second HISTORY row.
+- Expired request returned `REQUEST_EXPIRED`; tampered request returned `INTEGRITY_MISMATCH`; both kept CONFIRM & SYNC disabled and produced no HISTORY row.
+- T-010 is PASS; T-011 is the next execution task.
