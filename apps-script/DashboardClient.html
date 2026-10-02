@@ -1,0 +1,168 @@
+// T-009B/C — dashboard client. Pure render functions return HTML strings; values are
+// escaped and shown exactly as provided by the read layer. No inference or calculation.
+
+const DASHBOARD_ENTRIES = ['DECIDE', 'DESIGN'];
+const NOT_PROVIDED = 'Not provided';
+let dashboardState = { entry: 'DECIDE', list: null };
+
+function escapeHtml(value) {
+  return String(value === undefined || value === null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function textOrNotProvided(value) {
+  const text = value === undefined || value === null ? '' : String(value);
+  return text.trim() === ''
+    ? '<span class="not-provided">' + NOT_PROVIDED + '</span>'
+    : escapeHtml(text);
+}
+
+function renderProgress(progress) {
+  if (progress && progress.state === 'PROVIDED' && typeof progress.value === 'number') {
+    return '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
+      escapeHtml(progress.value) + '"><span style="width:' + escapeHtml(progress.value) + '%"></span></div>' +
+      '<div class="muted">' + escapeHtml(progress.raw) + '</div>';
+  }
+  if (progress && progress.state === 'UNREADABLE') {
+    return '<span class="not-provided">Progress value not displayable: ' + escapeHtml(progress.raw) + '</span>';
+  }
+  return '<span class="not-provided">Progress: ' + NOT_PROVIDED + '</span>';
+}
+
+function renderIndexMeta(meta) {
+  if (!meta) return '';
+  return '<div class="muted">Index source: ' + textOrNotProvided(meta.source_artifact) +
+    ' · commit ' + textOrNotProvided(meta.source_commit) +
+    ' · updated_at ' + textOrNotProvided(meta.updated_at) +
+    ' · freshness ' + escapeHtml(meta.freshness || 'UNVERIFIED') + '</div>';
+}
+
+function renderError(result) {
+  const error = (result && result.error) || { code: 'UNKNOWN', message: 'No result returned.' };
+  let detail = '';
+  if (result && result.tab) detail += ' Tab: ' + escapeHtml(result.tab) + '.';
+  if (result && result.missing && result.missing.length) detail += ' Missing: ' + escapeHtml(result.missing.join(', ')) + '.';
+  if (result && result.duplicate && result.duplicate.length) detail += ' Duplicate: ' + escapeHtml(result.duplicate.join(', ')) + '.';
+  return '<p class="error">FAILED (' + escapeHtml(error.code) + ') — ' + escapeHtml(error.message) + detail + '</p>';
+}
+
+function renderEntryTabs(active) {
+  return '<div class="tabs" role="tablist">' + DASHBOARD_ENTRIES.map(function (entry) {
+    return '<button type="button" data-entry="' + entry + '" aria-pressed="' + (entry === active) + '">' + entry + '</button>';
+  }).join('') + '</div>';
+}
+
+function renderProjectItem(project) {
+  return '<button type="button" class="project" data-project-id="' + escapeHtml(project.project_id) + '">' +
+    '<strong>' + textOrNotProvided(project.project_name) + '</strong>' +
+    renderProgress(project.progress) +
+    '<div>Latest update: ' + textOrNotProvided(project.latest_update) + '</div>' +
+    renderIndexMeta(project.index_metadata) +
+    '</button>';
+}
+
+function renderProjectList(result, entry) {
+  if (!result || result.ok !== true) return renderError(result);
+  const active = DASHBOARD_ENTRIES.indexOf(entry) >= 0 ? entry : 'DECIDE';
+  const projects = (result.groups && result.groups[active]) || [];
+  let html = renderEntryTabs(active);
+  html += projects.length
+    ? projects.map(renderProjectItem).join('')
+    : '<p class="muted">No ' + active + ' projects in ASC DB.</p>';
+  const unrecognized = result.unrecognized_ui_entry || [];
+  if (unrecognized.length) {
+    html += '<p class="muted">' + unrecognized.length + ' project row(s) have a ui_entry other than DECIDE/DESIGN and are not grouped.</p>';
+  }
+  return html;
+}
+
+function renderCell(column, row) {
+  const value = row[column];
+  if (column === 'canonical_url' && typeof value === 'string' && /^https:\/\/\S+$/.test(value)) {
+    return '<a href="' + escapeHtml(value) + '" target="_blank" rel="noopener">' + escapeHtml(value) + '</a>';
+  }
+  if (column === 'receipt_json' || column === 'lineage_json') {
+    return value ? '<details><summary>show</summary><pre>' + escapeHtml(value) + '</pre></details>' : '';
+  }
+  return escapeHtml(value);
+}
+
+function renderTable(columns, rows, emptyText) {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return '<p class="muted">' + escapeHtml(emptyText) + '</p>';
+  }
+  return '<div class="table-wrap"><table><thead><tr>' +
+    columns.map(function (c) { return '<th>' + escapeHtml(c) + '</th>'; }).join('') +
+    '</tr></thead><tbody>' +
+    rows.map(function (row) {
+      return '<tr>' + columns.map(function (c) { return '<td>' + renderCell(c, row) + '</td>'; }).join('') + '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+
+const ACTION_PLAN_COLUMNS = ['ap_id', 'status', 'action', 'dependencies', 'pass_condition', 'source_lineage', 'source_commit', 'updated_at'];
+const ZASS_COLUMNS = ['record_type', 'record_id', 'status', 'summary', 'lineage_json', 'source_artifact', 'source_commit', 'canonical_url', 'updated_at'];
+const HISTORY_COLUMNS = ['timestamp', 'request_id', 'operation', 'destination', 'status', 'affected_resource', 'commit_or_record_id', 'failure_reason', 'receipt_json'];
+
+function renderSection(title, body) {
+  return '<section class="card"><h2>' + escapeHtml(title) + '</h2>' + body + '</section>';
+}
+
+function renderProjectDetail(result) {
+  if (!result || result.ok !== true) {
+    return '<button type="button" class="back" data-back="1">← Back</button>' + renderError(result);
+  }
+  const p = result.project;
+  return '<button type="button" class="back" data-back="1">← Back</button>' +
+    '<h2>' + textOrNotProvided(p.project_name) + '</h2>' +
+    '<div class="muted">project_id ' + escapeHtml(p.project_id) + ' · ui_entry ' + textOrNotProvided(p.ui_entry) +
+    ' · source_method ' + textOrNotProvided(p.source_method) + ' · lifecycle_stage ' + textOrNotProvided(p.lifecycle_stage) + '</div>' +
+    renderIndexMeta(p.index_metadata) +
+    renderSection('1. Project progress bar', renderProgress(p.progress)) +
+    renderSection('2. Progress summary', '<p>' + textOrNotProvided(p.progress_summary) + '</p>') +
+    renderSection('3. Next Action Plan summary', '<p>' + textOrNotProvided(p.next_action_plan) + '</p>') +
+    renderSection('4. Next stage summary', '<p>' + textOrNotProvided(p.next_stage) + '</p>') +
+    renderSection('5. Action Plan table', renderTable(ACTION_PLAN_COLUMNS, result.action_plan, 'No ACTION_PLAN rows for this project.')) +
+    renderSection('6. ZASS table', renderTable(ZASS_COLUMNS, result.records, 'No RECORDS rows for this project.')) +
+    renderSection('7. History', renderTable(HISTORY_COLUMNS, result.history, 'No HISTORY rows for this project.'));
+}
+
+function dashboardRoot() { return document.getElementById('dashboard'); }
+
+function showList() {
+  dashboardRoot().innerHTML = renderProjectList(dashboardState.list, dashboardState.entry);
+}
+
+function openProject(projectId) {
+  dashboardRoot().innerHTML = 'Loading project…';
+  google.script.run
+    .withSuccessHandler(function (result) { dashboardRoot().innerHTML = renderProjectDetail(result); })
+    .withFailureHandler(function () {
+      dashboardRoot().innerHTML = renderProjectDetail({ ok: false, error: { code: 'SERVER_CALL_FAILED', message: 'Project could not be loaded.' } });
+    })
+    .getDashboardProject(projectId);
+}
+
+function handleDashboardClick(event) {
+  const target = event.target.closest('button');
+  if (!target) return;
+  if (target.dataset.entry) { dashboardState.entry = target.dataset.entry; showList(); return; }
+  if (target.dataset.projectId !== undefined) { openProject(target.dataset.projectId); return; }
+  if (target.dataset.back) { showList(); }
+}
+
+function bootDashboard() {
+  dashboardRoot().addEventListener('click', handleDashboardClick);
+  google.script.run
+    .withSuccessHandler(function (result) { dashboardState.list = result; showList(); })
+    .withFailureHandler(function () {
+      dashboardState.list = { ok: false, error: { code: 'SERVER_CALL_FAILED', message: 'Dashboard could not be loaded.' } };
+      showList();
+    })
+    .getDashboardProjects();
+}
+
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('DOMContentLoaded', bootDashboard);
+}

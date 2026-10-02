@@ -10,14 +10,19 @@
 
 ## Current task
 
-T-009 | CURRENT — NOT STARTED\
+T-009 | IN PROGRESS\
 Source: AP-003, UI data requirements\
 Decision / Design lineage: D-005, D-006, D-012, D-014, D-019, DESIGN v1.0 § Google Sites ASC UI\
 Do: Implement the read/dashboard path: DECIDE/DESIGN landing, project list with progress + latest update, and project detail with the seven locked sections.\
 Depends on: T-003 PASS, T-004 PASS — satisfied.\
 Pass: The UI can display Project progress bar, Progress summary, Next Action Plan summary, Next stage summary, Action Plan table, ZASS table, and History from ASC DB/index data without inventing method semantics.\
-Starting point: the minimum owner-only Google Sites shell created as a T-008 redirect prerequisite (`https://sites.google.com/view/aisync-asc/laman-utama`) exists; no dashboard content has been built.\
-Current result: NOT STARTED.
+Starting point: the minimum owner-only Google Sites shell created as a T-008 redirect prerequisite (`https://sites.google.com/view/aisync-asc/laman-utama`) exists; no dashboard content has been built there.\
+T-009A | LOCAL PASS — read-only ASC DB adapter `apps-script/DashboardRead.gs`: `getDashboardProjects()` / `getDashboardProject(projectId)`; SpreadsheetApp read calls only; required-header validation with structural `TAB_MISSING` / `SCHEMA_INCOMPATIBLE` failures; display strings preserved exactly; blank `progress_percent` → `NOT_PROVIDED` (null, never 0); no progress/latest-update derivation; exact `project_id` filtering for RECORDS / ACTION_PLAN / HISTORY; duplicate PROJECTS rows refused; source metadata exposed with freshness `UNVERIFIED`.\
+T-009B | LOCAL PASS — `?view=dashboard` route (`Dashboard.html` + `DashboardClient.html`); default route still serves the T-008 preview; DECIDE / DESIGN grouping from `PROJECTS.ui_entry` only; progress bar only when provided, otherwise "Not provided"; latest update shown exactly from `PROJECTS.latest_update`.\
+T-009C | LOCAL PASS — project detail with the seven locked sections in order (sections 1–4 from PROJECTS; Action Plan table from ACTION_PLAN; ZASS table from RECORDS; History from HISTORY); empty tables render gracefully; HISTORY status/receipt shown unmodified.\
+Tests: `node apps-script/test-dashboard-read.mjs`, `node apps-script/test-dashboard-ui.mjs` — PASS with fake services; T-008 regression tests PASS.\
+Pending: Apps Script deployment of the dashboard, Google Sites integration, and live read proof against the ASC DB. Not deployed; live Sheet and Google Sites unchanged.\
+Current result: IN PROGRESS — not PASS.
 
 ## Completed
 

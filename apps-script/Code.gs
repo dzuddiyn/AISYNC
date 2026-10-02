@@ -1,4 +1,14 @@
-function doGet() {
+// Default route = T-008 preview / CONFIRM & SYNC (unchanged).
+// ?view=dashboard = T-009 read-only dashboard.
+function doGet(e) {
+  const view = e && e.parameter ? e.parameter.view : undefined;
+  if (view === 'dashboard') {
+    return HtmlService
+      .createTemplateFromFile('Dashboard')
+      .evaluate()
+      .setTitle('ASC — Dashboard')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
   return HtmlService
     .createTemplateFromFile('Index')
     .evaluate()

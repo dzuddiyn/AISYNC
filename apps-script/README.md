@@ -24,6 +24,7 @@ This matches the Apps Script web-app manifest model documented by Google.
 - `Index.html` — ASC preview + CONFIRM & SYNC shell
 - `Client.html` — pending-fragment preservation + decode + preview + confirm/receipt/redirect logic
 - `RuntimeShims.gs`, `AscRuntime.gs` — T-008B runtime binding (see below)
+- `DashboardRead.gs`, `Dashboard.html`, `DashboardClient.html` — T-009 read-only dashboard (`?view=dashboard`; see below)
 - `test-pending-request.mjs` — dependency-free state/preview-boundary test
 
 ## Pending-request behavior
@@ -228,3 +229,21 @@ redirect:     main Google Sites ASC UI (https://sites.google.com/view/aisync-asc
 ```
 
 Limits: this proves the TEST_ONLY destination policy only. It is not a production Record ID → GitHub path mapping; that mapping remains undecided. Failure paths (FAILED/unverified writes never redirect) are proven by the local tests above, not by a live forced failure. Replay/expiry/integrity controls remain T-010.
+
+
+## T-009A/B/C read-only dashboard — LOCAL PASS (not deployed)
+
+Routing: the default route still serves the T-008 preview / CONFIRM & SYNC page; `?view=dashboard` serves `Dashboard.html`.
+
+- `DashboardRead.gs` — `getDashboardProjects()` and `getDashboardProject(projectId)` read PROJECTS / RECORDS / ACTION_PLAN / HISTORY from the ASC DB using only `openById` → `getSheetByName` → `getDataRange` → `getDisplayValues`. Required headers are matched by name; missing tabs/headers return `TAB_MISSING` / `SCHEMA_INCOMPATIBLE` instead of data. Values are display strings, preserved exactly.
+- Method-owned semantics are displayed, not computed: blank `progress_percent` is `NOT_PROVIDED` (null, never 0); a non-blank value is shown as a bar only if it is a plain 0–100 number (optional `%`), otherwise shown raw as not displayable. `latest_update`, stage, and summaries come only from PROJECTS.
+- Detail filters RECORDS / ACTION_PLAN / HISTORY by exact `project_id`; duplicate PROJECTS rows are refused rather than picked.
+- Every response carries source metadata (`source_artifact`, `source_commit`, `updated_at`) and freshness `UNVERIFIED`; stale index values are shown as stored and are not repaired.
+- Project detail renders the seven locked sections: progress bar, progress summary, next Action Plan summary, next stage summary, Action Plan table (ACTION_PLAN), ZASS table (RECORDS), History (HISTORY).
+
+```text
+node apps-script/test-dashboard-read.mjs
+node apps-script/test-dashboard-ui.mjs
+```
+
+Pending: deployment, Google Sites integration, live read proof.
