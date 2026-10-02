@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0.5  
+**Version:** 1.0.6  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-023 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-025 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 
@@ -530,3 +530,48 @@ The public Markdown endpoint serves `content` itself. Metadata is inspectable se
 The existing **ASC Write Contract v0.1 remains exactly eight semantic fields**. Method Snapshot metadata is not added to it. This preserves T-001/D-011/D-013 boundaries.
 
 The Method Gateway is a read-plane subsystem, not a new ZASS method and not a replacement for the ASC Write Contract.
+
+
+## Method Gateway v0.1 implementation topology
+
+D-025 locks the proof topology:
+
+```text
+CANONICAL SOURCE
+Official ZASS GitHub repo
+        ↓
+resolve exact main HEAD commit
+        ↓
+PROTECTED SYNC APP
+fetch 3 MY methods at that commit
+        ↓
+ASC DB / METHODS
+snapshot registry
+        ↓
+PUBLIC READ APP
+read-only anonymous GET
+        ↓
+plain Markdown / text
+        ↓
+receiver AI
+```
+
+### Separation rule
+
+The protected sync app and public read app are separate Apps Script surfaces. Public readers must not gain access to sync, publish, write, configuration, or admin operations.
+
+### Snapshot batch consistency
+
+One sync run resolves a single canonical GitHub commit first. All three method files are then read at that exact commit. This prevents one registry refresh from combining method files from different repository states.
+
+### Existing contracts
+
+The eight-field ASC Write Contract v0.1 remains unchanged. The Method Snapshot Record v0.1 and METHODS table belong to the read plane.
+
+### Execution order
+
+```text
+T-013A → T-013B → resume T-004
+```
+
+Production domain/URL, EN methods, advanced cache/versioning, webhooks, and broader registry features remain outside the v0.1 proof.
