@@ -47,12 +47,13 @@ Constraint / feasibility note: ASC Core must not perform reasoning or silently r
 Pass / stop condition: The same contract can enter the Core regardless of which AI app generated it.  
 Feeds design: YES
 
-AP-005 | OPEN  
+AP-005 | DONE  
 Source: D-007  
 Action: Implement the first destination adapter for GitHub using the locked v0.1 fine-grained PAT path, current-file/SHA fetch, create/update, verification, and receipt flow (D-016).  
 Dependencies: AP-001, AP-004.  
 Constraint / feasibility note: v0.1 proof should support Markdown update → commit → verification → factual receipt.  
 Pass / stop condition: A ZASSIMPLE project with no AI→GitHub integration can SAVE through ASC and receive a verified commit result.  
+Result: PASS — T-006A adapter mechanics + T-006B real Contents API transport produced verified live commit `95e019604e6edd778acd0ee252c506d2729f2d09`; final receipt semantics remain AP-006/T-007.  
 Feeds design: YES
 
 AP-006 | OPEN  
@@ -279,3 +280,12 @@ Finding: A successful GitHub write response is not sufficient to claim verified 
 
 PF-042 | T-006 NEXT SLICE — CONTROLLED LIVE WRITE  
 Finding: T-006 remains IN PROGRESS. The next smallest slice is T-006B: inject a real GitHub transport into the already-proven adapter boundary, perform one controlled repository write, re-read the persisted file, and capture factual commit/file identifiers without yet creating the final T-007 receipt or HISTORY entry.
+
+PF-043 | T-006B LIVE GITHUB WRITE — PASS  
+Finding: The controlled live proof created `proofs/t006b-github-adapter-live.md` through the real GitHub Contents API transport. Adapter outcome was VERIFIED_WRITE with commit `95e019604e6edd778acd0ee252c506d2729f2d09` and persisted content SHA `3be4eed97840c9414207f1cb4f33e7f5021847bf`.
+
+PF-044 | LIVE PERSISTED-STATE VERIFICATION — PASS  
+Finding: Remote verification independently confirmed the proof file exists on `main`, its content exactly matches the deterministic proposed content, and the remote file SHA equals the adapter's persisted/content SHA. The successful PUT response was therefore not the sole basis for the verified claim.
+
+PF-045 | T-006 CLOSED / T-007 PROMOTED  
+Finding: T-006 pass condition is met. The GitHub adapter now has proven mock mechanics, real runtime-authenticated transport, one controlled verified repository write, and factual commit/file identifiers. Execution advances to T-007 factual Write Receipt + HISTORY persistence.
