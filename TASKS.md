@@ -28,7 +28,7 @@ Pass:
 - Copilot can read and identify the method/version;
 - ZASSPILL handoff can carry the gateway URL;
 - HTML compatibility view is added only if field evidence requires it.
-Current result: GitHub Pages receiver-facing proof is live. Gemini successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and correctly identified ZASSIMPLE v0.3.0, its lifecycle, and PROCEED/LOCK semantics. Copilot readability and ZASSPILL handoff proof remain.
+Current result: GitHub Pages receiver-facing proof is live. Gemini and Copilot both successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and identified the method/version/semantics. Remaining proof: ZASSPILL handoff carrying the public gateway URL.
 
 ## Paused task
 
