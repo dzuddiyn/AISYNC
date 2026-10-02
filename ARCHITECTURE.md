@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0.1  
+**Version:** 1.0.2  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-019 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-020 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 
@@ -13,6 +13,65 @@
 ASC is shared transport/write infrastructure between reasoning/selection methods and authoritative persistence destinations.
 
 Methods own meaning and decisions. ASC owns transport, validation, destination translation, persistence, verification, and factual receipts.
+
+
+## Front-door AI handoff flow
+
+D-020 adds an entry/orchestration flow before the existing ASC persistence flow. It does **not** replace the confirmed write/verification pipeline.
+
+```text
+User types first message
+        ↓
+User MUST choose AI provider
+        ↓
+GO / START
+        ↓
+provider selected?
+  ├─ NO → red warning below arrow → STOP
+  └─ YES
+        ↓
+check ASC login/session
+  ├─ authenticated → continue
+  └─ not authenticated
+        ↓
+preserve draft locally
+        ↓
+attempt login in new tab
+  ├─ success → continue after login
+  └─ blocked/unavailable
+        ↓
+red warning:
+copy draft first
+        ↓
+user presses again
+        ↓
+redirect to login page
+        ↓
+ASC Intent Router
+  ├─ unclear / casual / scattered → DUMP
+  ├─ choice / comparison → DECIDE
+  └─ build / create / design → DESIGN
+        ↓
+select ZASS sub-system + current contract/instructions
+  ├─ DUMP   → ZASSPILL
+  ├─ DECIDE → ZASSELECTION / PICKS
+  └─ DESIGN → ZASSIMPLE / IDEA
+        ↓
+selected AI provider handoff
+  ├─ supported prefill/deep-link
+  │      → open AI chat with ASC bootstrap prompt
+  └─ unsupported
+         → show copy/paste prompt + provider link
+```
+
+Rules:
+- DUMP is the safe default for ambiguous intent.
+- The chosen route remains visible and user-overridable.
+- Later intent changes produce a switch suggestion; ASC does not silently change the active mode.
+- ASC selects the appropriate ZASS subsystem/contract but does not duplicate its semantic rules.
+- ZASSPILL remains an external dependency until its ZASS SYSTEM definition is complete.
+- Provider-specific prefill is capability-dependent; copy/paste is the required fallback.
+- Authentication/routing/handoff does not itself imply persistence.
 
 ## Main flow
 
@@ -322,3 +381,14 @@ Date: **2026-10-01**
 Confirmation phrase: `YA, CONFIRM ARCHITECTURE`
 
 Implementation status: **NOT STARTED**. Next lifecycle stage: **DO IT**.
+
+
+## Confirmed architecture patch record
+
+### v1.0.2 — D-020 front-door orchestration addendum
+
+**D-020 — ASC Start / Intent Routing / AI Handoff** is LOCKED.
+
+This patch adds mandatory AI-provider selection, authentication before intent routing, automatic DUMP/DECIDE/DESIGN routing, ZASS sub-system selection, and provider handoff/fallback behavior. It does not change GitHub/Sheets authority, the ASC Write Contract boundary, adapter semantics, or factual receipt requirements.
+
+Implementation of the DUMP route is intentionally deferred until ZASSPILL's own behavior/contract is available from ZASS SYSTEM.
