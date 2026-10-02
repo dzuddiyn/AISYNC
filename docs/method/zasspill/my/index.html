@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI-SYNC Method Gateway — ZASSPILL MY</title>
+  <meta name="aisync-method" content="ZASSPILL">
+  <meta name="aisync-language" content="my">
+  <meta name="aisync-version" content="0.1.0">
+  <meta name="aisync-source-repo" content="dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint">
+  <meta name="aisync-source-path" content="ZASSPILL/ZASSPILL_MY.md">
+  <meta name="aisync-source-commit" content="38760ddbc194ea530730bb615be2553cc38f267b">
+</head>
+<body>
+<main>
+<pre># ZASSPILL
+
+&gt; **Kekal serabut. Simpan konteks. Sambung di mana-mana.**
+
+**Version:** 0.1.0  
+**Status:** PHASE 1 FROZEN — CORE PROOF PASSED  
+**Language:** Bahasa Melayu  
+**Owner:** User / Continuity Owner
+
+ZASSPILL ialah method continuity DUMP dalam keluarga ZASS.
+
+Tugasnya mudah:
+
+&gt; **Simpan konteks manusia secukupnya supaya pemikiran boleh disambung merentas chat dan AI tanpa memaksa struktur terlalu awal.**
+
+ZASSPILL bukan method keputusan, architecture, task system, transcript archive atau personal-profile database.
+
+Pengguna boleh kekal dalam ZASSPILL selama mana perlu. Tidak naik ke DECIDE atau DESIGN bukan kegagalan.
+
+---
+
+## 1. Boundary Phase 1
+
+ZASSPILL v0.1.0 sengaja membuktikan core portable satu semantic thread dahulu.
+
+Termasuk:
+
+- satu semantic continuity thread bagi setiap portable packet;
+- continuity frame 6W;
+- beza fakta/fikiran/kebimbangan/preference/tafsiran AI;
+- continuity temporary/stable/superseded;
+- refresh bila meaning berubah;
+- continuity compression;
+- inspection dan correction oleh manusia;
+- portability manual antara AI;
+- cadangan contextual ke DECIDE atau DESIGN apabila intent benar-benar berubah.
+
+Belum termasuk:
+
+- sync database ASC;
+- semantic thread index;
+- automatic multi-thread resolution;
+- automation split/merge;
+- automation dormant/archive;
+- final backend schema;
+- format machine thread ID;
+- penambahan global DUMP sebagai entry first-class.
+
+Entry global ZASS SYSTEM semasa ialah DECIDE or DESIGN?. DUMP / DECIDE / DESIGN masih target pilot ASC yang lebih luas.
+
+---
+
+## 2. Routing bahasa
+
+ZASSPILL_MY.md ialah fail method Bahasa Melayu. ZASSPILL_EN.md ialah default English.
+
+Apabila fail Melayu ini aktif, structured surface ZASSPILL dipaparkan dalam Bahasa Melayu. Wording asal user yang penting boleh dikekalkan dalam bahasa asal jika terjemahan boleh mengubah maksud.
+
+Jika pengguna menggunakan ZASSPILL_EN.md tetapi bercakap dalam Bahasa Melayu, AI boleh terus berbual dalam Bahasa Melayu; versi Melayu dimaklumkan sekali sahaja dan fail tidak ditukar secara automatik.
+
+---
+
+## 3. Tingkah laku DUMP biasa
+
+&gt; **DUMP patut terasa seperti bercakap, bukan mengendalikan sistem.**
+
+Untuk mesej biasa user:
+
+- jawab secara natural dahulu;
+- jangan paparkan blok ZASSPILL wajib;
+- jangan paksa goal, criteria, pilihan, architecture, plan, task atau progress;
+- simpan secara senyap hanya konteks yang betul-betul membantu continuity masa depan;
+- jangan dakwa fail atau external store berubah jika tiada write sebenar.
+
+Lagi baik ZASSPILL berfungsi, lagi kurang user perlu memikirkan ZASSPILL.
+
+---
+
+## 4. Continuity frame 6W
+
+AI menjaga meaning menggunakan enam bucket semantic.
+
+### WHO
+Siapa yang penting kepada thread ini?
+
+Bawa hanya hubungan + relevance kepada thread. Jangan jadikan WHO sebagai full profile.
+
+### WHAT THIS IS ABOUT
+Cerita manusia atau continuity topic ini sebenarnya tentang apa?
+
+### WHERE THE THINKING IS NOW
+Di mana kedudukan pemikiran user sekarang?
+
+### WHAT MATTERS
+Fakta, preference, constraint, kebimbangan atau keadaan apa yang benar-benar membantu sambungan?
+
+### WHAT IS STILL OPEN
+Apa yang masih belum selesai, tidak pasti atau wajar dikembali semula?
+
+### WHERE THIS CONTEXT CAME FROM
+Dari mana state ini datang, sejauh mana ia fresh, dan lineage minimum apa yang perlu?
+
+History/timeline optional hanya apabila chronology benar-benar membantu continuity.
+
+---
+
+## 5. Disiplin meaning
+
+Truth type dan continuity stability ialah dua axis berbeza.
+
+~~~text
+JENIS KANDUNGAN
+Fakta
+Fikiran
+Kebimbangan
+Preference
+Tafsiran AI
+
+        ×
+
+KEADAAN CONTINUITY
+Temporary
+Stable
+Superseded
+~~~
+
+Aturan:
+
+- Stable bukan bermaksud fakta.
+- Fikiran berulang kekal fikiran sehingga user sendiri mengubahnya menjadi fakta/keputusan.
+- Kebimbangan mesti ditulis sebagai kebimbangan, bukan outcome yang diramal.
+- Tafsiran AI mesti kekal boleh dibezakan daripada apa yang user benar-benar kata.
+- Pembetulan jelas user mengatasi tafsiran AI.
+- Context superseded tidak boleh bersaing dengan current context.
+- Simpan context lama hanya jika ia membantu memahami keadaan semasa.
+
+Contoh:
+
+~~~text
+User:
+“Aku asyik terfikir nak pindah.”
+
+Betul:
+FIKIRAN — pindah ialah pertimbangan yang berulang.
+
+Salah:
+FAKTA — user akan berpindah.
+~~~
+
+Jangan paksa setiap baris packet mempunyai label. Gunakan label apabila ia mencegah meaning daripada menjadi keras atau mengelirukan.
+
+---
+
+## 6. Refresh dan continuity compression
+
+&gt; **Refresh bila meaning berubah, bukan bila bilangan mesej bertambah.**
+
+Refresh apabila meaning berubah secara material, contohnya:
+
+- pemikiran semasa user berubah;
+- orang, fakta, preference, constraint atau kebimbangan penting menjadi relevan;
+- open thread berubah atau selesai;
+- context tersimpan menjadi stale;
+- user membetulkan AI;
+- user meminta melihat atau export state semasa.
+
+Jangan append mini-summary selepas setiap mesej.
+
+&gt; **Current Summary mewakili keadaan semasa, bukan transcript.**
+
+Maklumat baru perlu mengemas kini gambaran semasa, bukan automatik membesarkan packet.
+
+Conversation yang lebih panjang tidak semestinya menghasilkan packet yang lebih besar.
+
+---
+
+## 7. Portable Thread Packet — surface Phase 1
+
+Portable Thread Packet ialah artifact continuity standalone.
+
+Ia dijaga oleh AI. User tidak perlu mengisi borang.
+
+Ini ialah surface Phase 1 yang human-readable, bukan final backend schema.
+
+~~~markdown
+# ZASSPILL Thread — [tajuk mudah difahami manusia]
+
+Method: ZASSPILL v0.1.0
+State: Standalone continuity packet
+Updated: [tarikh/masa jika diketahui]
+Boundary continuity: Guna packet ini + conversation semasa sahaja. Jangan tambah context daripada memory/profile provider kecuali user sendiri membawanya masuk semula.
+
+## WHO
+- [hanya orang yang penting kepada thread + relevance minimum]
+
+## WHAT THIS IS ABOUT
+[ringkasan cerita manusia]
+
+## WHERE THE THINKING IS NOW
+[meaning semasa, bukan sejarah transcript]
+
+## WHAT MATTERS
+- [fakta / preference / constraint / kebimbangan relevan]
+- [guna wording berhati-hati supaya fikiran tidak menjadi fakta]
+
+## WHAT IS STILL OPEN
+- [perkara belum selesai]
+- [soalan yang wajar dikembali]
+
+## WHERE THIS CONTEXT CAME FROM
+- Sumber: [AI/chat/app/fail jika diketahui]
+- Freshness: [state ini berdasarkan apa]
+- Lineage: [nota sumber/continuation minimum]
+
+## OPTIONAL HISTORY
+[hanya transition yang chronology-nya membantu continuity]
+
+## CONTINUE IN ANOTHER AI
+
+ZASSPILL method — raw:
+https://raw.githubusercontent.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/main/ZASSPILL/ZASSPILL_MY.md
+
+ZASSPILL method — browser fallback:
+https://github.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/blob/main/ZASSPILL/ZASSPILL_MY.md
+
+Jika user kemudian pilih DECIDE → ZASSELECTION — raw:
+https://raw.githubusercontent.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/main/ZASSELECTION/ZASSELECTION_MY.md
+
+Jika user kemudian pilih DECIDE → ZASSELECTION — browser fallback:
+https://github.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/blob/main/ZASSELECTION/ZASSELECTION_MY.md
+
+Jika user kemudian pilih DESIGN → ZASSIMPLE — raw:
+https://raw.githubusercontent.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/main/ZASSIMPLE/ZASSIMPLE_MY.md
+
+Jika user kemudian pilih DESIGN → ZASSIMPLE — browser fallback:
+https://github.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/blob/main/ZASSIMPLE/ZASSIMPLE_MY.md
+
+Arahan: Baca dan ikut ZASSPILL dahulu. Anggap packet ini sebagai continuity authority dan guna packet ini + conversation semasa sahaja. Jika intent user kemudian bergerak ke DECIDE atau DESIGN dan user memilih transition itu secara jelas, gunakan link receiving method yang sepadan dan sudah dibawa dalam packet ini. Jangan aktifkan ZASSELECTION atau ZASSIMPLE sebelum user memilih transition berkaitan.
+~~~
+
+Tajuk ialah presentation, bukan identity. Phase 1 belum lock format machine ID.
+
+Satu portable packet membawa satu semantic continuity thread.
+
+---
+
+## 8. SAVE dan authority standalone
+
+SAVE bermaksud:
+
+&gt; **simpan current continuity state, bukan transcript conversation.**
+
+Phase 1 belum mempunyai ASC sync.
+
+Jika external persistence tersedia dan write sebenar berjaya, laporkan receipt sebenar.
+
+Jika external persistence tidak tersedia:
+
+- hasilkan portable Thread Packet yang dikemas kini;
+- nyatakan dengan jelas bahawa ia ialah packet baru/updated;
+- jangan dakwa ia telah disimpan secara external.
+
+Untuk penggunaan standalone, Thread Packet yang sengaja dikekalkan dan dibekalkan oleh user/session ialah current continuity authority.
+
+Output yang hanya dijana tetapi belum dipersist tidak membuktikan external persistence.
+
+Timestamp paling baru sahaja tidak membuktikan authority.
+
+---
+
+## 9. Inspect, correct, exclude
+
+ZASSPILL invisible secara default tetapi boleh diperiksa bila user mahu.
+
+User boleh berkata secara natural:
+
+~~~text
+Apa yang kau simpan pasal benda ni?
+Tunjukkan context thread ni.
+Yang pasal aku nak resign tu salah.
+Yang ini jangan simpan.
+Buang benda tu daripada context.
+~~~
+
+Aturan:
+
+&gt; **User membetulkan meaning; sistem menjaga struktur.**
+
+&gt; **User boleh secara jelas mengecualikan atau membuang continuity context.**
+
+Jangan paksa user edit Markdown.
+
+Jika user membetulkan meaning, kemas kini current state dan jangan simpan tafsiran AI yang salah sebagai current truth yang bersaing.
+
+Untuk respons sistem ZASSPILL bagi tindakan seperti correct, exclude, inspect atau save:
+
+- letakkan respons sistem di dalam fenced code block;
+- jadikan seringkas mungkin;
+- asingkan daripada conversation biasa;
+- selepas block itu, sambung secara natural berdasarkan mesej sebenar user apabila masih berguna.
+
+Contoh:
+
+~~~text
+ZASSPILL: context dibuang.
+~~~
+
+---
+
+## 10. Privacy dan minimization
+
+WHO membawa hubungan + relevance thread, bukan full identity data.
+
+Jangan masukkan maklumat peribadi yang tidak berkaitan hanya kerana AI/backend mengetahuinya.
+
+&gt; **Jika personal detail tidak diperlukan untuk continuity, jangan bawa.**
+
+&gt; **Portability ialah disclosure boundary.**
+
+&gt; **Memory provider berada di luar boundary packet.**
+
+ZASSPILL tidak menganggap, mengimport atau menyelaraskan personal memory, profile atau private context yang disimpan oleh ChatGPT, Gemini atau provider AI lain kecuali user sengaja membawanya masuk ke semantic thread. Personalization khusus provider boleh wujud serentak, tetapi ia bukan sebahagian daripada portable continuity authority.
+
+Portable packet boleh mengandungi maklumat yang lebih sedikit daripada private authorized backend.
+
+Kekalkan wording tepat user hanya apabila paraphrase boleh mengubah meaning secara material.
+
+---
+
+## 11. Sambung dalam AI lain
+
+Untuk sambung standalone thread dalam AI lain, handoff Phase 1 yang disukai ialah **single-copy**: paste current Thread Packet sahaja. Packet itu sendiri membawa raw + browser fallback link untuk ZASSPILL dan juga link receiving method yang telah disediakan awal bagi kedua-dua route kemudian: DECIDE → ZASSELECTION dan DESIGN → ZASSIMPLE.
+
+AI penerima perlu membaca ZASSPILL dahulu. Link downstream dibawa awal untuk continuity tetapi tidak boleh mengaktifkan ZASSELECTION atau ZASSIMPLE sehingga user memilih transition berkaitan secara jelas.
+
+AI penerima perlu:
+
+- baca packet sebagai continuity state, bukan final decision record;
+- jawab secara natural;
+- jangan cuba reconstruct seluruh chat lama;
+- refresh hanya bila meaning berubah;
+- jaga correction dan beza fakta/fikiran/kebimbangan/tafsiran AI;
+- pastikan pengetahuan baru yang ditambah selepas handoff boleh dibezakan daripada context warisan.
+
+&gt; **Pengetahuan baharu bukan context warisan.**
+
+Fakta, anggaran, research atau tafsiran yang ditambah oleh AI penerima selepas handoff mesti kekal boleh dibezakan daripada maklumat yang dibawa dalam Thread Packet.
+
+Loading Thread Packet yang sah sudah imply continuation. Tiada command CONTINUE wajib.
+
+---
+
+## 12. Move-up contextual
+
+ZASSPILL boleh mengesan intent sudah matang, tetapi tidak boleh auto-switch.
+
+Jika user benar-benar mahu memilih, paparkan hanya system block ZASSPILL yang ringkas:
+
+~~~text
+ZASSPILL: pilihan sebenar dikesan.
+
+Balas:
+[ TERUS DUMP ]   [ DECIDE ]
+~~~
+
+Jika user benar-benar mahu membentuk/membina sesuatu, paparkan hanya system block ZASSPILL yang ringkas:
+
+~~~text
+ZASSPILL: idea dah matang untuk dibentuk.
+
+Balas:
+[ TERUS DUMP ]   [ DESIGN ]
+~~~
+
+Jangan huraikan method, ulang semula pilihan user, atau terangkan maksud controls kecuali user bertanya.
+
+Jangan paparkan ini hanya kerana DECIDE atau DESIGN secara teori boleh digunakan.
+
+Apabila user jelas mahu memilih, ZASSPILL tidak boleh membanding, meranking, mencadang pemenang, memilih, atau merancang option. ZASSPILL mesti dahulu menawarkan [ TERUS DUMP ] [ DECIDE ] dan menunggu pilihan user. Hanya selepas user memilih DECIDE, ZASSELECTION mengambil alih comparison.
+
+Apabila user jelas mahu membentuk atau membina sesuatu, ZASSPILL tidak boleh membina architecture, mereka workflow, membina Action Plan, memecahkan task, menentukan struktur implementation, atau memulakan execution. ZASSPILL mesti dahulu menawarkan [ TERUS DUMP ] [ DESIGN ] dan menunggu pilihan user. Hanya selepas user memilih DESIGN, ZASSIMPLE mengambil alih structured design work.
+
+Jika user pilih DECIDE, receiving method ialah ZASSELECTION.
+
+Jika user pilih DESIGN, receiving method ialah ZASSIMPLE.
+
+Bawa hanya continuity context yang relevan. Jangan bina matrix, architecture, Action Plan atau tasks di dalam ZASSPILL.
+
+---
+
+## 13. Handoff minimum
+
+Apabila user secara jelas bergerak ke DECIDE atau DESIGN, bawa hanya:
+
+~~~text
+thread identity / title
+WHO yang relevan
+WHERE THE THINKING IS NOW
+WHAT MATTERS yang relevan
+WHAT IS STILL OPEN yang relevan
+source / lineage minimum
+optional relevant history
+~~~
+
+Receiving method memiliki structured work yang baru.
+
+Continuity context membantu tetapi tidak pre-authorize keputusan atau design.
+
+Apabila structured method memulangkan result, ZASSPILL simpan outcome relevan + lineage sahaja, bukan seluruh internal artifact method.
+
+---
+
+## 14. Method Handoff Contract v0.1
+
+Apabila user secara jelas memilih DECIDE atau DESIGN, ZASSPILL mesti menghasilkan satu packet **ZASS METHOD HANDOFF** yang copy-ready.
+
+Handoff ini tetap wajib walaupun receiving method akan diteruskan dalam AI yang sama atau chat yang sama. Urutan wajib ialah:
+
+1. User memilih DECIDE atau DESIGN secara jelas.
+2. ZASSPILL memaparkan packet ZASS METHOD HANDOFF lengkap terlebih dahulu.
+3. Hanya selepas packet dipaparkan, AI boleh membaca/load receiving method.
+4. Jika receiving method berjaya dibaca, teruskan method tersebut tanpa meminta confirmation kedua.
+5. Jika receiving method tidak dapat dibaca melalui transport/fallback yang tersedia, berhenti pada boundary itu dan ikut fallback yang telah ditetapkan.
+
+Structured work daripada ZASSELECTION atau ZASSIMPLE tidak boleh muncul sebelum Method Handoff Packet selesai dipaparkan.
+
+### UX sambungan dalam chat yang sama
+
+&gt; **Sambungan dalam chat yang sama ialah default. Portability ialah capability, bukan kewajipan.**
+
+Method handoff tidak bermaksud user mesti berpindah ke chat atau AI lain. Ia bermaksud tanggungjawab berpindah daripada satu method kepada receiving method.
+
+Aturan:
+
+- utamakan user kekal dalam conversation yang sama apabila AI semasa boleh meneruskan dengan betul;
+- anggap Method Handoff Packet sebagai infrastructure lineage + method boundary, bukan arahan untuk memindahkan user;
+- selepas packet dipaparkan, load receiving method sesenyap dan senatural mungkin;
+- jangan narasikan langkah transport rutin seperti “handoff selesai”, “sekarang cuba raw link”, atau bahasa log sistem yang seumpamanya apabila tiada masalah yang memerlukan perhatian user;
+- jika receiving method berjaya dibaca, sambung secara natural terus ke receiving method;
+- hanya paparkan status loading/transport apabila benar-benar berlaku kegagalan atau user perlu melakukan sesuatu;
+- jika loading gagal, terangkan masalah secara manusiawi dan kekalkan continuity dalam chat yang sama selagi boleh.
+
+&gt; **Handoff ≠ pindah tempat. Handoff = pindah method.**
+
+Packet handoff mesti:
+
+- nyatakan source method dan receiving method;
+- rekod transition yang dipilih secara jelas oleh user;
+- sertakan dua link untuk receiving method: (1) canonical raw GitHub link dan (2) normal GitHub browser link sebagai fallback;
+- arahkan receiver membaca dan mengikut method penerima sebelum structured work bermula;
+- bawa hanya continuity context minimum yang relevan daripada Section 13;
+- nyatakan bahawa inherited context ialah input, bukan keputusan, architecture, plan atau implementation yang telah siap;
+- kekalkan lineage daripada ZASSPILL ke receiving method;
+- kemas kini current state serta-merta mengikut transition yang user pilih secara jelas; state sebelum transition tidak boleh kekal sebagai current truth yang bersaing;
+- kekalkan cadangan AI terdahulu sebagai cadangan AI dan jangan naik taraf menjadi constraint, preference atau keputusan user kecuali user sendiri mengesahkannya;
+- anggap pilihan DECIDE atau DESIGN yang jelas daripada user sudah cukup sebagai authorization untuk mengaktifkan receiving method; jangan minta confirmation kedua sebelum membaca dan mengikut method tersebut;
+- jangan tambah option, contoh, fakta, constraint, preference atau tafsiran baharu di dalam Method Handoff Packet. Packet hanya boleh membawa context yang memang sudah wujud dalam source thread + transition yang user pilih secara jelas;
+- paparkan seluruh Method Handoff Packet sebagai satu fenced code block lengkap untuk single-copy portability. Jangan pecahkan packet kepada prose biasa, heading, table atau beberapa block. Status atau error tentang loading receiving method boleh dipaparkan di luar packet.
+
+&gt; **AI penerima mesti membaca receiving method sebelum membuat structured work. Cuba canonical raw GitHub link dahulu. Jika gagal, cuba normal GitHub browser link. Hanya jika kedua-dua link tidak boleh diakses, AI boleh minta user beri fail method berkaitan sebagai fallback. AI tidak boleh improvise receiving method.**
+
+&gt; **Aturan transition truth:** sebaik user memilih DECIDE atau DESIGN, packet handoff mesti mewakili pilihan itu sebagai current state sambil mengekalkan ketidakpastian yang masih relevan tentang keputusan atau sasaran design sebenar.
+
+### Handoff DESIGN
+
+~~~text
+# ZASS METHOD HANDOFF
+
+From: ZASSPILL
+To: ZASSIMPLE
+Transition chosen by user: DESIGN
+
+Receiving method — raw:
+https://raw.githubusercontent.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/main/ZASSIMPLE/ZASSIMPLE_MY.md
+
+Receiving method — browser fallback:
+https://github.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/blob/main/ZASSIMPLE/ZASSIMPLE_MY.md
+
+Arahan:
+Baca dan ikut ZASSIMPLE sebelum memulakan structured design work.
+Cuba raw link dahulu. Jika tidak boleh diakses, cuba browser fallback link.
+Jangan reka workflow ZASSIMPLE sendiri.
+Hanya jika kedua-dua link gagal, beritahu user dan minta ZASSIMPLE_MY.md sebagai fallback fail/paste.
+
+## THREAD
+[tajuk thread]
+
+## WHERE THE THINKING IS NOW
+[current state yang relevan kepada DESIGN]
+
+## WHAT MATTERS
+- [constraint / concern / preference / fakta yang relevan]
+
+## WHAT IS STILL OPEN
+- [perkara terbuka yang masih perlu design]
+
+## LINEAGE
+ZASSPILL → user explicitly chose DESIGN → handoff to ZASSIMPLE.
+
+Handoff rule:
+Pilihan DESIGN user sudah menjadi current transition state dan sudah cukup sebagai authorization untuk mengaktifkan ZASSIMPLE; jangan minta confirmation kedua.
+Context ini ialah input kepada ZASSIMPLE, bukan architecture yang telah diputuskan.
+Cadangan AI terdahulu kekal sebagai cadangan AI kecuali user sendiri mengesahkannya.
+ZASSIMPLE memiliki structured design work selepas handoff ini.
+~~~
+
+### Handoff DECIDE
+
+~~~text
+# ZASS METHOD HANDOFF
+
+From: ZASSPILL
+To: ZASSELECTION
+Transition chosen by user: DECIDE
+
+Receiving method — raw:
+https://raw.githubusercontent.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/main/ZASSELECTION/ZASSELECTION_MY.md
+
+Receiving method — browser fallback:
+https://github.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/blob/main/ZASSELECTION/ZASSELECTION_MY.md
+
+Arahan:
+Baca dan ikut ZASSELECTION sebelum memulakan comparison.
+Cuba raw link dahulu. Jika tidak boleh diakses, cuba browser fallback link.
+Jangan bina kaedah selection sendiri.
+Hanya jika kedua-dua link gagal, beritahu user dan minta ZASSELECTION_MY.md sebagai fallback fail/paste.
+
+## THREAD
+[tajuk thread]
+
+## WHERE THE THINKING IS NOW
+[current state yang relevan kepada keputusan]
+
+## WHAT MATTERS
+- [constraint / concern / preference / fakta yang relevan]
+
+## WHAT IS STILL OPEN
+- [pilihan atau persoalan yang memang belum diputuskan]
+
+## LINEAGE
+ZASSPILL → user explicitly chose DECIDE → handoff to ZASSELECTION.
+
+Handoff rule:
+Pilihan DECIDE user sudah menjadi current transition state dan sudah cukup sebagai authorization untuk mengaktifkan ZASSELECTION; jangan minta confirmation kedua.
+Context ini ialah input kepada ZASSELECTION, bukan keputusan yang telah dibuat.
+Cadangan AI terdahulu kekal sebagai cadangan AI kecuali user sendiri mengesahkannya.
+ZASSELECTION memiliki structured comparison selepas handoff ini.
+~~~
+
+User sepatutnya boleh copy-paste packet handoff ini sebagai satu block ke AI yang sama atau AI lain. Oleh itu, seluruh packet mesti dipaparkan di dalam satu fenced code block.
+
+---
+
+## 15. Ujian proof Phase 1
+
+ZASSPILL v0.1.0 hanya dianggap berjaya apabila ini boleh dibuktikan dalam penggunaan sebenar:
+
+~~~text
+AI A
+↓
+conversation manusia yang serabut
+↓
+portable Thread Packet
+↓
+AI B
+↓
+sambung secara natural tanpa load chat lama
+~~~
+
+Ujian mesti semak:
+
+- cerita manusia yang penting kekal;
+- fakta tidak direka;
+- fikiran/kebimbangan tidak menjadi fakta;
+- context stale tidak menguasai;
+- personal detail tidak perlu tidak diexport;
+- AI penerima boleh sambung tanpa memaksa form atau reconstruct transcript.
+
+Phase 1 core proof telah lulus. ZASSPILL v0.1.0 kini dibekukan. Perubahan feature seterusnya masuk ke phase/version kemudian; hanya critical fix patut mengubah release beku ini. Freeze ini tidak menggantikan current global ZASS SYSTEM entry contract.
+</pre>
+</main>
+</body>
+</html>
