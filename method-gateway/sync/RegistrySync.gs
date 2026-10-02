@@ -198,14 +198,24 @@ function getGitHubFileAtCommit_(repo, path, commit) {
 }
 
 function fetchGitHubJson_(url) {
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'User-Agent': 'AISYNC-Method-Gateway-v0.1'
+  };
+
+  const token = PropertiesService
+    .getScriptProperties()
+    .getProperty('GITHUB_TOKEN');
+
+  if (token) {
+    headers.Authorization = 'Bearer ' + token;
+  }
+
   const response = UrlFetchApp.fetch(url, {
     method: 'get',
     muteHttpExceptions: true,
-    headers: {
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'AISYNC-Method-Gateway-v0.1'
-    }
+    headers: headers
   });
 
   const status = response.getResponseCode();
