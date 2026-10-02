@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0.4  
+**Version:** 1.0.5  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-022 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-023 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 
@@ -461,3 +461,72 @@ preview
 The system must preserve the user's work; the URL fragment itself does not have to survive Google's redirect.
 
 A fully automatic invisible auth-return/recovery flow is deferred beyond v0.1.
+
+
+## Public Method Gateway / read plane
+
+D-023 adds a read/distribution plane alongside the existing protected write/persistence plane.
+
+```text
+PUBLIC METHOD READ PLANE
+
+Official ZASS GitHub repo
+(authoritative method SoT)
+        ↓
+protected Method Registry sync
+        ↓
+AI-SYNC snapshot store
+        ↓
+PUBLIC READ-ONLY Method Gateway
+        ↓
+/method/zasspill/my
+/method/zassimple/my
+/method/zasselection/my
+        ↓
+ChatGPT / Meta / Gemini / Copilot / other receiver AI
+```
+
+This does not replace the write plane:
+
+```text
+PROTECTED WRITE PLANE
+
+method / project
+      ↓
+ASC Write Contract v0.1
+      ↓
+ASC envelope / auth / Core
+      ↓
+GitHub project destination + ASC DB
+      ↓
+verification / receipt
+```
+
+### Authority boundary
+
+- Official ZASS GitHub repository = canonical method content and commit lineage.
+- AI-SYNC Method Registry = identifiable operational snapshot index.
+- Public Method Gateway = read transport.
+- Receiver AI = consumer.
+- AI-SYNC must not become a second editable master for method semantics.
+
+### Method Snapshot Record v0.1
+
+Separate read-plane registry representation:
+
+- `method`
+- `language`
+- `version`
+- `source_repo`
+- `source_path`
+- `source_commit`
+- `synced_at`
+- `content`
+
+The public Markdown endpoint serves `content` itself. Metadata is inspectable separately so a snapshot can always be traced to its canonical GitHub commit/version.
+
+### Contract relationship
+
+The existing **ASC Write Contract v0.1 remains exactly eight semantic fields**. Method Snapshot metadata is not added to it. This preserves T-001/D-011/D-013 boundaries.
+
+The Method Gateway is a read-plane subsystem, not a new ZASS method and not a replacement for the ASC Write Contract.
