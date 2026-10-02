@@ -1,6 +1,8 @@
-# ASC Apps Script Web App — T-004
+# ASC Apps Script Web App — T-004 / T-008
 
-Status: PROTECTED PREVIEW LIVE PASS — front-door preservation handled by GitHub Pages
+Status:
+- T-004 PROTECTED PREVIEW — LIVE PASS (front-door preservation handled by GitHub Pages).
+- T-008 PREVIEW → CONFIRM & SYNC → RECEIPT → HISTORY → REDIRECT — LIVE PASS for the owner-locked TEST_ONLY destination only; T-008B runtime binding deployed as Apps Script version 3.
 
 ## Purpose
 
@@ -18,9 +20,10 @@ This matches the Apps Script web-app manifest model documented by Google.
 ## Files
 
 - `appsscript.json` — V8 runtime + owner-only web-app configuration
-- `Code.gs` — `doGet()`, template include helper, preview-only bootstrap state
-- `Index.html` — ASC preview shell
-- `Client.html` — pending-fragment preservation + decode + preview logic
+- `Code.gs` — `doGet()`, template include helper, bootstrap state, T-008B `confirmAndSync` / `getConfirmSyncResult`
+- `Index.html` — ASC preview + CONFIRM & SYNC shell
+- `Client.html` — pending-fragment preservation + decode + preview + confirm/receipt/redirect logic
+- `RuntimeShims.gs`, `AscRuntime.gs` — T-008B runtime binding (see below)
 - `test-pending-request.mjs` — dependency-free state/preview-boundary test
 
 ## Pending-request behavior
@@ -32,19 +35,17 @@ The client follows this order:
 3. if a later navigation/reload returns without the fragment, restore it from `sessionStorage`;
 4. decode the T-002 envelope;
 5. render the semantic contract as preview;
-6. do not expose any write function.
+6. perform no write unless the owner explicitly presses CONFIRM & SYNC (T-008).
 
 This protects the request after the protected ASC page has loaded. Live testing proved that Google sign-in itself does not preserve the incoming fragment, so pre-auth preservation is handled by the static GitHub Pages front door under `docs/asc/`.
 
-## Explicit non-goal
+## T-004 scope
 
-T-004 performs **no persistence**.
+T-004 itself performed **no persistence**. Persistence was added later by T-008, only behind explicit CONFIRM & SYNC (see the T-008 sections below).
 
-There is no `CONFIRM & SYNC` server write handler yet. GitHub/Sheets writes remain later tasks.
+## T-004 deployment test (completed)
 
-## Deployment test still required
-
-A real Apps Script deployment must verify:
+The real Apps Script deployment verified:
 
 ```text
 ASC Link with #asc payload
@@ -62,7 +63,7 @@ preview rendered
 NO WRITE
 ```
 
-Until that live check is performed, T-004 remains implementation-complete but verification-pending.
+This live check passed (see the D-022 live proof below); T-004 is PASS.
 
 
 ## Local verification result
@@ -171,21 +172,21 @@ NO WRITE
 
 The protected preview correctly rendered the D-028 TEST_ONLY contract after replay. No persistence handler was exposed or invoked.
 
-T-004 is not fully complete yet: provider selection, visible/user-overridable DUMP / DECIDE / DESIGN routing, and AI handoff remain to implement.
+At that checkpoint provider selection, DUMP / DECIDE / DESIGN routing, and AI handoff were still open; they later passed and T-004 closed as PASS.
 
 
 ## T-008A confirm/sync UI — LOCAL PASS
 
 The protected preview now renders a CONFIRM & SYNC control, a write-receipt card, and a main-ASC-UI return link. The client builds a request-bound confirmation only from an explicit click, redirects only when the server returns `SYNCED` with a verified SUCCESS receipt and `HISTORY_PERSISTED`, and otherwise keeps the pending request and a visible FAILED state.
 
-`Code.gs` keeps `writeEnabled=false` and `confirmAndSync()` fails closed with `SYNC_RUNTIME_NOT_BOUND` until T-008B binds `flow/confirm-sync.mjs` into the Apps Script runtime. No live deployment of this version has been tested.
+The T-008A server placeholder was superseded by the T-008B runtime binding below.
 
 ```text
 node apps-script/test-confirm-ui.mjs
 ```
 
 
-## T-008B Apps Script runtime binding — LOCAL PASS (not deployed)
+## T-008B Apps Script runtime binding — LOCAL PASS + LIVE PASS (Apps Script version 3)
 
 Project files for the confirm-sync web app:
 
@@ -197,13 +198,13 @@ AscRuntime.gs     GENERATED bundle: transport, Core, GitHub adapter, REST client
 Index.html / Client.html
 ```
 
-Local-only files (do not push to Apps Script): `build-runtime.mjs`, `test-*.mjs`, `README.md`.
+Repository-only files (not part of the Apps Script project): `build-runtime.mjs`, `test-*.mjs`, `README.md`.
 
 - `AscRuntime.gs` is produced mechanically by `node apps-script/build-runtime.mjs` from the existing ES-module owners; `--check` fails if it is stale. No Core/adapter/receipt/flow semantics are rewritten.
 - GitHub transport reuses `createGitHubRestClient` with a UrlFetchApp-backed `fetchImpl` restricted to `https://api.github.com/` (`muteHttpExceptions`, no redirects).
 - HISTORY persistence reuses `History.gs` `appendHistory`; its `{ ok: false }` result is surfaced as failure by the T-008A strict writer bridge.
 - Destination policy is the owner-locked TEST_ONLY target only: `dzuddiyn/AISYNC`, `main`, `proofs/t008-confirm-sync-live.md`. Authorization additionally requires owner session, `Record ID` prefix `TEST_ONLY_`, and `Destination: ["GitHub"]`.
-- Script Properties: `GITHUB_TOKEN` (required; never returned, logged, or hard-coded) and `ASC_MAIN_UI_URL` (accepted only if it starts with `https://sites.google.com/`).
+- Script Properties: `GITHUB_TOKEN` (required; never returned, logged, or hard-coded) and `ASC_MAIN_UI_URL` (accepted only if it starts with `https://sites.google.com/`). `getBootstrapState().writeEnabled` is true only when `GITHUB_TOKEN` is configured.
 - The reused flow is async; `confirmAndSync` returns `RESULT_PENDING`, the settled result is stored in the owner's user cache, and the client fetches it via `getConfirmSyncResult`. A missing result is shown as FAILED/unknown, never success. Before each attempt the cached result for that request ID is removed (if removal fails the attempt is not started), and cache read/key errors in `getConfirmSyncResult` return FAILED/unknown instead of throwing, so a previous SUCCESS can never be returned for a new attempt.
 
 ```text
@@ -212,3 +213,18 @@ node apps-script/test-apps-script-binding.mjs
 node apps-script/test-confirm-ui.mjs
 ```
 
+### Live TEST_ONLY proof — PASS
+
+Owner-confirmed run on Apps Script deployment version 3 ("T-008B Apps Script runtime binding") after the owner granted the required Google permissions:
+
+```text
+request_id:   TEST_ONLY_T008B_LIVE_20261003_0415
+target:       dzuddiyn/AISYNC / main / proofs/t008-confirm-sync-live.md
+commit:       fb1da42abaac61d5568548ec254e48c1a1b5aa6b
+verification: remote file independently re-read and matched
+HISTORY:      row 4, SUCCESS
+receipt:      adapter_outcome=VERIFIED_WRITE, write_performed=true, verified=true
+redirect:     main Google Sites ASC UI (https://sites.google.com/view/aisync-asc/laman-utama)
+```
+
+Limits: this proves the TEST_ONLY destination policy only. It is not a production Record ID → GitHub path mapping; that mapping remains undecided. Failure paths (FAILED/unverified writes never redirect) are proven by the local tests above, not by a live forced failure. Replay/expiry/integrity controls remain T-010.
