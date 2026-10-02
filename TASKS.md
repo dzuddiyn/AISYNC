@@ -10,87 +10,55 @@
 
 ## Current task
 
-T-013B | IN PROGRESS — PUBLIC METHOD GATEWAY + CROSS-AI PROOF
-Source: AP-008, D-023, D-024, D-025, D-026
-Decision / Design lineage: D-002, D-005, D-018, D-023, D-025, D-026, DESIGN v1.0.8 § Public Method Gateway / read plane
+T-004 | IN PROGRESS — FRONT-DOOR / AUTH PRESERVE / ROUTING / HANDOFF  
+Source: AP-003, AP-007, PF-005, D-020, D-021, D-022, D-027, D-028  
+Decision / Design lineage: D-006, D-015, D-017, D-020, D-021, D-022, D-027, D-028, DESIGN v1.0.9 § Apps Script Web App / continuity / receiver-facing host refinement  
 Do:
-- deploy the separate public read-only Apps Script surface;
-- serve the stored METHODS snapshot itself without GitHub redirect;
-- require no login for public method reads;
-- expose traceable snapshot provenance metadata;
-- field-test the plain-text endpoint with Gemini and Copilot;
-- verify ZASSPILL can carry the gateway URL during DECIDE/DESIGN handoff.
+- preserve the pending draft/request in the original ASC tab before authentication;
+- launch Google sign-in in a new tab when possible, with the existing safe redirect fallback;
+- replay the preserved request after authentication into the authenticated preview;
+- route DUMP / DECIDE / DESIGN to ZASSPILL / ZASSELECTION / ZASSIMPLE;
+- use the public Method Gateway receiver links defined by D-028;
+- keep provider handoff capability-aware and use short copy/paste fallback where prefill is unsupported;
+- keep the no-write preview boundary until later write tasks explicitly add persistence.
+Built / proven already:
+- owner-only Apps Script Web App skeleton;
+- authenticated `/exec#asc=<payload>` fragment read via `google.script.url.getLocation()`;
+- D-019 envelope decode + preview;
+- no-write preview boundary;
+- direct fragment-through-login failure identified;
+- D-022 original-tab preservation strategy locked;
+- public receiver-facing method transport proven by T-013.
 Pass:
-- public endpoint returns the AI-SYNC-held Markdown snapshot itself;
-- no login is required;
-- snapshot version/source commit is identifiable;
-- Gemini can read and identify the method/version;
-- Copilot can read and identify the method/version;
-- ZASSPILL handoff can carry the gateway URL;
-- HTML compatibility view is added only if field evidence requires it.
-Current result: GitHub Pages receiver-facing proof is live. Gemini and Copilot both successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and identified the method/version/semantics. Remaining proof: ZASSPILL handoff carrying the public gateway URL.
-
-## Paused task
-
-T-004 | PAUSED — VERIFIED BOUNDARY  
-Source: AP-003, AP-007, PF-005  
-Decision / Design lineage: D-006, D-015, D-017, D-020, D-021, D-022, DESIGN v1.0.8 § Apps Script Web App + Google Account authentication / front-door orchestration  
-Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
-Depends on: T-002  
-Pass: ASC front-door preserves the pending draft/payload before authentication, completes owner sign-in, then replays the payload into the authenticated preview with no write occurring.  
-Built:
-- `apps-script/appsscript.json` — owner-only `MYSELF`, execute as deployer
-- `apps-script/Code.gs` — preview-only web-app server
-- `apps-script/Index.html`
-- `apps-script/Client.html` — fragment/session preservation + preview
-- `apps-script/test-pending-request.mjs`
-Verification completed:
-- simulated fragment → sessionStorage → fragmentless-return restoration: PASS
-- T-002 envelope decode after restore: PASS
-- no client write function exposed: PASS
-Live verification:
-- deployed owner-only Apps Script Web App: PASS
-- authenticated `/exec#asc=<payload>` fragment read via `google.script.url.getLocation()`: PASS
-- D-019 envelope decode + preview: PASS
-- no-write preview boundary: PASS
-- fresh unauthenticated `/exec#asc=<payload>` → Google sign-in → return: FAIL; the outer fragment is not preserved through Google's auth redirect
-Finding:
-- direct fragment-through-login is not a viable persistence path
-- D-020 front-door must preserve draft/payload before launching authentication, then replay it after sign-in
-Result: PARTIAL PASS — auth gate and authenticated fragment preview are proven; front-door preserve/login/replay remains to implement.
-
-Execution gate: D-024
-- no further T-004 implementation now;
-- wait for official ZASSPILL;
-- review its real handoff contract;
-- owner then decides whether T-013 becomes the next current task;
-- after a successful Method Gateway proof, return to the remaining T-004 front-door/routing/handoff work.
-
-D-020 front-door behavior is LOCKED but not yet implemented:
-- mandatory AI-provider selection + red missing-provider warning
-- auth check before routing
-- new-tab login attempt + copy-draft/redirect fallback
-- automatic DUMP / DECIDE / DESIGN routing
-- ZASSPILL / ZASSELECTION / ZASSIMPLE method mapping
-- provider handoff with capability-aware prefill or copy/paste fallback
-Dependency note: DUMP routing cannot be finalized until ZASSPILL's own contract/behavior is available.
-
-D-022 auth strategy is LOCKED for v0.1:
-- Primary B: preserve draft/pending state in the original ASC tab → login in new tab → return → CONTINUE → replay to authenticated preview.
-- Fallback A: complete login → click ASC link / GO / CONTINUE again.
-- Requirement: user draft/request must not be lost; fragment survival across auth redirect is not required.
-- Fully automatic invisible auth recovery is deferred.
-
-D-027 transfer UX target is LOCKED for the later T-004 resume:
-- SAVE should surface an ASC link instead of requiring a long user-pasted packet;
-- intentional cross-AI continuation should originate from ASC Web/project tree;
-- user selects saved thread/state and target AI;
-- transfer page emits a short instruction + public method link + controlled continuity reference;
-- provider open/prefill is capability-aware; short copy/paste is the fallback;
-- method links may be public; project continuity must remain controlled/scoped;
-- exact continuity-link security mechanism remains an implementation decision.
+- user draft/request is preserved across the auth step;
+- authenticated CONTINUE/replay restores the pending request into preview;
+- route is visible and user-overridable;
+- DUMP / DECIDE / DESIGN map to the correct ZASS subsystem;
+- provider handoff uses the public Method Gateway URL and does not falsely claim unsupported auto-prefill;
+- no persistence occurs before an explicit later write/confirm task.
+Current result: RESUMED after T-013 PASS. Next smallest implementation step is the original-tab preserve → login → CONTINUE/replay flow.
 
 ## Completed
+
+T-013B | PASS — PUBLIC METHOD GATEWAY + CROSS-AI PROOF  
+Source: T-013A, D-023, D-025, D-026, D-028  
+Decision / Design lineage: D-023, D-025, D-026, D-028, DESIGN v1.0.9 § Public Method Gateway / receiver-facing host refinement  
+Built / proven:
+- public GitHub Pages receiver surface under `https://dzuddiyn.github.io/AISYNC/method/<method>/my/`;
+- MY pages for ZASSPILL, ZASSIMPLE, and ZASSELECTION;
+- browser anonymous read: PASS;
+- Gemini direct read of ZASSIMPLE page: PASS;
+- Copilot direct read of ZASSIMPLE page: PASS;
+- ZASSPILL generated an exact DESIGN → ZASSIMPLE handoff carrying the public gateway URL;
+- Gemini end-to-end handoff continued under ZASSIMPLE using the supplied explicit test context.
+Caveat:
+- one later Copilot end-to-end handoff session failed to fetch the exact page and substituted repository search, producing stale/incorrect version context;
+- receiver guardrail: exact gateway URL only; on fetch failure, report failure and do not substitute another source as method authority.
+Scope:
+- this proves method-link handoff;
+- it does not prove the future controlled/private continuity transport.
+Result: PASS — T-013B v0.1 proof closed; T-004 resumed.
+
 
 T-013A | PASS — METHOD REGISTRY + PROTECTED GITHUB SYNC
 Source: AP-008, D-023, D-024, D-025
@@ -223,16 +191,16 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001, T-002, and T-003.
+Implementation evidence exists for T-001, T-002, T-003, T-013A, and T-013B.
 
 Closure checks:
-- Built: PARTIAL — T-001, T-002, and T-003 complete
-- Verified: PARTIAL — T-001, T-002, and T-003 verified
-- Matches architecture: YES FOR T-001, T-002, AND T-003
+- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-013A, and T-013B complete
+- Verified: PARTIAL PROJECT — those completed slices are verified
+- Matches design: YES FOR COMPLETED SLICES
 - Recorded: YES — task queue created
 
 
-T-013 | ACTIVE — PUBLIC METHOD GATEWAY v0.1 PROOF  
+T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  
 Source: AP-008, D-023  
 Decision / Design lineage: D-002, D-005, D-018, D-023, DESIGN v1.0.8 § Public Method Gateway / read plane  
 Do: Prove the smallest public AI-readable method mirror for the three Malay methods only:
@@ -252,7 +220,7 @@ Pass:
 - GitHub update can sync without copy/paste;
 - ZASSPILL can hand off a gateway URL.
 Constraint: do not add EN methods, public write/admin APIs, webhook complexity, or extra connectors in this proof.
-Result: IN PROGRESS — T-013A PASS; T-013B public gateway deployment and cross-AI proof are current.
+Result: PASS — T-013A protected sync and T-013B receiver-facing/cross-AI proof completed; execution returned to T-004.
 
 
 ### Planned slicing after D-024 gate
@@ -266,18 +234,6 @@ If T-013 is promoted:
 
 After those pass sufficiently, resume the remaining T-004 front-door/routing/handoff work.
 
-
-T-013B | QUEUED — PUBLIC METHOD GATEWAY + CROSS-AI PROOF
-Source: T-013A, D-023
-Do:
-- retain Apps Script for protected/backend proof and provenance where useful;
-- use a standard static public host for receiver-facing compatibility; current proof host is GitHub Pages;
-- expose a readable ZASSIMPLE MY proof page from the canonical snapshot/content;
-- verify no login required;
-- field-test Gemini and Copilot readability;
-- verify ZASSPILL handoff can carry the gateway URL.
-Depends on: T-013A PASS.
-Pass: acceptance conditions 2–8 of D-023 proof are demonstrated.
 
 D-026 receiver-format rule is LOCKED:
 - test clean text/Markdown endpoint first;
