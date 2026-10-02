@@ -10,15 +10,36 @@
 
 ## Current task
 
-T-005 | IN PROGRESS — ASC CORE REQUEST BOUNDARY  
-Source: AP-004  
-Decision / Design lineage: D-002, D-004, D-014, DESIGN v1.0 § ASC Core  
-Do: Implement the ASC Core request boundary: validate semantic contract, authorize request, preserve meaning, route by destination, and expose adapter/receipt interfaces.  
-Depends on: T-001  
-Pass: The same valid contract can enter Core independently of which AI app produced it, and Core contains no ZASS reasoning/validator logic.  
-Current result: PROMOTED after T-004 PASS.
+T-006 | IN PROGRESS — GITHUB DESTINATION ADAPTER  
+Source: AP-005  
+Decision / Design lineage: D-007, D-016, DESIGN v1.0 § GitHub adapter  
+Do: Implement the first GitHub destination adapter for current-file/SHA fetch, create/update, persisted-state verification, and commit result capture.  
+Depends on: T-005  
+Pass: A controlled test update produces a real verified GitHub commit and returns factual identifiers needed by the receipt layer.  
+Current result: PROMOTED after T-005 PASS.
 
 ## Completed
+
+T-005 | PASS — ASC CORE REQUEST BOUNDARY  
+Source: AP-004  
+Decision / Design lineage: D-002, D-004, D-014, DESIGN v1.0 § ASC Core  
+Built / proven:
+- exact eight-field ASC Write Contract validation;
+- structured rejection for ordinary invalid input;
+- fail-closed injected authorization boundary;
+- authorization mutation isolated by deep copy;
+- accepted semantic contract deep-equals input and nested semantic data remains isolated;
+- Destination routing: GitHub → github, ASC_DB → asc_db;
+- destination order preserved;
+- mixed known/unknown destinations fail without partial accepted routing;
+- adapter invocation descriptors are isolated deep copies;
+- neutral receipt-layer handoff only; no fake SUCCESS/commit/resource/timestamp;
+- provider-context labels do not change accepted contract or routes;
+- no network, persistence/write, or ZASS reasoning.
+Verification:
+- `node core/test-asc-core.mjs`: PASS;
+- published commit: `3a56c30d8520ab6824807c76255c973a1f838450`.
+Result: PASS — same valid semantic contract can enter Core independently of AI provider, and Core remains method-agnostic with no destination write side effects.
 
 T-004 | PASS — FRONT-DOOR / AUTH PRESERVE / ROUTING / HANDOFF  
 Source: AP-003, AP-007, PF-005, D-020, D-021, D-022, D-027, D-028  
@@ -133,13 +154,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-006 | QUEUED  
-Source: AP-005  
-Decision / Design lineage: D-007, D-016, DESIGN v1.0 § GitHub adapter  
-Do: Implement the first GitHub destination adapter for current-file/SHA fetch, create/update, persisted-state verification, and commit result capture.  
-Depends on: T-005  
-Pass: A controlled test update produces a real verified GitHub commit and returns factual identifiers needed by the receipt layer.
-
 T-007 | QUEUED  
 Source: AP-006  
 Decision / Design lineage: D-004, R-003, D-014, DESIGN v1.0 § Write Receipt  
@@ -185,10 +199,10 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001, T-002, T-003, T-004, T-013A, and T-013B.
+Implementation evidence exists for T-001, T-002, T-003, T-004, T-005, T-013A, and T-013B.
 
 Closure checks:
-- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-013A, and T-013B complete
+- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-005, T-013A, and T-013B complete
 - Verified: PARTIAL PROJECT — those completed slices are verified
 - Matches design: YES FOR COMPLETED SLICES
 - Recorded: YES — task queue created
