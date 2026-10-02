@@ -1,11 +1,11 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.29  
+**Project record version:** 0.6.31  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
-**Lifecycle stage:** DO IT  
-**Status:** DESIGN CONFIRMED — implementation in progress  
+**Lifecycle stage:** DELIVERED !!  
+**Status:** ASC v0.1 core/fallback proof delivered; deferred T-012 remains blocked/later  
 **Owner:** Project Owner
 
 > AISYNC is shared infrastructure for moving, translating, writing, and verifying meaningful information produced by methods and projects. It is not itself a reasoning method.
@@ -64,7 +64,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: DESIGN v1.0.8 remains CONFIRMED, with technical architecture preserved inside `DESIGN.md`. D-023 adds a separate public Method Gateway/read-mirror plane while preserving the existing protected write plane and eight-field ASC Write Contract. T-001 through T-003 have PASSED. T-013A has PASSED; T-013B is the current implementation task. T-004 remains paused until the Method Gateway proof is sufficiently proven.
+Current direction: DESIGN v1.0.10 remains CONFIRMED. T-001 through T-011 and T-013A/B are PASS. D-029 secures write-capable envelopes; D-030 refines the successful post-sync return path to a user-activated main-ASC link/button for v0.1. T-012 remains BLOCKED / LATER pending ZASS GitHub CI. ASC v0.1 core/fallback proof is delivered.
 
 ---
 
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.31 | 2026-10-03 | LOCKED D-030 successful-return refinement from T-011 live evidence; user-activated `Return to main ASC UI` is the guaranteed v0.1 return path after verified SUCCESS + HISTORY, automatic top-level navigation is optional, and T-011 minimum end-to-end ZASSIMPLE SAVE proof is PASS. ASC v0.1 core/fallback proof is delivered; T-012 remains BLOCKED / LATER. |
 | 0.6.30 | 2026-10-03 | LOCKED D-029 T-010 v0.1 envelope security/replay rules (30-minute expiry, SHA-256 integrity as error detection only, one confirmed attempt per request_id via LockService + Script Properties, owner-only gate, server-side-only GITHUB_TOKEN, preview + confirm double validation). T-010A/B LOCAL PASS; T-010 remains IN PROGRESS pending live proof. |
 | 0.6.29 | 2026-10-03 | T-006 PASS: real GitHub Contents API adapter completed one controlled VERIFIED_WRITE; commit and persisted file SHA independently verified; AP-005 done and T-007 promoted. |
 | 0.6.28 | 2026-10-03 | T-006A PASS: GitHub adapter local/mock mechanics published; truthful current-SHA, commit-SHA, persisted-state verification, WRITE_UNVERIFIED, Promise/throw handling, and isolation boundaries verified; T-006 remains IN PROGRESS for controlled live write. |
@@ -1160,6 +1161,21 @@ Decision: T-010 v0.1 ASC envelope security / replay rules. These rules extend D-
 7. Atomic replay claim. The check-and-set runs under an Apps Script lock: lock → inspect persistent claim → reject if claimed → persist claim if unused → release. Only one simultaneous confirmed invocation for a `request_id` can win. The claim happens after explicit confirmation + security + owner checks and before destination I/O.
 
 `request_id` is the v0.1 replay key; no separate nonce is added.
+
+Locked by: Project Owner\
+Date: 2026-10-03
+
+D-030 | LOCKED
+
+Decision: ASC v0.1 successful post-sync return behavior is a guaranteed **user-activated `Return to main ASC UI` link/button** after a verified SUCCESS write and persisted HISTORY.
+
+1. After `VERIFIED SUCCESS` + HISTORY persistence, ASC must expose a visible, usable return control to the configured main ASC UI.
+2. Automatic top-level navigation may be attempted when the hosting/browser platform permits it, but it is not a v0.1 pass requirement and must not be relied on as the only return mechanism.
+3. The success UI must not claim that automatic navigation definitely occurred when the platform blocks or ignores it.
+4. FAILED, unverified, or incomplete writes must remain visibly non-successful and must not offer a return path in a way that falsely implies persistence succeeded.
+5. This refines the post-sync wording in D-015 / D-017 without changing the existing confirmation, verification, receipt, HISTORY, authentication, or destination-credential boundaries.
+
+Live basis: T-011 owner-issued ZASSIMPLE SAVE completed a verified GitHub write and HISTORY persistence, then remained on the Apps Script success page until the owner activated `Return to main ASC UI`.
 
 Locked by: Project Owner\
 Date: 2026-10-03
