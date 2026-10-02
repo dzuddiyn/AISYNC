@@ -1,5 +1,5 @@
-# T-008B LIVE TEST_ONLY proof
+# T-010 LIVE security proof
 
-Request: TEST_ONLY_T008B_LIVE_20261003_0415
+Request: TEST_ONLY_T010_LIVE_20261002221136
 
-This file was written by the owner-confirmed T-008B live Apps Script flow.
+Owner-confirmed secure envelope with expiry, integrity, and replay control.
