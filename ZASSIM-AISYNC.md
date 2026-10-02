@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.19  
+**Project record version:** 0.6.20  
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -24,7 +24,7 @@ DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
 Current project stage: **DO IT**  
-Reason: ASC technical architecture/design was explicitly confirmed by the Project Owner on 2026-10-01. The project is now in active DO IT execution; current work is T-013A.
+Reason: ASC technical architecture/design was explicitly confirmed by the Project Owner on 2026-10-01. The project is now in active DO IT execution; T-013A has PASSED and current work is T-013B.
 
 Current command surface:
 
@@ -64,7 +64,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: DESIGN v1.0.8 remains CONFIRMED, with technical architecture preserved inside `DESIGN.md`. D-023 adds a separate public Method Gateway/read-mirror plane while preserving the existing protected write plane and eight-field ASC Write Contract. T-001 through T-003 have PASSED. T-013A is the current implementation task; T-004 remains paused until the Method Gateway proof is sufficiently proven.
+Current direction: DESIGN v1.0.8 remains CONFIRMED, with technical architecture preserved inside `DESIGN.md`. D-023 adds a separate public Method Gateway/read-mirror plane while preserving the existing protected write plane and eight-field ASC Write Contract. T-001 through T-003 have PASSED. T-013A has PASSED; T-013B is the current implementation task. T-004 remains paused until the Method Gateway proof is sufficiently proven.
 
 ---
 
@@ -1049,4 +1049,31 @@ TASKS.md
 
 `ARCHITECTURE.md` was renamed to `DESIGN.md`. The existing confirmed technical architecture remains inside DESIGN as a technical subtype. No LOCKED decision, confirmation authority, or current execution task was reopened by this migration.
 
-Current task remains: **T-013A**.
+Current task: **T-013B**. T-013A is PASS.
+
+
+## T-013A LIVE VERIFICATION CHECKPOINT
+
+Date: 2026-10-02  
+Status: **PASS**
+
+Evidence:
+- protected `syncMethodsFromGitHub()` ran successfully against the live ASC DB;
+- the METHODS registry contains the three MY method snapshots;
+- snapshots from one run share the same canonical GitHub source commit;
+- version/path/content fields are populated from canonical GitHub;
+- authenticated GitHub API access uses `GITHUB_TOKEN` from Apps Script Script Properties, not a hard-coded secret;
+- a second sync run upserted the same three records without duplication.
+
+Execution now advances to:
+
+```text
+T-013B
+public Method Gateway
+↓
+no-login plain-text snapshot
+↓
+Gemini + Copilot field proof
+↓
+ZASSPILL gateway-link handoff proof
+```
