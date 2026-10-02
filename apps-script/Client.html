@@ -60,25 +60,44 @@ function setStatus(message, isError) {
   status.className = 'card' + (isError ? ' error' : '');
 }
 
-function bootAscPreview() {
-  const pending = preservePendingRequest(window.location, window.sessionStorage);
-
-  if (!pending.fragment) {
-    setStatus('Signed in. No pending ASC request found.', false);
+function getAppsScriptLocation(callback) {
+  if (
+    typeof google !== 'undefined' &&
+    google.script &&
+    google.script.url &&
+    typeof google.script.url.getLocation === 'function'
+  ) {
+    google.script.url.getLocation(function(location) {
+      callback({ hash: location.hash || '' });
+    });
     return;
   }
 
-  try {
-    const envelope = decodePendingEnvelope(pending.fragment);
-    renderPendingPreview(envelope);
-    setStatus(
-      'Signed in with Google. Pending request restored from ' + pending.source +
-      '. Preview only — no write has occurred.',
-      false
-    );
-  } catch (error) {
-    setStatus('Pending request could not be decoded: ' + error.message, true);
-  }
+  // Fallback for local/non-Apps-Script tests.
+  callback(window.location);
+}
+
+function bootAscPreview() {
+  getAppsScriptLocation(function(locationLike) {
+    const pending = preservePendingRequest(locationLike, window.sessionStorage);
+
+    if (!pending.fragment) {
+      setStatus('Signed in. No pending ASC request found.', false);
+      return;
+    }
+
+    try {
+      const envelope = decodePendingEnvelope(pending.fragment);
+      renderPendingPreview(envelope);
+      setStatus(
+        'Signed in with Google. Pending request restored from ' + pending.source +
+        '. Preview only — no write has occurred.',
+        false
+      );
+    } catch (error) {
+      setStatus('Pending request could not be decoded: ' + error.message, true);
+    }
+  });
 }
 
 window.addEventListener('DOMContentLoaded', bootAscPreview);
