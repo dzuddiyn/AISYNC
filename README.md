@@ -2,7 +2,7 @@
 
 > Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** DESIGN/ARCHITECTURE CONFIRMED — DO IT in progress; current task T-013A  
+**Status:** DESIGN CONFIRMED — DO IT in progress; current task T-013A  
 **Method used to develop this project:** ZASSIMPLE v0.3.0  
 **Repository:** AISYNC
 
@@ -21,7 +21,7 @@ AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DO IT** — technical design/architecture is confirmed and implementation is in progress; current task is **T-013A**.
+Current stage: **DO IT** — DESIGN is confirmed, with technical architecture contained inside `DESIGN.md`; implementation is in progress and current task is **T-013A**.
 
 The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, design/technical architecture, executable tasks, verification, and delivery.
 
@@ -33,7 +33,13 @@ Primary command surface:
 
 Legacy `LOCK` / `LOCK DECISION` and `COMMIT` remain compatible aliases.
 
-ZASSIMPLE v0.3.0 treats architecture as a technical subtype of DESIGN. AISYNC's existing confirmed architecture remains valid; new confirmation work should use the current `CONFIRM DESIGN` surface.
+ZASSIMPLE v0.3.0 treats architecture as a technical subtype of DESIGN. AISYNC's existing confirmed technical architecture remains valid inside `DESIGN.md`; new confirmation work uses the current `CONFIRM DESIGN` surface.
+
+### ZASSIMPLE v0.3 project artifacts
+
+- `ACTION_PLAN.md` — planning lineage
+- `DESIGN.md` — confirmed design, including technical architecture where applicable
+- `TASKS.md` — executable slices
 
 ---
 
