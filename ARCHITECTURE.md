@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0.7  
+**Version:** 1.0.8  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.3.0  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-026 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-027 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 >
@@ -600,3 +600,69 @@ FALLBACK
 ```
 
 The HTML fallback is transport-only. It must preserve the same method content/semantics and must not become a second editable representation or method authority.
+
+
+## ASC continuity authority and cross-AI transfer
+
+D-027 makes ASC the preferred continuity authority for intentional cross-AI continuation.
+
+### Save path
+
+```text
+AI conversation
+      ↓ SAVE
+ASC save link
+      ↓
+preview / confirm
+      ↓
+ASC persistence
+```
+
+The user should not need to manually paste a long handover packet as the normal save mechanism.
+
+### Transfer path
+
+```text
+ASC Web
+      ↓
+Project Tree
+      ↓
+select saved DUMP / DECIDE / DESIGN thread
+      ↓
+transfer/chat box
+      ↓
+select target AI
+      ↓
+Transfer Page
+      ├─ short receiving instruction
+      ├─ public Method Gateway link
+      ├─ controlled continuity reference
+      ├─ COPY
+      └─ OPEN TARGET AI when supported
+```
+
+If provider prefill/deep-link is not supported, the official fallback is short copy/paste plus user-opened target AI/app.
+
+### Authority split
+
+```text
+PUBLIC READ PLANE
+/method/...
+→ method semantics/instructions
+→ public, reusable, read-only
+
+CONTROLLED CONTINUITY PLANE
+/handoff/... or equivalent
+→ project/thread state
+→ scoped/private/controlled
+```
+
+The exact continuity protection mechanism remains open for implementation and must be chosen with the smallest safe v0.1 design.
+
+### UX acceptance principles
+
+1. If an ordinary user still must paste a long method/continuity packet after ASC is complete, the UX goal is not met.
+2. If cross-AI transfer still requires the user to understand ZASS method internals, raw GitHub URLs, fallback URLs, or packet structure, ASC is exposing too much transport complexity.
+3. Preferred user flow is: `select thread → select AI → TRANSFER → copy/open → continue`.
+
+This section refines T-004's eventual handoff target without changing the current T-013 execution order.
