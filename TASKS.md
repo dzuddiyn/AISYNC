@@ -32,7 +32,12 @@ Built / proven already:
 - static GitHub Pages front door at `/asc/` proven live for fragment preservation;
 - protected Apps Script preview proven live for authenticated replay;
 - SIGN IN → return to original tab → CONTINUE works without refresh;
-- replayed D-028 TEST_ONLY payload reached protected preview with NO WRITE.
+- replayed D-028 TEST_ONLY payload reached protected preview with NO WRITE;
+- live provider selection proof supports exactly ChatGPT / Gemini / Copilot;
+- live deterministic route suggestion passed for DUMP / DECIDE / DESIGN;
+- explicit user route override remains active after draft changes;
+- route → method → public Method Gateway mapping passed live;
+- PREPARE HANDOFF produces preview only and opens no AI provider.
 Pass:
 - user draft/request is preserved across the auth step;
 - authenticated CONTINUE/replay restores the pending request into preview;
@@ -40,7 +45,7 @@ Pass:
 - DUMP / DECIDE / DESIGN map to the correct ZASS subsystem;
 - provider handoff uses the public Method Gateway URL and does not falsely claim unsupported auto-prefill;
 - no persistence occurs before an explicit later write/confirm task.
-Current result: D-022 live preserve → auth → CONTINUE/replay proof PASS. T-004 remains IN PROGRESS; next smallest slice is provider selection + visible/user-overridable DUMP / DECIDE / DESIGN routing before AI handoff.
+Current result: D-022 auth-preserve/replay PASS and provider-selection + visible/user-overridable routing + method-mapping proof PASS live. T-004 remains IN PROGRESS; next smallest slice is actual capability-aware provider handoff using the prepared bootstrap while preserving the no-write boundary.
 
 ## Completed
 
@@ -195,7 +200,7 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001, T-002, T-003, T-013A, and T-013B.
+Implementation evidence exists for T-001, T-002, T-003, T-013A, T-013B, and partial verified slices of T-004.
 
 Closure checks:
 - Built: PARTIAL PROJECT — T-001, T-002, T-003, T-013A, and T-013B complete
