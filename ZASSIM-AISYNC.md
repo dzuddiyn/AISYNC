@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.13  
+**Project record version:** 0.6.14  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -552,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.14 | 2026-10-02 | D-024 gate satisfied by official ZASSPILL v0.1.0 Phase 1 freeze. T-013 promoted as next implementation work. METHODS registry created in ASC DB; Method Snapshot Record v0.1 schema, protected GitHub sync worker, and separate public read gateway code added. T-004 remains paused. |
 | 0.6.13 | 2026-10-02 | LOCKED D-024 execution-order gate: pause T-004 at its verified boundary; keep T-013 planned but unpromoted; wait for official ZASSPILL, then review its real handoff contract and let the owner decide whether to run T-013A → T-013B before resuming T-004. |
 | 0.6.12 | 2026-10-02 | LOCKED D-023 Public Method Gateway: GitHub remains method SoT; AI-SYNC holds identifiable method snapshots and serves Markdown itself through public read-only receiving URLs. Write Contract v0.1 remains unchanged; Method Snapshot Record is a separate read-plane representation. |
 | 0.6.11 | 2026-10-02 | LOCKED D-022: ASC v0.1 auth preservation uses B + A fallback — preserve draft/pending state in the original ASC tab, authenticate in a new tab, return and CONTINUE; if that flow is unavailable, login then click the ASC link/GO/CONTINUE again. Seamless automatic auth recovery is deferred. |
@@ -728,3 +729,34 @@ resume T-004 front-door / routing / handoff
 Reason: Avoid implementing transport assumptions against an unfinished ZASSPILL contract, while preserving the D-023 architecture and the already proven T-004 work.  
 Locked by: Project Owner  
 Date: 2026-10-02
+
+
+## T-013 IMPLEMENTATION PROMOTION
+
+Status: ACTIVE IMPLEMENTATION  
+Date: 2026-10-02
+
+The D-024 execution gate is now satisfied because ZASSPILL v0.1.0 Phase 1 is officially FROZEN / CORE PROOF PASSED.
+
+Current execution order:
+
+```text
+T-013A
+METHODS registry + protected GitHub sync
+        ↓
+T-013B
+public Method Gateway + Gemini/Copilot proof
+        ↓
+resume T-004
+front-door / routing / handoff
+```
+
+Implementation evidence already created:
+- ASC DB now includes `METHODS` with the locked 9-column snapshot shape.
+- `method-gateway/method-snapshot-v0.1.schema.json`
+- `method-gateway/sync/RegistrySync.gs`
+- `method-gateway/sync/appsscript.json`
+- `method-gateway/public/Gateway.gs`
+- `method-gateway/public/appsscript.json`
+
+T-004 remains paused at its verified boundary.
