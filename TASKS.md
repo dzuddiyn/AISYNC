@@ -3,7 +3,7 @@
 **Status:** EXECUTION QUEUE  
 **Method:** ZASSIMPLE v0.2.4  
 **Lifecycle stage:** DO IT  
-**Architecture:** v1.0.5 CONFIRMED  
+**Architecture:** v1.0.6 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
@@ -32,6 +32,13 @@ Pass:
 - all three rows identify the same real GitHub commit used for that sync;
 - re-running the sync updates/upserts instead of duplicating rows.
 Current result: IMPLEMENTATION BUILT — LIVE Apps Script RUN/VERIFICATION PENDING.
+
+D-025 implementation path is LOCKED:
+- METHODS is the v0.1 snapshot registry;
+- protected sync and public read are separate Apps Script surfaces;
+- one sync run pins all three files to one exact GitHub HEAD commit;
+- T-013A must pass before T-013B;
+- T-004 resumes only after the Method Gateway proof is sufficiently proven.
 
 ## Paused task
 
