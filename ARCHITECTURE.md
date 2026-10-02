@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0.6  
+**Version:** 1.0.7  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.3.0  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-025 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-026 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 >
@@ -577,3 +577,26 @@ T-013A → T-013B → resume T-004
 ```
 
 Production domain/URL, EN methods, advanced cache/versioning, webhooks, and broader registry features remain outside the v0.1 proof.
+
+
+### Receiver format fallback
+
+D-026 locks the T-013B rendering strategy:
+
+```text
+PRIMARY
+/method/<method>/my
+→ clean text / Markdown
+→ receiver AI
+```
+
+Only if field testing proves the primary surface unreliable for a required receiver:
+
+```text
+FALLBACK
+/method/<method>/my/view
+→ clean HTML compatibility view
+→ receiver AI
+```
+
+The HTML fallback is transport-only. It must preserve the same method content/semantics and must not become a second editable representation or method authority.
