@@ -3,10 +3,12 @@
 **Version:** 1.0.6  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
-**Method:** ZASSIMPLE v0.2.4  
+**Method:** ZASSIMPLE v0.3.0  
 **Authority:** Derived from LOCKED owner decisions D-002 through D-025 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
+>
+> Method baseline note: ZASSIMPLE v0.3.0 now treats architecture as a technical subtype of DESIGN. This document remains the confirmed technical design/architecture artifact; the historical confirmation above remains valid and is not reopened.
 
 ## Purpose
 
