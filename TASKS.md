@@ -28,7 +28,7 @@ Pass:
 - Copilot can read and identify the method/version;
 - ZASSPILL handoff can carry the gateway URL;
 - HTML compatibility view is added only if field evidence requires it.
-Current result: T-013A PASSED; T-013B LIVE DEPLOYMENT / CROSS-AI VERIFICATION PENDING.
+Current result: GitHub Pages receiver-facing proof is live. Gemini successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and correctly identified ZASSIMPLE v0.3.0, its lifecycle, and PROCEED/LOCK semantics. Copilot readability and ZASSPILL handoff proof remain.
 
 ## Paused task
 
@@ -270,10 +270,9 @@ After those pass sufficiently, resume the remaining T-004 front-door/routing/han
 T-013B | QUEUED — PUBLIC METHOD GATEWAY + CROSS-AI PROOF
 Source: T-013A, D-023
 Do:
-- deploy separate public read-only Apps Script Web App;
-- expose equivalent routes for zasspill/my, zassimple/my, zasselection/my;
-- return snapshot Markdown itself using ContentService text output;
-- expose provenance metadata separately;
+- retain Apps Script for protected/backend proof and provenance where useful;
+- use a standard static public host for receiver-facing compatibility; current proof host is GitHub Pages;
+- expose a readable ZASSIMPLE MY proof page from the canonical snapshot/content;
 - verify no login required;
 - field-test Gemini and Copilot readability;
 - verify ZASSPILL handoff can carry the gateway URL.
