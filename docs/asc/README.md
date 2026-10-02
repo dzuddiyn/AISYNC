@@ -1,6 +1,6 @@
 # GitHub Pages ASC Front Door Proof
 
-Status: local proof slice; deployment pending.
+Status: LIVE PROOF PASS — D-022 preserve/auth/replay verified.
 
 Target public URL after GitHub Pages deployment:
 
@@ -47,3 +47,34 @@ node docs/asc/test-front-door.mjs
 ```
 
 The test covers fragment capture, sessionStorage restoration, the clean protected sign-in URL, `noopener` sign-in behavior when `window.open` returns `null`, exact replay URL construction, and absence of persistence/write/routing functions.
+
+
+## Live verification — 2026-10-02
+
+Result: **PASS**
+
+Verified in an Incognito session:
+
+```text
+GitHub Pages /asc/#asc=<payload>
+        ↓
+pending request detected
+        ↓
+SIGN IN opens protected Apps Script base URL in a new tab
+        ↓
+Google authentication
+        ↓
+return to original GitHub Pages tab
+        ↓
+CONTINUE remains enabled without refresh
+        ↓
+protected /exec#asc=<stored-payload>
+        ↓
+authenticated preview renders D-028 TEST_ONLY payload
+        ↓
+NO WRITE
+```
+
+The first live attempt exposed a false popup-failure state because `window.open(..., 'noopener')` may successfully open a new tab while returning `null`. The regression fix stopped using that return value as proof of failure, preserved `noopener`, and kept a valid CONTINUE state intact.
+
+This proof validates the D-022 original-tab preservation/replay slice only. Provider selection, intent routing, method selection, and AI handoff remain later T-004 work.
