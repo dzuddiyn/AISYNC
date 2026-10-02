@@ -314,3 +314,8 @@ Finding: T-008 pass condition is met by live evidence. Apps Script deployment ve
 PF-052 | T-009A/B/C LOCAL READ/DASHBOARD — LOCAL PASS; STALE INDEX VALUES NOT REFRESHED
 
 Finding: The live ASC DB is structurally valid, but some operational/index values are stale (for example, the AISYNC PROJECTS row still refers to T-004 while GitHub has progressed to T-009). T-009 intentionally does not invent GitHub→Sheets semantic refresh rules: the read layer returns Sheet values exactly, exposes `source_artifact` / `source_commit` / `updated_at`, and labels index freshness `UNVERIFIED`; it never derives progress, stage, or latest update and does not repair live Sheet values. Automatic synchronization/index rules remain unlocked and need an owner decision. Local read layer, DECIDE / DESIGN landing, and seven-section project detail pass with fake services; deployment, Google Sites integration, and live read proof remain pending.
+
+PF-053 | T-009 CLOSED / T-010 PROMOTED
+
+Finding: T-009 pass condition is met by live owner verification. Apps Script deployment version 5 ("T-009D dashboard HTML include fix") serves the read-only dashboard at `?view=dashboard`; the published Google Sites ASC UI at `https://sites.google.com/view/aisync-asc/laman-utama` embeds that dashboard successfully. The live AISYNC DESIGN project rendered the required seven project-detail sections, including ACTION_PLAN, RECORDS/ZASS, and factual HISTORY rows for the T-003 bootstrap, T-007 HISTORY proof, and T-008 live SAVE. The dashboard preserves D-014: GitHub remains canonical, Sheets remains operational/index storage, semantic progress/stage are not invented, and stale operational values remain visibly `UNVERIFIED`. Execution advances to T-010 security/replay controls.
+
