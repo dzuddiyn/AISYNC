@@ -210,7 +210,7 @@ Verified:
 5. method version/path/content are populated;
 6. a second run upserts existing rows without duplicates.
 
-Current work: **T-013B** — deploy the separate public read-only Apps Script gateway and field-test the plain-text snapshot endpoint with Gemini and Copilot. Add the HTML `/view` compatibility surface only if receiver evidence requires it.
+Current work: **T-013B** — Apps Script was proven public to browsers but was not fetchable by Gemini or Copilot as a receiver-facing host, even with an HTML compatibility view. A GitHub Pages proof surface was then deployed. Gemini successfully read `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/` and correctly identified ZASSIMPLE v0.3.0 plus method semantics. Copilot readability and ZASSPILL handoff proof remain.
 
 ## Locked implementation path — D-025
 
@@ -255,3 +255,32 @@ Evidence-triggered fallback only:
 ```
 
 Do not implement the HTML view unless Gemini/Copilot field tests show that the plain-text endpoint is insufficient. Both surfaces, if eventually needed, must expose the same AI-SYNC-held snapshot and preserve identical method semantics.
+
+
+## Receiver-host field evidence — 2026-10-02
+
+Apps Script transport:
+- anonymous browser access to base `/exec`: PASS;
+- query-route method content in browser: PASS;
+- provenance/meta JSON in browser: PASS;
+- Gemini direct fetch of Apps Script plain text: FAIL;
+- Gemini direct fetch of Apps Script HTML compatibility view: FAIL;
+- Copilot direct fetch of Apps Script HTML compatibility view: FAIL.
+
+Control:
+- Gemini successfully fetched a normal public webpage (`example.com`), showing that Gemini web access itself was available.
+
+GitHub Pages proof:
+- proof page: `https://dzuddiyn.github.io/AISYNC/method/zassimple/my/`;
+- anonymous browser access: PASS;
+- Gemini direct fetch: PASS;
+- Gemini correctly identified:
+  - method: ZASSIMPLE;
+  - version: 0.3.0;
+  - lifecycle: DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!;
+  - PROCEED/LOCK semantics.
+
+Interpretation:
+- Apps Script remains suitable for protected sync/backend functions.
+- For receiver-facing method transport, a standard static host is currently more compatible.
+- This is a transport finding only; GitHub remains the method Source of Truth and method semantics are unchanged.
