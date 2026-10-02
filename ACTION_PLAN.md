@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE ACTION PLAN
 
 **Status:** SLICED INTO TASKS  
-**Method:** ZASSIMPLE v0.2.4  
+**Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Authority:** Planning artifact only. It must not override LOCKED owner decisions.
 
@@ -204,3 +204,7 @@ Finding: Apps Script ContentService can serve plain text and anonymous web-app a
 
 PF-020 | RESOLVED BY D-025  
 Finding: Lock the smallest Method Gateway implementation topology: existing ASC DB `METHODS` registry, protected exact-commit GitHub sync worker, and a separate public anonymous read-only Apps Script gateway. Keep the eight-field ASC Write Contract unchanged. Execute T-013A → T-013B → resume T-004.
+
+
+PF-021 | ZASSIMPLE v0.3.0 BASELINE  
+Finding: AISYNC now follows official ZASSIMPLE v0.3.0. DESIGN is the generic design surface; architecture remains a technical subtype appropriate to AISYNC. Existing confirmed architecture and LOCKED decisions remain valid. Current execution remains T-013A in DO IT.
