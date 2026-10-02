@@ -56,3 +56,22 @@ PASS when:
 - required-field failure is mechanically detectable;
 - extra transport/destination mechanics are rejected at the semantic boundary;
 - no GitHub- or Sheets-specific write logic is required to understand the contract.
+
+
+## Method Gateway boundary
+
+D-023 introduces a public AI-SYNC Method Gateway/read mirror. It does **not** change this Write Contract.
+
+The ASC Write Contract v0.1 remains exactly the eight semantic fields defined above.
+
+Method-distribution snapshot metadata such as:
+- method
+- language
+- method version
+- canonical source repository/path/commit
+- sync timestamp
+- mirrored Markdown content
+
+belongs to a separate **Method Snapshot Record v0.1** in the public read-plane/registry subsystem.
+
+Reason: method distribution/readability and semantic project writes are different responsibilities. Combining them would weaken the contract boundary established by D-011/D-013.
