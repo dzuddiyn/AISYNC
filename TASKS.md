@@ -3,7 +3,7 @@
 **Status:** EXECUTION QUEUE  
 **Method:** ZASSIMPLE v0.2.4  
 **Lifecycle stage:** DO IT  
-**Architecture:** v1.0 CONFIRMED  
+**Architecture:** v1.0.2 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
@@ -12,7 +12,7 @@
 
 T-004 | IN PROGRESS — LIVE DEPLOYMENT TEST PENDING  
 Source: AP-003, AP-007, PF-005  
-Decision / Architecture lineage: D-006, D-015, D-017, ARCH v1.0.1 § Apps Script Web App + Google Account authentication  
+Decision / Architecture lineage: D-006, D-015, D-017, D-020, ARCH v1.0.2 § Apps Script Web App + Google Account authentication / front-door orchestration  
 Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
 Depends on: T-002  
 Pass: An unauthenticated ASC Link request survives sign-in and reaches a post-login preview state without any write occurring.  
@@ -32,6 +32,15 @@ Remaining verification:
 - complete Google Account sign-in
 - confirm pending request reaches preview with no write
 Result: PARTIAL PASS — implementation complete, real Google auth/deployment pass condition not yet proven.
+
+D-020 front-door behavior is LOCKED but not yet implemented:
+- mandatory AI-provider selection + red missing-provider warning
+- auth check before routing
+- new-tab login attempt + copy-draft/redirect fallback
+- automatic DUMP / DECIDE / DESIGN routing
+- ZASSPILL / ZASSELECTION / ZASSIMPLE method mapping
+- provider handoff with capability-aware prefill or copy/paste fallback
+Dependency note: DUMP routing cannot be finalized until ZASSPILL's own contract/behavior is available.
 
 ## Completed
 
