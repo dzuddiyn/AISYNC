@@ -10,25 +10,29 @@
 
 ## Current task
 
-T-006 | IN PROGRESS — GITHUB DESTINATION ADAPTER  
-Source: AP-005  
-Decision / Design lineage: D-007, D-016, DESIGN v1.0 § GitHub adapter  
-Do: Implement the first GitHub destination adapter for current-file/SHA fetch, create/update, persisted-state verification, and commit result capture.  
-Depends on: T-005  
-Pass: A controlled test update produces a real verified GitHub commit and returns factual identifiers needed by the receipt layer.  
-Current result: **T-006A PASS** — local/mock adapter mechanics published at commit `7c1dbd64328eb8ff6590374706eb7d603b0f1dc7`.
-Verified in T-006A:
-- create/update/no-change mechanics;
-- current-file SHA required before update;
-- exact read → write → read verification path;
-- persisted content SHA taken from verification read;
-- successful write without valid commit SHA cannot become VERIFIED_WRITE;
-- post-write verification failure returns WRITE_UNVERIFIED while preserving captured commit SHA;
-- sync throws and rejected Promises are contained as truthful structured outcomes;
-- no real network, PAT, credential, final receipt, or HISTORY write.
-Next smallest slice: **T-006B — controlled real GitHub write proof** using the same adapter boundary with a real injected GitHub transport, then verify persisted state and factual commit identifiers. T-006 remains IN PROGRESS until this live proof passes.
+T-007 | IN PROGRESS — FACTUAL WRITE RECEIPT + HISTORY  
+Source: AP-006  
+Decision / Design lineage: D-004, R-003, D-014, DESIGN v1.0 § Write Receipt  
+Do: Implement the factual ASC Write Receipt and HISTORY persistence.  
+Depends on: T-003, T-006  
+Pass: SUCCESS and FAILED writes are distinguishable; successful GitHub writes record destination, affected resource, commit/record identifier, request identity/time, and HISTORY entry.  
+Current result: PROMOTED after T-006 PASS.
 
 ## Completed
+
+T-006 | PASS — GITHUB DESTINATION ADAPTER  
+Source: AP-005  
+Decision / Design lineage: D-007, D-016, DESIGN v1.0 § GitHub adapter  
+Built / proven:
+- T-006A local/mock adapter mechanics: CREATE / UPDATE / NO_CHANGE, current-SHA enforcement, exact read → write → read verification, truthful WRITE_UNVERIFIED handling, Promise/throw containment, and no fake identifiers;
+- T-006B GitHub REST transport: runtime-only GITHUB_TOKEN, Contents API GET/PUT translation, UTF-8/Base64 handling, structured HTTP/fetch errors, and no credential leakage;
+- live proof target: `proofs/t006b-github-adapter-live.md` on `dzuddiyn/AISYNC` branch `main`;
+- controlled live CREATE produced commit `95e019604e6edd778acd0ee252c506d2729f2d09`;
+- persisted content SHA verified as `3be4eed97840c9414207f1cb4f33e7f5021847bf`;
+- remote re-read matched the deterministic proposed content exactly;
+- live adapter result: VERIFIED_WRITE, writePerformed=true, verified=true;
+- no final T-007 Write Receipt or HISTORY entry was created by T-006.
+Result: PASS — a controlled real GitHub write produced a verified commit and factual identifiers needed by the receipt layer.
 
 T-005 | PASS — ASC CORE REQUEST BOUNDARY  
 Source: AP-004  
@@ -164,13 +168,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-007 | QUEUED  
-Source: AP-006  
-Decision / Design lineage: D-004, R-003, D-014, DESIGN v1.0 § Write Receipt  
-Do: Implement the factual ASC Write Receipt and HISTORY persistence.  
-Depends on: T-003, T-006  
-Pass: SUCCESS and FAILED writes are distinguishable; successful GitHub writes record destination, affected resource, commit/record identifier, request identity/time, and HISTORY entry.
-
 T-008 | QUEUED  
 Source: AP-003, AP-007  
 Decision / Design lineage: D-012, D-015, D-017, DESIGN v1.0 § Google Sites + Apps Script interaction flow  
@@ -209,10 +206,10 @@ Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or dupl
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001, T-002, T-003, T-004, T-005, T-013A, and T-013B.
+Implementation evidence exists for T-001, T-002, T-003, T-004, T-005, T-006, T-013A, and T-013B.
 
 Closure checks:
-- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-005, T-013A, and T-013B complete
+- Built: PARTIAL PROJECT — T-001, T-002, T-003, T-004, T-005, T-006, T-013A, and T-013B complete
 - Verified: PARTIAL PROJECT — those completed slices are verified
 - Matches design: YES FOR COMPLETED SLICES
 - Recorded: YES — task queue created
