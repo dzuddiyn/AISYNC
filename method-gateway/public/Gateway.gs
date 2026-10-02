@@ -9,7 +9,10 @@ const METHOD_GATEWAY_CONFIG = Object.freeze({
 });
 
 function doGet(e) {
-  const path = normalizePath_(e && e.pathInfo ? e.pathInfo : '');
+  const routeParam = e && e.parameter && e.parameter.route
+    ? e.parameter.route
+    : '';
+  const path = normalizePath_(routeParam || (e && e.pathInfo ? e.pathInfo : ''));
   const metaRequested = path.endsWith('/meta');
   const basePath = metaRequested ? path.slice(0, -5) : path;
   const methodKey = METHOD_GATEWAY_CONFIG.routes[basePath];
@@ -18,9 +21,9 @@ function doGet(e) {
     return text_(
       'AI-SYNC Method Gateway v0.1\n' +
       'Available routes:\n' +
-      '/method/zasspill/my\n' +
-      '/method/zassimple/my\n' +
-      '/method/zasselection/my\n'
+      '?route=method/zasspill/my\n' +
+      '?route=method/zassimple/my\n' +
+      '?route=method/zasselection/my\n'
     );
   }
 
