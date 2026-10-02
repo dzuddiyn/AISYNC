@@ -245,3 +245,10 @@ Finding: The live flow `static /asc/#asc → sessionStorage → SIGN IN in new t
 
 PF-031 | T-004 NEXT SLICE  
 Finding: Authentication-state preservation/replay is now proven. The next smallest T-004 slice is mandatory AI-provider selection plus visible/user-overridable DUMP / DECIDE / DESIGN routing and method-link handoff, while keeping persistence disabled.
+
+
+PF-032 | T-004 LIVE PROVIDER / ROUTING PROOF — PASS  
+Finding: Live browser proof passed for mandatory provider selection (ChatGPT / Gemini / Copilot), deterministic DUMP / DECIDE / DESIGN suggestion, explicit user override persistence, exact route→method→Method Gateway mapping, and preview-only PREPARE HANDOFF. No provider was opened and no network/write action occurred.
+
+PF-033 | T-004 NEXT SLICE — PROVIDER HANDOFF  
+Finding: The next smallest implementation slice is capability-aware provider handoff from the prepared preview. It must use the selected provider, active route, public Method Gateway URL, and user draft; it must not claim unsupported prefill/deep-link capability and must retain the no-write boundary.
