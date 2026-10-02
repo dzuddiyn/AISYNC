@@ -12,7 +12,7 @@
 
 T-004 | IN PROGRESS — FRONT-DOOR REPLAY REQUIRED  
 Source: AP-003, AP-007, PF-005  
-Decision / Architecture lineage: D-006, D-015, D-017, D-020, ARCH v1.0.2 § Apps Script Web App + Google Account authentication / front-door orchestration  
+Decision / Architecture lineage: D-006, D-015, D-017, D-020, D-021, D-022, ARCH v1.0.4 § Apps Script Web App + Google Account authentication / front-door orchestration  
 Do: Create the Apps Script Web App skeleton with owner-only Google Account gate and pending-request preservation across sign-in.  
 Depends on: T-002  
 Pass: ASC front-door preserves the pending draft/payload before authentication, completes owner sign-in, then replays the payload into the authenticated preview with no write occurring.  
@@ -45,6 +45,12 @@ D-020 front-door behavior is LOCKED but not yet implemented:
 - ZASSPILL / ZASSELECTION / ZASSIMPLE method mapping
 - provider handoff with capability-aware prefill or copy/paste fallback
 Dependency note: DUMP routing cannot be finalized until ZASSPILL's own contract/behavior is available.
+
+D-022 auth strategy is LOCKED for v0.1:
+- Primary B: preserve draft/pending state in the original ASC tab → login in new tab → return → CONTINUE → replay to authenticated preview.
+- Fallback A: complete login → click ASC link / GO / CONTINUE again.
+- Requirement: user draft/request must not be lost; fragment survival across auth redirect is not required.
+- Fully automatic invisible auth recovery is deferred.
 
 ## Completed
 
