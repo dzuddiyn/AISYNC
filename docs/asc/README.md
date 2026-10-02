@@ -1,6 +1,6 @@
 # GitHub Pages ASC Front Door Proof
 
-Status: LIVE T-004 routing proof PASS; actual provider handoff pending.
+Status: T-004 LIVE PASS — auth preservation, routing, and copy-open provider handoff verified.
 
 Target public URL after GitHub Pages deployment:
 
@@ -118,3 +118,24 @@ Live browser proof verified:
 - no network call or persistence/write occurred.
 
 This closes the provider-selection / intent-routing / method-mapping proof slice. Actual provider handoff remains the next T-004 slice.
+
+## Live provider handoff verification — 2026-10-03
+
+Result: **PASS for T-004 provider-handoff scope**
+
+Field results:
+
+- **Gemini:** fetched the exact ZASSIMPLE Method Gateway URL and continued under DESIGN. However, because the v0.1 handoff carries only the method link + user draft and not controlled project continuity, Gemini introduced generic/inaccurate AISYNC assumptions. This is a continuity limitation, not a failure of method transport.
+- **ChatGPT:** fetched the exact gateway and continued under ZASSIMPLE with a project-aligned architecture response. This demonstrates the copy-open handoff path, but the session may have had ambient project context, so it is not treated as clean proof of portable project continuity.
+- **Copilot:** could not fetch the exact supplied gateway in the tested session and correctly stopped. It did not substitute repository search, raw GitHub, cache, or another source as method authority. This is the intended failure-safe behavior under D-028.
+
+T-004 therefore proves:
+- front-door preservation across authentication;
+- visible/user-overridable routing;
+- exact method mapping;
+- short receiver bootstrap;
+- explicit COPY + OPEN fallback;
+- truthful receiver failure behavior;
+- no write/persistence.
+
+T-004 does **not** prove controlled/private cross-AI project continuity. That remains a separate D-027/PF-024 implementation concern.
