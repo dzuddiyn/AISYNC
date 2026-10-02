@@ -100,11 +100,23 @@ function ascResultKey_(requestId) {
   return ASC_RESULT_CACHE_PREFIX_ + Utilities.base64EncodeWebSafe(String(requestId));
 }
 
+// Remove any earlier result for this request ID so a previous SUCCESS can never be
+// returned for a new attempt. Returns false if the cache cannot be cleared.
+function ascClearResult_(requestId) {
+  try {
+    CacheService.getUserCache().remove(ascResultKey_(requestId));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 function ascStoreResult_(requestId, result) {
   try {
     CacheService.getUserCache().put(ascResultKey_(requestId), JSON.stringify(result), ASC_RESULT_CACHE_SECONDS_);
   } catch (error) {
-    // Result stays unknown; getConfirmSyncResult reports it as not confirmed saved.
+    // Result stays unknown (cache was cleared before the attempt); getConfirmSyncResult
+    // reports it as not confirmed saved.
   }
 }
 
@@ -134,6 +146,11 @@ function confirmAndSync(request) {
   const token = ascScriptProperty_('GITHUB_TOKEN');
   if (!token) {
     return ascFailed_('CONFIG', 'GITHUB_TOKEN_MISSING', 'Server GitHub credential is not configured. Nothing was saved.', requestId);
+  }
+
+  // Fail closed: without a cleared result slot, a stale result could be mistaken for this attempt.
+  if (!ascClearResult_(requestId)) {
+    return ascFailed_('RESULT', 'RESULT_CACHE_UNAVAILABLE', 'Result cache could not be reset. Sync was not started; nothing was saved.', requestId);
   }
 
   const runtime = ascRuntime_();
@@ -173,14 +190,27 @@ function getConfirmSyncResult(requestId) {
   if (typeof requestId !== 'string' || requestId.length === 0) {
     return ascFailed_('RESULT', 'INVALID_REQUEST_ID', 'Request ID is required.');
   }
-  const cached = CacheService.getUserCache().get(ascResultKey_(requestId));
+  let cached;
+  try {
+    cached = CacheService.getUserCache().get(ascResultKey_(requestId));
+  } catch (error) {
+    const unknown = ascFailed_('RESULT', 'SYNC_RESULT_UNREADABLE',
+      'Sync result could not be read. Check HISTORY; nothing is reported as saved.', requestId);
+    unknown.writePerformed = null; // unknown — not claimed either way
+    return unknown;
+  }
   if (!cached) {
-    return ascFailed_('RESULT', 'SYNC_RESULT_UNAVAILABLE',
+    const unknown = ascFailed_('RESULT', 'SYNC_RESULT_UNAVAILABLE',
       'Sync result is not available. Check HISTORY; nothing is reported as saved.', requestId);
+    unknown.writePerformed = null;
+    return unknown;
   }
   try {
     return JSON.parse(cached);
   } catch (error) {
-    return ascFailed_('RESULT', 'SYNC_RESULT_UNREADABLE', 'Sync result could not be read. Nothing is reported as saved.', requestId);
+    const unknown = ascFailed_('RESULT', 'SYNC_RESULT_UNREADABLE',
+      'Sync result could not be read. Check HISTORY; nothing is reported as saved.', requestId);
+    unknown.writePerformed = null;
+    return unknown;
   }
 }

@@ -204,7 +204,7 @@ Local-only files (do not push to Apps Script): `build-runtime.mjs`, `test-*.mjs`
 - HISTORY persistence reuses `History.gs` `appendHistory`; its `{ ok: false }` result is surfaced as failure by the T-008A strict writer bridge.
 - Destination policy is the owner-locked TEST_ONLY target only: `dzuddiyn/AISYNC`, `main`, `proofs/t008-confirm-sync-live.md`. Authorization additionally requires owner session, `Record ID` prefix `TEST_ONLY_`, and `Destination: ["GitHub"]`.
 - Script Properties: `GITHUB_TOKEN` (required; never returned, logged, or hard-coded) and `ASC_MAIN_UI_URL` (accepted only if it starts with `https://sites.google.com/`).
-- The reused flow is async; `confirmAndSync` returns `RESULT_PENDING`, the settled result is stored in the owner's user cache, and the client fetches it via `getConfirmSyncResult`. A missing result is shown as FAILED/unknown, never success.
+- The reused flow is async; `confirmAndSync` returns `RESULT_PENDING`, the settled result is stored in the owner's user cache, and the client fetches it via `getConfirmSyncResult`. A missing result is shown as FAILED/unknown, never success. Before each attempt the cached result for that request ID is removed (if removal fails the attempt is not started), and cache read/key errors in `getConfirmSyncResult` return FAILED/unknown instead of throwing, so a previous SUCCESS can never be returned for a new attempt.
 
 ```text
 node apps-script/build-runtime.mjs --check

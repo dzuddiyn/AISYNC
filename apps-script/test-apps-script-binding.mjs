@@ -55,7 +55,8 @@ const Utilities = {
 };
 
 function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser = OWNER } = {}) {
-  const github = { file: null, calls: [], commitCounter: 0 };
+  const github = { file: null, calls: [], commitCounter: 0, putMode, getMode: 'ok' };
+  const cacheFaults = { remove: false, put: false, get: false };
   const rows = [];
   const cache = new Map();
   const logs = [];
@@ -68,18 +69,19 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
       assert.equal(options.muteHttpExceptions, true);
       const respond = (status, body) => ({ getResponseCode: () => status, getContentText: () => JSON.stringify(body || {}) });
       if (options.method === 'get') {
+        if (github.getMode === 'error') return respond(500, { message: 'server error' });
         if (!github.file) return respond(404, { message: 'Not Found' });
         const b64 = Buffer.from(github.file.content, 'utf8').toString('base64').replace(/(.{60})/g, '$1\n');
         return respond(200, { type: 'file', sha: github.file.sha, content: b64 });
       }
       if (options.method === 'put') {
-        if (putMode === 'throw') throw new Error('network');
-        if (putMode === 'conflict') return respond(409, { message: 'conflict' });
+        if (github.putMode === 'throw') throw new Error('network');
+        if (github.putMode === 'conflict') return respond(409, { message: 'conflict' });
         const body = JSON.parse(options.payload);
         assert.equal(body.branch, 'main');
         if (github.file) assert.equal(body.sha, github.file.sha, 'current SHA enforced');
         let content = Buffer.from(body.content, 'base64').toString('utf8');
-        if (putMode === 'corrupt') content += 'CORRUPTED';
+        if (github.putMode === 'corrupt') content += 'CORRUPTED';
         github.commitCounter += 1;
         github.file = { sha: 'blobsha' + github.commitCounter, content };
         return respond(github.commitCounter === 1 ? 201 : 200, {
@@ -109,14 +111,20 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
       getActiveUser: () => ({ getEmail: () => activeUser }),
       getEffectiveUser: () => ({ getEmail: () => OWNER })
     },
-    CacheService: { getUserCache: () => ({ put: (k, v) => cache.set(k, v), get: (k) => (cache.has(k) ? cache.get(k) : null) }) },
+    CacheService: {
+      getUserCache: () => ({
+        put: (k, v) => { if (cacheFaults.put) throw new Error('cache put'); cache.set(k, v); },
+        get: (k) => { if (cacheFaults.get) throw new Error('cache get'); return cache.has(k) ? cache.get(k) : null; },
+        remove: (k) => { if (cacheFaults.remove) throw new Error('cache remove'); cache.delete(k); }
+      })
+    },
     Uint8Array
   };
   vm.createContext(context);
   vm.runInContext(SHIMS, context, { filename: 'RuntimeShims.gs' });
   vm.runInContext(RUNTIME, context, { filename: 'AscRuntime.gs' });
   vm.runInContext(CODE, context, { filename: 'Code.gs' });
-  return { context, github, rows, cache, logs };
+  return { context, github, rows, cache, logs, cacheFaults };
 }
 
 const settle = () => new Promise((resolve) => setImmediate(resolve));
@@ -332,6 +340,62 @@ for (const [label, contract, opts] of [
   assert.equal(shims.Buffer.from(b64, 'base64').toString('utf8'), text);
   assert.equal(new shims.TextDecoder().decode(Uint8Array.from(Buffer.from(text))), text);
   assert.equal(shims.atob(Buffer.from('abc').toString('base64')), 'abc');
+}
+
+// 12. Stale-result regression: same requestId twice; first SUCCESS must never leak into the second attempt.
+{
+  const envelope = envelopeWith(contractWith(), 'TEST_ONLY_T008B_SAME_ID');
+  const confirmation = confirmFor('TEST_ONLY_T008B_SAME_ID');
+
+  // 12a. first attempt succeeds and caches SUCCESS; second attempt is forced to fail at read.
+  const w = createWorld({ props: fullProps });
+  const first = await run(w, envelope, confirmation);
+  assert.equal(first.final.state, 'SYNCED');
+  assert.equal(first.final.receipt.status, 'SUCCESS');
+  w.github.getMode = 'error';
+  const second = await run(w, envelope, confirmation);
+  assert.equal(second.immediate.state, 'RESULT_PENDING');
+  assert.equal(second.final.state, 'FAILED');
+  assert.equal(second.final.redirect, null);
+  assert.equal(second.final.receipt.status, 'FAILED');
+  assert.equal(second.final.receipt.adapter_outcome, 'READ_ERROR');
+  assert.notDeepStrictEqual(second.final, first.final);
+  assert.equal(JSON.stringify(second.final).includes('"state":"SYNCED"'), false);
+
+  // 12b. second attempt write fails AND its result cannot be cached → unknown FAILED, never the first SUCCESS.
+  const w2 = createWorld({ props: fullProps });
+  const ok = await run(w2, envelope, confirmation);
+  assert.equal(ok.final.state, 'SYNCED');
+  w2.github.getMode = 'error';
+  w2.cacheFaults.put = true;
+  const lost = await run(w2, envelope, confirmation);
+  assert.equal(lost.final.state, 'FAILED');
+  assert.equal(lost.final.error.code, 'SYNC_RESULT_UNAVAILABLE');
+  assert.equal(lost.final.redirect, null);
+  assert.equal(lost.final.writePerformed, null);
+
+  // 12c. cache cannot be cleared → attempt is not started (no GitHub I/O, no HISTORY), never SUCCESS.
+  const w3 = createWorld({ props: fullProps });
+  await run(w3, envelope, confirmation);
+  const callsBefore = w3.github.calls.length;
+  const rowsBefore = w3.rows.length;
+  w3.cacheFaults.remove = true;
+  const blocked = w3.context.confirmAndSync({ fragment: encodeFragment(envelope), confirmation });
+  await settle();
+  assert.equal(blocked.state, 'FAILED');
+  assert.equal(blocked.error.code, 'RESULT_CACHE_UNAVAILABLE');
+  assert.equal(blocked.redirect, null);
+  assert.equal(w3.github.calls.length, callsBefore);
+  assert.equal(w3.rows.length, rowsBefore);
+
+  // 12d. cache read failure → factual FAILED/unknown, does not throw, never redirects.
+  w3.cacheFaults.get = true;
+  let lookup;
+  assert.doesNotThrow(() => { lookup = w3.context.getConfirmSyncResult('TEST_ONLY_T008B_SAME_ID'); });
+  assert.equal(lookup.state, 'FAILED');
+  assert.equal(lookup.error.code, 'SYNC_RESULT_UNREADABLE');
+  assert.equal(lookup.redirect, null);
+  assert.equal(lookup.writePerformed, null);
 }
 
 console.log('T-008B Apps Script binding test: PASS');
