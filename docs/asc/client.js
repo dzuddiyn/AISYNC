@@ -62,11 +62,11 @@ function setFrontDoorError(message) {
 }
 
 function handleSignIn() {
-  const opened = window.open(getProtectedSignInUrl(), '_blank', 'noopener');
+  window.open(getProtectedSignInUrl(), '_blank', 'noopener');
 
-  if (!opened) {
-    setFrontDoorError('Sign-in could not open. Allow pop-ups, then try SIGN IN again.');
-  }
+  const status = document.getElementById('status');
+  status.textContent = 'Sign-in opened in a new tab. Complete Google sign-in, return here, then press CONTINUE.';
+  status.className = '';
 }
 
 function handleContinue() {

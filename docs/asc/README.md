@@ -36,7 +36,7 @@ CONTINUE appends the stored fragment
 protected preview URL#asc=<payload>
 ```
 
-SIGN IN never receives the fragment, payload, or a query-string copy of the payload. The page performs no persistence and contains no CONFIRM & SYNC, GitHub/Sheets write, or DUMP/DECIDE/DESIGN routing logic.
+SIGN IN never receives the fragment, payload, or a query-string copy of the payload. The front door does not infer popup failure from the return value of `window.open` when `noopener` is used; it leaves a valid CONTINUE state intact and shows a neutral return-and-continue message. The page performs no persistence and contains no CONFIRM & SYNC, GitHub/Sheets write, or DUMP/DECIDE/DESIGN routing logic.
 
 ## Local verification
 
@@ -46,4 +46,4 @@ Run only this proof test:
 node docs/asc/test-front-door.mjs
 ```
 
-The test covers fragment capture, sessionStorage restoration, the clean protected sign-in URL, exact replay URL construction, and absence of persistence/write/routing functions.
+The test covers fragment capture, sessionStorage restoration, the clean protected sign-in URL, `noopener` sign-in behavior when `window.open` returns `null`, exact replay URL construction, and absence of persistence/write/routing functions.

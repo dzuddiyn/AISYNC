@@ -21,10 +21,24 @@ const payload = Buffer.from(JSON.stringify({
 
 const fragment = '#asc=' + payload;
 const storage = new FakeStorage();
+const ui = {
+  status: { textContent: 'Pending ASC request detected.', className: '' },
+  continueButton: { disabled: false }
+};
+let signInCall;
 const sandbox = {
   console,
   window: {
-    addEventListener() {}
+    addEventListener() {},
+    open(url, target, features) {
+      signInCall = { url, target, features };
+      return null;
+    }
+  },
+  document: {
+    getElementById(id) {
+      return id === 'status' ? ui.status : ui.continueButton;
+    }
   }
 };
 vm.createContext(sandbox);
@@ -47,6 +61,18 @@ assert.equal(
 assert.equal(signInUrl.includes('#asc='), false);
 assert.equal(signInUrl.includes('?'), false);
 assert.equal(signInUrl.includes(payload), false);
+
+sandbox.handleSignIn();
+assert.deepEqual(signInCall, {
+  url: signInUrl,
+  target: '_blank',
+  features: 'noopener'
+});
+assert.equal(ui.continueButton.disabled, false);
+assert.equal(
+  ui.status.textContent,
+  'Sign-in opened in a new tab. Complete Google sign-in, return here, then press CONTINUE.'
+);
 
 const replayUrl = sandbox.buildProtectedReplayUrl(signInUrl, restored.fragment);
 assert.equal(replayUrl, signInUrl + fragment);
