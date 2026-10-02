@@ -3,7 +3,7 @@
 **Status:** EXECUTION QUEUE  
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
-**Architecture:** v1.0.6 CONFIRMED  
+**Architecture:** v1.0.7 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
@@ -262,3 +262,8 @@ Do:
 - verify ZASSPILL handoff can carry the gateway URL.
 Depends on: T-013A PASS.
 Pass: acceptance conditions 2–8 of D-023 proof are demonstrated.
+
+D-026 receiver-format rule is LOCKED:
+- test clean text/Markdown endpoint first;
+- add a clean HTML `/view` compatibility endpoint only if Gemini/Copilot evidence requires it;
+- do not alter method semantics in the fallback view.
