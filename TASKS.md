@@ -90,6 +90,7 @@ Scope limits:
 - the TEST_ONLY destination policy is a controlled proof policy, NOT the production mapping; general Record ID → GitHub path mapping remains undecided;
 - only `Destination: ["GitHub"]` is supported; ASC_DB record destination and replay/expiry/integrity controls (T-010) are not implemented;
 - live failure paths (FAILED/unverified writes not redirecting) are proven by local tests, not by a live forced failure.
+- D-030 later refines the user-visible success return requirement: the guaranteed v0.1 path is the user-activated `Return to main ASC UI` link/button; automatic top-level navigation is optional.
 Result: PASS — explicit confirmation preceded persistence, a real verified GitHub commit produced a factual SUCCESS receipt and HISTORY row, and the flow returned to the main Google Sites ASC UI.
 
 T-007 | PASS — FACTUAL WRITE RECEIPT + HISTORY
