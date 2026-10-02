@@ -270,3 +270,12 @@ Finding: Nested semantic data is deep-isolated from authorization policy mutatio
 
 PF-039 | T-005 CLOSED / T-006 PROMOTED  
 Finding: T-005 pass condition is met and published at commit `3a56c30d8520ab6824807c76255c973a1f838450`. Execution advances to T-006 GitHub destination adapter.
+
+PF-040 | T-006A GITHUB ADAPTER MOCK PROOF — PASS  
+Finding: The GitHub adapter mechanics are implemented and published at commit `7c1dbd64328eb8ff6590374706eb7d603b0f1dc7`. The adapter separates Core semantic input from destination mechanics, supports CREATE / UPDATE / NO_CHANGE, and verifies persistence only by re-reading exact content.
+
+PF-041 | POST-WRITE TRUTHFULNESS  
+Finding: A successful GitHub write response is not sufficient to claim verified persistence. VERIFIED_WRITE requires a valid returned commit SHA plus a subsequent read proving exact persisted content and a valid persisted file SHA. If verification fails after a write, the outcome is WRITE_UNVERIFIED and any captured commit SHA is preserved.
+
+PF-042 | T-006 NEXT SLICE — CONTROLLED LIVE WRITE  
+Finding: T-006 remains IN PROGRESS. The next smallest slice is T-006B: inject a real GitHub transport into the already-proven adapter boundary, perform one controlled repository write, re-read the persisted file, and capture factual commit/file identifiers without yet creating the final T-007 receipt or HISTORY entry.
