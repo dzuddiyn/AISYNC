@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.8  
+**Project record version:** 0.6.9  
 **Method:** ZASSIMPLE v0.2.4  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT  
@@ -62,7 +62,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
 
-Current direction: architecture v1.0.2 remains CONFIRMED with the locked D-020 front-door addendum. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
+Current direction: architecture v1.0.3 remains CONFIRMED with D-020 front-door orchestration and D-021 User-First UX locked. T-001 through T-003 have PASSED. The active ASC DB is under the intended Google owner profile `dzuddiyn Google`. T-004 remains IN PROGRESS; D-020 implementation is documented but its DUMP route depends on ZASSPILL being completed in ZASS SYSTEM.
 
 ---
 
@@ -552,6 +552,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.9 | 2026-10-02 | LOCKED D-021 User-First UX: user types naturally, chooses only the AI provider, and ASC handles auth/routing/sub-system/contract/handoff behind the simple DUMP / DECIDE / DESIGN surface. DUMP implementation remains pending ZASSPILL. |
 | 0.6.8 | 2026-10-02 | LOCKED D-020: mandatory AI-provider selection, login-before-routing gate, automatic DUMP/DECIDE/DESIGN intent routing, visible/overridable route, ZASSPILL/ZASSELECTION/ZASSIMPLE mapping, provider handoff with supported prefill and mandatory copy/paste fallback. No code implementation started for this addendum while ZASSPILL remains pending. |
 | 0.6.7 | 2026-10-02 | Operational ownership fix: recreated and verified the active ASC DB under the intended Google owner profile `dzuddiyn Google`; replaced the repo's active Sheet URL and preserved the same T-003 schema/authority boundary. T-004 remains IN PROGRESS pending real deployment/auth verification. |
 | 0.6.6 | 2026-10-02 | DO IT T-004 partial: implemented owner-only Apps Script Web App skeleton, pending fragment/session preservation, and preview-only client; local state/decode/no-write tests PASS. Real deployed Google Account sign-in verification remains pending, so T-004 is not yet marked PASS. |
@@ -568,3 +569,20 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 | 0.3.0 | 2026-10-01 | LOCKED D-003: ASC Link established as the universal write fallback; native integrations remain optional fast paths; user-confirmed web preview/sync flow defined. |
 | 0.2.0 | 2026-10-01 | LOCKED D-002: official Method → AI-SYNC → Source of Truth boundary; AISYNC defined as shared transport/write infrastructure reusable by ZASS Full, ZASSIMPLE, ZASSELECTION, Dzuddiyn Library, and other projects. |
 | 0.1.0 | 2026-09-29 | Initial AISYNC project record. D-001 defined the temporary AISYNC ↔ Dzuddiyn Library boundary. |
+
+
+D-021 | LOCKED  
+Decision: Lock the **User-First UX principle** for the ASC front door.
+
+- The user starts by typing naturally; the system must not require knowledge of ZASSPILL, ZASSELECTION, ZASSIMPLE, PICKS, IDEA, contracts, or internal architecture before starting.
+- The user is required to choose only the target AI provider before GO/START.
+- ASC handles authentication, intent routing, sub-system selection, contract selection, and provider handoff behind the simple surface.
+- DUMP / DECIDE / DESIGN are the only user-facing structural choices exposed by default.
+- Initial route is automatic; DUMP remains the safe default for unclear intent.
+- Later mode changes are suggested, not silently forced.
+- Internal ZASS sub-system names may stay hidden unless the user explicitly wants to learn the system.
+- The exact DUMP implementation remains pending ZASSPILL completion. This decision does not pre-empt or redefine ZASSPILL semantics.
+
+Reason: preserve a plain-user-first experience while keeping deeper ZASS method structure modular and hidden until needed.  
+Locked by: Project Owner  
+Date: 2026-10-02
