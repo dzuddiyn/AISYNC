@@ -544,3 +544,8 @@ DUMP / DECIDE / DESIGN are user-facing modes. Internal mappings are:
 - DESIGN → ZASSIMPLE / IDEA
 
 The route is visible and user-overridable. Ambiguous intent defaults to DUMP.
+
+
+### User-first principle
+
+The user should not have to understand ZASS internals before using ASC. The default start experience is: type naturally → choose AI provider → GO. ASC then handles authentication, routing, method/contract selection, and handoff behind the DUMP / DECIDE / DESIGN surface.
