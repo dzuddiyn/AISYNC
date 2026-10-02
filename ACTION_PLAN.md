@@ -5,7 +5,7 @@
 **Lifecycle stage:** DO IT  
 **Authority:** Planning artifact only. It must not override LOCKED owner decisions.
 
-> Implementation thoughts discovered during DESIGN may refine architecture. Architecture findings may refine this Action Plan. LOCKED decisions remain owner authority.
+> Implementation thoughts discovered during DESIGN may refine the design, including technical architecture where applicable. Implementation findings may refine this Action Plan. LOCKED decisions remain owner authority.
 
 ## Purpose
 
@@ -20,7 +20,7 @@ Dependencies: None beyond the locked field set.
 Constraint / feasibility note: Keep destination-specific mechanics out of the method contract.  
 Pass / stop condition: One generic contract can express a real ZASSIMPLE SAVE without embedding GitHub- or Sheets-specific write logic.  
 Result: PASS — canonical JSON Schema + valid/invalid examples implemented under `contracts/`; T-001 verified.  
-Feeds architecture: YES
+Feeds design: YES
 
 AP-002 | DONE  
 Source: D-003, D-004, D-011  
@@ -29,7 +29,7 @@ Dependencies: AP-001.
 Constraint / feasibility note: Prefer client-side fragment transport for small payloads; exact encoding remains open.  
 Pass / stop condition: An ordinary AI app with no write integration can generate a valid ASC Link from method instructions.  
 Result: PASS — envelope schema + fragment-only Base64URL link encoder/decoder implemented and verified in T-002; security enforcement remains in AP-007/T-010.  
-Feeds architecture: YES
+Feeds design: YES
 
 AP-003 | OPEN  
 Source: D-006, D-009, D-012, D-019, D-020  
@@ -37,7 +37,7 @@ Action: Implement the locked Google Sites + Apps Script UI flow, including the D
 Dependencies: D-012 UI information architecture.  
 Constraint / feasibility note: Landing must stay simple: DUMP / DECIDE / DESIGN. User does not need to choose a mode before starting; AI-provider selection is mandatory, then ASC auto-routes after authentication. Project detail carries the richer lineage views.  
 Pass / stop condition: The UI can represent the locked navigation and project-detail sections without forcing users to inspect raw Markdown.  
-Feeds architecture: YES
+Feeds design: YES
 
 AP-004 | OPEN  
 Source: D-002, D-004  
@@ -45,7 +45,7 @@ Action: Implement the ASC Core boundary: validate, authorize, translate, route, 
 Dependencies: AP-001.  
 Constraint / feasibility note: ASC Core must not perform reasoning or silently rewrite method meaning / LOCKED decisions.  
 Pass / stop condition: The same contract can enter the Core regardless of which AI app generated it.  
-Feeds architecture: YES
+Feeds design: YES
 
 AP-005 | OPEN  
 Source: D-007  
@@ -53,7 +53,7 @@ Action: Implement the first destination adapter for GitHub using the locked v0.1
 Dependencies: AP-001, AP-004.  
 Constraint / feasibility note: v0.1 proof should support Markdown update → commit → verification → factual receipt.  
 Pass / stop condition: A ZASSIMPLE project with no AI→GitHub integration can SAVE through ASC and receive a verified commit result.  
-Feeds architecture: YES
+Feeds design: YES
 
 AP-006 | OPEN  
 Source: D-004, R-003  
@@ -61,7 +61,7 @@ Action: Define the factual ASC Write Receipt.
 Dependencies: AP-004, AP-005.  
 Constraint / feasibility note: Must distinguish proposed state from actually persisted state.  
 Pass / stop condition: Receipt clearly reports success/failure, destination, affected resource, record/commit identifier where applicable, and failure reason when not successful.  
-Feeds architecture: YES
+Feeds design: YES
 
 AP-007 | OPEN  
 Source: D-003, R-004  
@@ -69,7 +69,7 @@ Action: Define minimum v0.1 security/privacy controls.
 Dependencies: AP-002, AP-003, AP-004.  
 Constraint / feasibility note: No silent writes; explicit confirmation before persistence; destination credentials must not be exposed to the AI-generated link.  
 Pass / stop condition: Prototype does not rely on exposed credentials, invisible persistence, or sensitive record content in ordinary query parameters.  
-Feeds architecture: YES
+Feeds design: YES
 
 ## UI data requirements
 
@@ -122,9 +122,9 @@ Finding: The project-detail UI reads normalized operational/index data from Goog
 PF-004 | RESOLVED BY D-014  
 Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is the operational/index ASC DB and must not silently become a competing editable master.
 
-## Architecture feedback
+## Design feedback
 
-The core DESIGN blockers are resolved by D-013 through D-018. Architecture v1.0 is confirmed. The Action Plan has now been sliced into `TASKS.md`. Current executable task: T-001. Future tasks remain queued until prior dependencies pass or are explicitly replanned.
+The core DESIGN blockers are resolved by D-013 through D-018. The confirmed technical design is now maintained in `DESIGN.md`. The Action Plan has now been sliced into `TASKS.md`. Current executable task: T-001. Future tasks remain queued until prior dependencies pass or are explicitly replanned.
 
 
 PF-005 | RESOLVED BY D-017  
@@ -167,7 +167,7 @@ Constraint / feasibility note:
 - Start with MY only.
 - Do not modify ZASS method semantics.
 Pass / stop condition: the six D-023 proof objectives pass, including direct Gemini/Copilot readability and GitHub→gateway sync without manual copy/paste.  
-Feeds architecture: YES
+Feeds design: YES
 
 PF-012 | RESOLVED BY D-023  
 Finding: External receiver access to GitHub/raw/CDN/reader URLs is not a reliable method-distribution assumption. AI-SYNC therefore needs a separate public read plane.
