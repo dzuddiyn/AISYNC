@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE ARCHITECTURE
 
-**Version:** 1.0.2  
+**Version:** 1.0.3  
 **Status:** CONFIRMED  
 **Architecture Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.2.4  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-020 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-021 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 
@@ -392,3 +392,27 @@ Implementation status: **NOT STARTED**. Next lifecycle stage: **DO IT**.
 This patch adds mandatory AI-provider selection, authentication before intent routing, automatic DUMP/DECIDE/DESIGN routing, ZASS sub-system selection, and provider handoff/fallback behavior. It does not change GitHub/Sheets authority, the ASC Write Contract boundary, adapter semantics, or factual receipt requirements.
 
 Implementation of the DUMP route is intentionally deferred until ZASSPILL's own behavior/contract is available from ZASS SYSTEM.
+
+
+### User-First UX principle
+
+D-021 locks the front-door experience around the plain user:
+
+```text
+type naturally
+      ↓
+choose AI provider
+      ↓
+GO
+      ↓
+ASC handles:
+auth → intent → route → ZASS sub-system → contract → AI handoff
+```
+
+Default visible modes remain:
+
+- DUMP — just talk
+- DECIDE — help me choose
+- DESIGN — help me build
+
+Internal method names and contracts remain hidden by default. The DUMP route will adopt ZASSPILL once ZASSPILL is finalized in ZASS SYSTEM.
