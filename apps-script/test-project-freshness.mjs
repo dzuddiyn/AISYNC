@@ -13,6 +13,7 @@ const repository = 'dzuddiyn/AISYNC';
 const canonical = '889bf7d66643e779d59d340a691bf07b0d8e8f06';
 const stale = '97cdd389a5f2173f917ffdb46a6d6ab90b7bc3c4';
 const NOW = '2026-10-03T04:30:00.000Z';
+const FAKE_TOKEN = 'test-only-github-token';
 
 assert.equal(RUNTIME, buildRuntime(), 'AscRuntime.gs is stale');
 assert.match(RUNTIME, /continuity\/github-source-head\.mjs/);
@@ -35,6 +36,9 @@ function world(sequence) {
   }
   const context = {
     console,
+    ascScriptProperty_(name) {
+      return name === 'GITHUB_TOKEN' ? FAKE_TOKEN : null;
+    },
     Uint8Array,
     Date: FakeDate,
     Utilities: {
@@ -90,6 +94,7 @@ function project(indexedCommit = canonical, sourceRef = 'main') {
   assert.deepStrictEqual(w.calls.map(x => x.options.method), ['get', 'get']);
   assert.equal(w.calls.every(x => x.options.payload === undefined), true);
   assert.equal(w.calls.every(x => x.options.followRedirects === false), true);
+  assert.equal(w.calls.every(x => x.options.headers.Authorization === 'Bearer ' + FAKE_TOKEN), true);
   assert.equal(w.calls[0].url, 'https://api.github.com/repos/dzuddiyn/AISYNC');
   assert.equal(w.calls[1].url, 'https://api.github.com/repos/dzuddiyn/AISYNC/commits/main');
 
@@ -120,6 +125,16 @@ function project(indexedCommit = canonical, sourceRef = 'main') {
 }
 
 {
+  const w = world([]);
+  w.context.ascScriptProperty_ = () => null;
+  const result = w.context.ascProjectIndexFreshness_(project());
+  assert.equal(result.status, 'UNVERIFIED');
+  assert.equal(result.reason, 'CANONICAL_HEAD_READ_FAILED');
+  assert.equal(result.canonical.error.code, 'GITHUB_TOKEN_MISSING');
+  assert.equal(w.calls.length, 0);
+}
+
+{
   const w = world([response(503, { message: 'unavailable' })]);
   const result = w.context.ascProjectIndexFreshness_(project());
   assert.equal(result.status, 'UNVERIFIED');
@@ -130,6 +145,7 @@ function project(indexedCommit = canonical, sourceRef = 'main') {
 
 assert.doesNotMatch(FRESHNESS, /SpreadsheetApp|setValue|setValues|appendRow|deleteRow/);
 assert.doesNotMatch(FRESHNESS, /progress_percent|lifecycle_stage|ZASSPILL|ZASSELECTION|ZASSIMPLE/);
+assert.doesNotMatch(FRESHNESS, /console\.log|Logger\.log/);
 
 console.log('T-015 factual project-index freshness Apps Script binding: PASS');
 console.log('canonical default-branch head -> exact repo/ref/commit comparison: PASS');

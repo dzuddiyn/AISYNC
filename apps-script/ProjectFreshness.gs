@@ -3,6 +3,50 @@
 // This layer compares exact source evidence only. It does not refresh or infer
 // method-owned lifecycle/progress semantics.
 
+// Project/index freshness may need to read private repositories and must not depend
+// on the shared anonymous GitHub API rate limit. The server-side token is read from
+// Script Properties and is never returned in freshness evidence.
+function ascReadGitHubProjectJson_(url) {
+  if (typeof url !== 'string' || url.indexOf(ASC_ZASS_CI_GITHUB_API_PREFIX_) !== 0) {
+    return ascZassCiTransportError_('INVALID_GITHUB_API_URL', 'Only the GitHub API origin is allowed.');
+  }
+
+  var token = ascScriptProperty_('GITHUB_TOKEN');
+  if (!token) {
+    return ascZassCiTransportError_('GITHUB_TOKEN_MISSING', 'Server GitHub credential is not configured.');
+  }
+
+  var response;
+  try {
+    response = UrlFetchApp.fetch(url, {
+      method: 'get',
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        Authorization: 'Bearer ' + token
+      },
+      muteHttpExceptions: true,
+      followRedirects: false
+    });
+  } catch (error) {
+    return ascZassCiTransportError_('GITHUB_FETCH_ERROR', 'GitHub request could not be completed.');
+  }
+
+  var status = response.getResponseCode();
+  if (status < 200 || status >= 300) {
+    return ascZassCiTransportError_('GITHUB_READ_FAILED', 'GitHub read request failed.', status);
+  }
+
+  var data;
+  try {
+    data = JSON.parse(response.getContentText());
+  } catch (error) {
+    return ascZassCiTransportError_('MALFORMED_JSON_RESPONSE', 'GitHub response JSON was malformed.');
+  }
+
+  return { ok: true, data: data };
+}
+
 function ascProjectIndexFreshness_(project) {
   const repository = project && typeof project.github_repo === 'string'
     ? project.github_repo
@@ -15,7 +59,7 @@ function ascProjectIndexFreshness_(project) {
   try {
     canonical = ascRuntime_().sourceHead.readGitHubDefaultHeadWithJsonReader({
       repository: repository,
-      readJson: ascReadGitHubJson_,
+      readJson: ascReadGitHubProjectJson_,
       now: function () { return new Date().toISOString(); }
     });
   } catch (error) {
