@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** ASC v0.1 CORE/FALLBACK DELIVERED — deferred queue remains  
+**Status:** ASC v0.1 CORE/FALLBACK DELIVERED — T-012 ACTIVE  
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DELIVERED !!  
 **Design:** v1.0.10 CONFIRMED  
@@ -10,9 +10,18 @@
 
 ## Current task
 
-None — no unblocked current task.
-
-ASC v0.1 core/fallback proof is delivered. T-012 remains **BLOCKED / LATER** until ZASS SYSTEM GitHub CI exists; do not invent or duplicate that validation layer inside ASC.
+T-012 | CURRENT — CONSUME COMMIT-LINKED ZASS CI STATUS  
+Source: PF-006, D-018  
+Decision / Design lineage: D-018, DESIGN v1.0 § Cross-system validation boundary  
+Do: Consume and display commit-linked ZASS CI validation status in ASC without implementing ZASS rules inside ASC.  
+Depends on: ZASS SYSTEM GitHub CI existing first — **SATISFIED**.  
+Dependency evidence:
+- ZASS GitHub CI implementation merged to `main` at `13b9b267372ef9d18329ed5f88858dc04da3dfdc`;
+- workflow `ZASS CI / zass-check` completed **SUCCESS** on the merged `main` commit;
+- GitHub Actions run: `37084654404`;
+- the workflow uses the existing ZASS CLI/core semantics with explicit historical baseline selection; ASC must consume the result only and must not reproduce Z001–Z101 rules.
+Pass: ASC displays CI result tied to a commit while CLI/CI continue to use the same ZASS Core semantics.  
+Current result: UNBLOCKED / CURRENT.
 
 ## Completed
 
@@ -258,24 +267,18 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-012 | BLOCKED / LATER  
-Source: PF-006, D-018  
-Decision / Design lineage: D-018, DESIGN v1.0 § Cross-system validation boundary  
-Do: Consume and display commit-linked ZASS CI validation status in ASC without implementing ZASS rules inside ASC.  
-Depends on: ZASS SYSTEM GitHub CI existing first.  
-Pass: ASC displays CI result tied to a commit while CLI/CI continue to use the same ZASS Core semantics.  
-Block reason: ZASS GitHub CI is not implemented yet; ASC must not invent or duplicate it.
+None — T-012 is now active.
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001 through T-011 and T-013A/B. T-012 remains blocked/later.
+Implementation evidence exists for T-001 through T-011 and T-013A/B. T-012 is now unblocked/current after live ZASS GitHub CI PASS on main.
 
 Closure checks:
 - Built: YES — ASC v0.1 core/fallback path and method gateway slices required through T-011 are implemented
 - Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY
 - Matches design: YES — including D-029 security/replay and D-030 successful-return refinement
 - Recorded: YES — canonical GitHub tracking/evidence updated
-- Deferred: T-012 only, blocked pending external ZASS GitHub CI
+- Current: T-012, external ZASS GitHub CI dependency satisfied
 
 
 T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  
