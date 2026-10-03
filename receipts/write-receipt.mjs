@@ -1,7 +1,9 @@
-const SUCCESS_OUTCOMES = new Set(['VERIFIED_WRITE', 'NO_CHANGE']);
+const SUCCESS_OUTCOMES = new Set(['VERIFIED_WRITE', 'VERIFIED_WRITE_RECONCILED', 'NO_CHANGE']);
 const FAILURE_OUTCOMES = new Set([
   'READ_ERROR',
   'WRITE_ERROR',
+  'WRITE_CONFLICT',
+  'WRITE_OUTCOME_UNKNOWN',
   'WRITE_UNVERIFIED',
   'INVALID_INPUT'
 ]);
@@ -105,7 +107,7 @@ function buildReceipt(input) {
     timestamp: input.timestamp,
     failure_reason: status === 'FAILED' ? failureReason(adapterResult) : null,
     adapter_outcome: adapterResult.outcome,
-    write_performed: adapterResult.writePerformed === true,
+    write_performed: adapterResult.writePerformed === true ? true : (adapterResult.writePerformed === false ? false : null),
     verified: adapterResult.verified === true
   };
 

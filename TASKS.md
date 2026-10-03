@@ -16,7 +16,7 @@ Do: Replace the proof-only TEST_ONLY write policy with the Production v1 GitHub 
 Depends on: T-015 PASS — satisfied.
 Boundary: production writes must be authorized and deterministic; arbitrary destination paths remain forbidden. GitHub stays canonical for project artifacts, private continuity remains in the ASC Private Continuity Store, and transport replay identity remains separate from semantic idempotency identity.
 Pass: supported human SAVE uses deterministic authorized project mapping + GitHub App + concurrency/idempotency/unknown-write handling; no TEST_ONLY policy.
-Current result: NOT STARTED — promoted after T-015 PASS on 2026-10-03.
+Current result: IN PROGRESS — local Production v1 write implementation PASS and controlled owner-confirmed live SAVE PASS via GitHub App + deterministic registry mapping. Independent verification confirmed commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca`, exact persisted file `records/T016-LIVE-20261003181842.md`, GitHub App bot authorship, and one matching HISTORY SUCCESS row. Canonical branch save/PR/merge and final protected production deployment from merged `main` remain pending; T-017 is not promoted.
 
 ## Completed
 

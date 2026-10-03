@@ -96,6 +96,64 @@ assert.equal(readFailed.receipt.status, 'FAILED');
 assert.equal(readFailed.receipt.commit_or_record_id, null);
 assert.equal(readFailed.receipt.failure_reason, 'GitHub read request failed.');
 
+const reconciled = createWriteReceipt({
+  ...baseInput,
+  requestId: 'req-t016-reconciled',
+  adapterResult: {
+    outcome: 'VERIFIED_WRITE_RECONCILED',
+    adapterId: 'github',
+    destination: 'GitHub',
+    repository: 'dzuddiyn/AISYNC',
+    path: 'records/PROD-001.md',
+    writePerformed: null,
+    commitSha: null,
+    persistedSha: 'persisted-sha',
+    verified: true
+  }
+});
+assert.equal(reconciled.receipt.status, 'SUCCESS');
+assert.equal(reconciled.receipt.write_performed, null);
+assert.equal(reconciled.receipt.verified, true);
+assert.equal(reconciled.receipt.commit_or_record_id, null);
+
+const outcomeUnknown = createWriteReceipt({
+  ...baseInput,
+  requestId: 'req-t016-unknown',
+  adapterResult: {
+    outcome: 'WRITE_OUTCOME_UNKNOWN',
+    adapterId: 'github',
+    destination: 'GitHub',
+    repository: 'dzuddiyn/AISYNC',
+    path: 'records/PROD-001.md',
+    writePerformed: null,
+    commitSha: null,
+    verified: false,
+    error: { code: 'GITHUB_FETCH_ERROR', message: 'GitHub write outcome is unknown.' }
+  }
+});
+assert.equal(outcomeUnknown.receipt.status, 'FAILED');
+assert.equal(outcomeUnknown.receipt.write_performed, null);
+assert.equal(outcomeUnknown.receipt.verified, false);
+assert.equal(outcomeUnknown.receipt.failure_reason, 'GitHub write outcome is unknown.');
+
+const conflict = createWriteReceipt({
+  ...baseInput,
+  requestId: 'req-t016-conflict',
+  adapterResult: {
+    outcome: 'WRITE_CONFLICT',
+    adapterId: 'github',
+    destination: 'GitHub',
+    repository: 'dzuddiyn/AISYNC',
+    path: 'records/PROD-001.md',
+    writePerformed: false,
+    commitSha: null,
+    verified: false,
+    error: { code: 'GITHUB_WRITE_CONFLICT', message: 'GitHub rejected the write because the target changed.' }
+  }
+});
+assert.equal(conflict.receipt.status, 'FAILED');
+assert.equal(conflict.receipt.write_performed, false);
+
 const invalid = createWriteReceipt({
   ...baseInput,
   adapterResult: { outcome: 'UNKNOWN' }

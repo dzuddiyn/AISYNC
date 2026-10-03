@@ -316,3 +316,17 @@ Owner-visible proof: PASS — the protected dashboard displayed `dzuddiyn/AISYNC
 - Protected Apps Script production deployment is version 10: `T-015 canonical continuity state verified hotfix`.
 - All 22 repository `test-*.mjs` tests PASS after the merged hotfix.
 - T-015 is PASS. T-016 Production Write Path is the next/current task.
+
+
+## T-016 Production write path — CONTROLLED LIVE WRITE PASS; final canonical deployment pending
+
+- Proof-only TEST_ONLY repository/path authorization is replaced in source by `ProductionWritePolicy.gs` + `production/github-write-policy.mjs`: server-side authorized project registry, deterministic safe Record ID mapping, exact repo/branch/path selection, and owner gate before destination I/O.
+- Production write credentials use `GitHubAppAuth.gs`: RS256 GitHub App JWT, short-lived installation token, and installation credentials stored only in Script Properties. The installed GitHub App is scoped to exactly `dzuddiyn/AISYNC` with Contents read/write permission.
+- GitHub App manifest bootstrap exposed a real PKCS#1 private-key compatibility issue. The implementation now normalizes PKCS#1 RSA private keys to PKCS#8 server-side before Apps Script signing; a real RSA regression test covers the conversion.
+- Optimistic concurrency remains SHA-based through the GitHub Contents API. 409/422 writes are surfaced as `WRITE_CONFLICT`.
+- Exact-content idempotency returns `NO_CHANGE` without a second commit.
+- Transport failures after a write are not blindly retried. One deterministic reconciliation read yields `VERIFIED_WRITE_RECONCILED`, `WRITE_ERROR` when desired content is confirmed absent, or `WRITE_OUTCOME_UNKNOWN` when reconciliation itself is unavailable.
+- Factual receipts preserve `write_performed=true|false|null`; reconciled success does not invent a commit SHA.
+- Controlled live owner-confirmed SAVE PASS: request `ASC-T016-20261003181842` wrote `records/T016-LIVE-20261003181842.md` through GitHub App commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca`. Independent GitHub read-back matched exact content; independent HISTORY read-back found one matching SUCCESS row with `verified=true`.
+- Temporary GitHub App setup/recovery web routes and temporary deployment were removed after bootstrap proof. Apps Script @HEAD contains only the non-temporary T-016 source.
+- All 24 repository `test-*.mjs` tests PASS after the live fixes. Final T-016 closure still requires canonical Git save/merge and updating the protected production deployment from merged `main`.

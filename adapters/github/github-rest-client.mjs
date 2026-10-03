@@ -9,13 +9,14 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.length > 0;
 }
 
-function errorResult(code, message, status) {
+function errorResult(code, message, status, outcomeKnown) {
   return {
     ok: false,
     error: {
       code,
       message,
-      ...(typeof status === 'number' ? { status } : {})
+      ...(typeof status === 'number' ? { status } : {}),
+      ...(typeof outcomeKnown === 'boolean' ? { outcomeKnown } : {})
     }
   };
 }
@@ -196,13 +197,21 @@ export function createGitHubRestClient({ token, fetchImpl = globalThis.fetch } =
       });
 
       if (response.status < 200 || response.status >= 300) {
-        return errorResult('GITHUB_WRITE_FAILED', 'GitHub write request failed.', response.status);
+        if (response.status === 409 || response.status === 422) {
+          return errorResult('GITHUB_WRITE_CONFLICT', 'GitHub rejected the write because the target changed.', response.status, true);
+        }
+        return errorResult('GITHUB_WRITE_FAILED', 'GitHub write request failed.', response.status, true);
       }
 
       const data = await readJson(response);
       if (!data || !data.commit || !isNonEmptyString(data.commit.sha) ||
         !data.content || !isNonEmptyString(data.content.sha)) {
-        return errorResult('MALFORMED_WRITE_RESPONSE', 'GitHub write response lacked valid identifiers.');
+        return errorResult(
+          'MALFORMED_WRITE_RESPONSE',
+          'GitHub accepted the request but the write response lacked valid identifiers.',
+          response.status,
+          false
+        );
       }
 
       return {
@@ -211,7 +220,12 @@ export function createGitHubRestClient({ token, fetchImpl = globalThis.fetch } =
         contentSha: data.content.sha
       };
     } catch (error) {
-      return fetchFailure('GITHUB_FETCH_ERROR', 'GitHub request could not be completed.');
+      return errorResult(
+        'GITHUB_FETCH_ERROR',
+        'GitHub write request outcome is unknown because the transport failed.',
+        undefined,
+        false
+      );
     }
   }
 

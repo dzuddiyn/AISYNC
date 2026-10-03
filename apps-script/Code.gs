@@ -20,14 +20,9 @@ function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
-// T-008B — Apps Script binding for the T-008A flow (flow/confirm-sync.mjs, bundled in AscRuntime.gs).
-// Owner-locked TEST_ONLY destination policy. This is NOT the production Record ID → GitHub path rule.
-const ASC_T008B_TEST_ONLY_DESTINATION_ = Object.freeze({
-  repository: 'dzuddiyn/AISYNC',
-  branch: 'main',
-  path: 'proofs/t008-confirm-sync-live.md'
-});
-const ASC_TEST_ONLY_RECORD_PREFIX_ = 'TEST_ONLY_';
+// Apps Script binding for the confirmed sync flow.
+// T-016 replaces the proof-only TEST_ONLY destination with a server-side
+// production registry + GitHub App installation credential boundary.
 const ASC_MAIN_UI_PREFIX_ = 'https://sites.google.com/';
 const ASC_RESULT_CACHE_PREFIX_ = 'asc.t008.result.';
 const ASC_RESULT_CACHE_SECONDS_ = 600;
@@ -56,22 +51,20 @@ function ascMainUiUrl_() {
   return value;
 }
 
-function ascHasGitHubToken_() {
-  return ascScriptProperty_('GITHUB_TOKEN') !== null;
-}
-
 function getBootstrapState() {
   return {
     authenticated: true,
     ownerOnly: true,
-    writeEnabled: ascHasGitHubToken_(),
+    writeEnabled: ascGitHubAppConfigured_() && ascProductionRegistryConfigured_(),
     redirectConfigured: ascMainUiUrl_() !== null,
-    destinationPolicy: 'TEST_ONLY',
-    appVersion: '0.1-t010'
+    destinationPolicy: 'PRODUCTION_REGISTRY',
+    destinationAuth: 'GITHUB_APP',
+    appVersion: '1.0-t016'
   };
 }
 
-// Owner-only authorization policy injected into ASC Core, plus the TEST_ONLY scope guard.
+// Owner-only identity remains the T-016 closed-beta authorization gate.
+// Project/repository/path authorization is a separate server-side registry decision.
 function ascAuthorizationContext_() {
   return {
     activeUser: Session.getActiveUser().getEmail() || '',
@@ -79,35 +72,11 @@ function ascAuthorizationContext_() {
   };
 }
 
-// v0.1 owner identity: non-empty active user equal to the effective (deploying) owner.
-// Shared by the T-010 owner gate and the ASC Core authorization policy.
+// Current protected deployment remains owner-only. T-018 may broaden the human
+// allowlist without weakening the production project/path registry.
 function ascIsOwner_(context) {
   return Boolean(context) && typeof context.activeUser === 'string' && context.activeUser.length > 0 &&
     context.activeUser === context.effectiveUser;
-}
-
-function ascTestOnlyAuthorizationPolicy_(contract, context) {
-  const owner = ascIsOwner_(context);
-  const testOnly = typeof contract['Record ID'] === 'string' &&
-    contract['Record ID'].indexOf(ASC_TEST_ONLY_RECORD_PREFIX_) === 0;
-  const githubOnly = Array.isArray(contract.Destination) &&
-    contract.Destination.length === 1 && contract.Destination[0] === 'GitHub';
-  return { authorized: owner && testOnly && githubOnly };
-}
-
-// TEST_ONLY write-spec: fixed destination; content must already be a string.
-function ascTestOnlyWriteSpec_(invocation) {
-  const content = invocation.contract['Content/change'];
-  if (typeof content !== 'string') {
-    throw new Error('TEST_ONLY policy requires string Content/change.');
-  }
-  return {
-    repository: ASC_T008B_TEST_ONLY_DESTINATION_.repository,
-    path: ASC_T008B_TEST_ONLY_DESTINATION_.path,
-    branch: ASC_T008B_TEST_ONLY_DESTINATION_.branch,
-    content: content,
-    commitMessage: 'TEST_ONLY T-008B confirm sync ' + invocation.contract['Record ID']
-  };
 }
 
 function ascFailed_(stage, code, message, requestId) {
@@ -224,7 +193,7 @@ function ascPreviewResult_(result) {
     stage: result && result.stage ? result.stage : 'PREVIEW',
     requestId: result && typeof result.requestId === 'string' ? result.requestId : null,
     securityValid: securityValid,
-    writeEnabled: securityValid && ascHasGitHubToken_(),
+    writeEnabled: securityValid && ascGitHubAppConfigured_() && ascProductionRegistryConfigured_(),
     issuedAt: securityValid ? result.security.issuedAt : null,
     expiresAt: securityValid ? result.security.expiresAt : null,
     writePerformed: false,
@@ -251,9 +220,23 @@ function confirmAndSync(request) {
     return ascFailed_('PREVIEW', 'MISSING_REQUEST_ID', 'Envelope request_id is required. Nothing was saved.');
   }
 
-  const token = ascScriptProperty_('GITHUB_TOKEN');
-  if (!token) {
-    return ascFailed_('CONFIG', 'GITHUB_TOKEN_MISSING', 'Server GitHub credential is not configured. Nothing was saved.', requestId);
+  if (!ascGitHubAppConfigured_()) {
+    return ascFailed_(
+      'CONFIG',
+      'GITHUB_APP_CONFIG_MISSING',
+      'Server GitHub App credential is not configured. Nothing was saved.',
+      requestId
+    );
+  }
+
+  const registry = ascProductionRegistry_();
+  if (!registry.ok) {
+    return ascFailed_(
+      'CONFIG',
+      registry.error && registry.error.code ? registry.error.code : 'PRODUCTION_REGISTRY_INVALID',
+      'Production GitHub project registry is not configured or is invalid. Nothing was saved.',
+      requestId
+    );
   }
 
   // Fail closed: without a cleared result slot, a stale result could be mistaken for this attempt.
@@ -275,9 +258,9 @@ function confirmAndSync(request) {
     envelope: envelope,
     confirmation: request.confirmation,
     authorizationContext: ascAuthorizationContext_(),
-    authorizationPolicy: ascTestOnlyAuthorizationPolicy_,
-    resolveGitHubWriteSpec: ascTestOnlyWriteSpec_,
-    githubClient: runtime.githubRest.createGitHubRestClient({ token: token, fetchImpl: ascUrlFetchImpl_ }),
+    authorizationPolicy: ascProductionAuthorizationPolicy_,
+    resolveGitHubWriteSpec: ascProductionWriteSpec_,
+    githubClient: ascCreateGitHubAppRestClient_(),
     historyWriter: { appendHistory: appendHistory },
     now: ascNow_,
     sha256Hex: ascSha256Hex_,

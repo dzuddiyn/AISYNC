@@ -92,9 +92,12 @@ The client owns transport later. Client exceptions become structured adapter fai
 ## Outcomes
 
 - `VERIFIED_WRITE` — write succeeded and persisted content exactly matches; persisted SHA is captured.
+- `VERIFIED_WRITE_RECONCILED` — the write response/transport outcome was uncertain, but one deterministic re-read proves the exact desired content is present. The adapter does not invent a commit SHA or claim that this exact attempt definitely performed the write.
 - `NO_CHANGE` — existing content exactly matches; no write is called.
 - `READ_ERROR` — initial read failed; no write is called.
-- `WRITE_ERROR` — write failed; no verification read is called.
+- `WRITE_CONFLICT` — GitHub rejected the update because the target changed (409/422 optimistic-concurrency conflict); no blind retry is attempted.
+- `WRITE_ERROR` — write failed with a known non-success outcome, or reconciliation proved the desired content absent.
+- `WRITE_OUTCOME_UNKNOWN` — transport failed after write submission and the deterministic reconciliation read also failed; ASC must keep the result visibly unresolved/failed rather than retry blindly.
 - `WRITE_UNVERIFIED` — write returned, but verification read failed or content mismatched; captured `commitSha` is preserved.
 - `INVALID_INPUT` — invocation, write spec, or injected client boundary is invalid.
 
@@ -167,3 +170,10 @@ verified: true
 Independent remote verification confirmed the proof file exists on `main` with exact deterministic content and matching file SHA.
 
 T-006B used `GITHUB_TOKEN` only at runtime. No credential was committed. T-006 does not create the final ASC Write Receipt or HISTORY record; those belong to T-007.
+
+
+## T-016 Production v1 integration note
+
+The adapter remains credential-agnostic. T-016 supplies a GitHub App installation-token REST client from the Apps Script binding; no GitHub App private key, JWT, installation token, PAT, project registry, or authorization decision enters the adapter input/write spec.
+
+Production target selection is resolved before the adapter from the server-side authorized project registry. The adapter still receives only `repository/path/branch/content/commitMessage` and enforces read → conditional write → verification/reconciliation behavior.

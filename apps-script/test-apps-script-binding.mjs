@@ -12,13 +12,28 @@ import { sealEnvelope } from '../transport/envelope-security.mjs';
 const read = (f) => fs.readFileSync(new URL('./' + f, import.meta.url), 'utf8');
 const SHIMS = read('RuntimeShims.gs');
 const RUNTIME = read('AscRuntime.gs');
+const GITHUB_APP_AUTH = read('GitHubAppAuth.gs');
+const PRODUCTION_POLICY = read('ProductionWritePolicy.gs');
 const CODE = read('Code.gs');
 const CLIENT = read('Client.html');
 
-const FAKE_TOKEN = 'FAKE_TEST_TOKEN_value_1234567890';
+const FAKE_TOKEN = 'ghs_FAKE_INSTALLATION_TOKEN_value_1234567890';
+const FAKE_PRIVATE_KEY = '-----BEGIN PRIVATE KEY-----\\nTEST\\n-----END PRIVATE KEY-----';
 const SITES_URL = 'https://sites.google.com/view/aisync-asc';
 const OWNER = 'owner@example.test';
-const TEST_PATH = 'proofs/t008-confirm-sync-live.md';
+const TEST_PATH = 'records/PROD-001.md';
+const REGISTRY = {
+  schema_version: '0.1',
+  projects: {
+    AISYNC: {
+      repository: 'dzuddiyn/AISYNC',
+      branch: 'main',
+      path_prefix: 'records',
+      extension: '.md',
+      allowed_operations: ['SAVE']
+    }
+  }
+};
 const HISTORY_HEADERS = [
   'request_id', 'project_id', 'operation', 'destination', 'status', 'affected_resource',
   'commit_or_record_id', 'source_commit', 'timestamp', 'failure_reason', 'receipt_json'
@@ -28,7 +43,14 @@ const HISTORY_HEADERS = [
 assert.equal(RUNTIME, buildRuntime(), 'AscRuntime.gs is stale; run node apps-script/build-runtime.mjs');
 
 // 0b. No credential material is hard-coded in the Apps Script project.
-for (const [name, src] of [['RuntimeShims.gs', SHIMS], ['AscRuntime.gs', RUNTIME], ['Code.gs', CODE], ['Client.html', CLIENT]]) {
+for (const [name, src] of [
+  ['RuntimeShims.gs', SHIMS],
+  ['AscRuntime.gs', RUNTIME],
+  ['GitHubAppAuth.gs', GITHUB_APP_AUTH],
+  ['ProductionWritePolicy.gs', PRODUCTION_POLICY],
+  ['Code.gs', CODE],
+  ['Client.html', CLIENT]
+]) {
   assert.doesNotMatch(src, /ghp_[A-Za-z0-9]{10,}|github_pat_[A-Za-z0-9_]{10,}/, name + ' contains a token-like literal');
 }
 assert.doesNotMatch(CLIENT, /GITHUB_TOKEN|api\.github\.com|UrlFetchApp|PropertiesService/);
@@ -52,7 +74,10 @@ const Utilities = {
     if (!/^[A-Za-z0-9+/]*={0,2}$/.test(text) || text.length % 4 === 1) throw new Error('Could not decode string.');
     return signed(Buffer.from(text, 'base64'));
   },
-  base64EncodeWebSafe(str) { return Buffer.from(String(str), 'utf8').toString('base64url'); },
+  base64EncodeWebSafe(value) {
+    if (Array.isArray(value)) return unsigned(value).toString('base64url');
+    return Buffer.from(String(value), 'utf8').toString('base64url');
+  },
   newBlob(data) { return makeBlob(typeof data === 'string' ? signed(Buffer.from(data, 'utf8')) : Array.from(data)); },
   DigestAlgorithm: { SHA_256: 'SHA_256' },
   Charset: { UTF_8: 'UTF_8' },
@@ -60,6 +85,11 @@ const Utilities = {
     assert.equal(alg, 'SHA_256');
     assert.equal(charset, 'UTF_8');
     return signed(createHash('sha256').update(String(text), 'utf8').digest());
+  },
+  computeRsaSha256Signature(value, key, charset) {
+    assert.equal(key, FAKE_PRIVATE_KEY);
+    assert.equal(charset, 'UTF_8');
+    return [1, 2, 3, 4];
   }
 };
 
@@ -68,6 +98,7 @@ const nodeSha = (t) => createHash('sha256').update(t, 'utf8').digest('hex');
 
 function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser = OWNER } = {}) {
   const github = { file: null, calls: [], commitCounter: 0, putMode, getMode: 'ok' };
+  const authCalls = [];
   const cacheFaults = { remove: false, put: false, get: false };
   const propFaults = { get: false, set: false, dropWrite: false, onGet: null };
   const lockState = { held: false, unavailable: false, acquisitions: 0 };
@@ -78,11 +109,25 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
 
   const UrlFetchApp = {
     fetch(url, options) {
-      github.calls.push({ url, options: JSON.parse(JSON.stringify(options)) });
-      const expectedUrl = 'https://api.github.com/repos/dzuddiyn/AISYNC/contents/' + TEST_PATH + '?ref=main';
-      assert.equal(url, expectedUrl, 'only the TEST_ONLY destination is addressed');
-      assert.equal(options.muteHttpExceptions, true);
+      const snapshot = { url, options: JSON.parse(JSON.stringify(options)) };
       const respond = (status, body) => ({ getResponseCode: () => status, getContentText: () => JSON.stringify(body || {}) });
+
+      if (url === 'https://api.github.com/app/installations/12345678/access_tokens') {
+        authCalls.push(snapshot);
+        assert.equal(options.method, 'post');
+        assert.match(options.headers.Authorization, /^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+        assert.deepStrictEqual(JSON.parse(options.payload), { permissions: { contents: 'write' } });
+        return respond(201, {
+          token: FAKE_TOKEN,
+          expires_at: '2026-10-03T04:00:00Z'
+        });
+      }
+
+      github.calls.push(snapshot);
+      const expectedUrl = 'https://api.github.com/repos/dzuddiyn/AISYNC/contents/' + TEST_PATH + '?ref=main';
+      assert.equal(url, expectedUrl, 'only deterministic production registry path is addressed');
+      assert.equal(options.muteHttpExceptions, true);
+      assert.equal(options.headers.Authorization, 'Bearer ' + FAKE_TOKEN);
       if (options.method === 'get') {
         if (github.getMode === 'error') return respond(500, { message: 'server error' });
         if (!github.file) return respond(404, { message: 'Not Found' });
@@ -161,11 +206,13 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
   vm.createContext(context);
   vm.runInContext(SHIMS, context, { filename: 'RuntimeShims.gs' });
   vm.runInContext(RUNTIME, context, { filename: 'AscRuntime.gs' });
+  vm.runInContext(GITHUB_APP_AUTH, context, { filename: 'GitHubAppAuth.gs' });
+  vm.runInContext(PRODUCTION_POLICY, context, { filename: 'ProductionWritePolicy.gs' });
   vm.runInContext(CODE, context, { filename: 'Code.gs' });
   const clock = { now: NOW };
   context.ascNow_ = () => clock.now;
   const replayKeys = () => Object.keys(store).filter((k) => k.startsWith('asc.replay.v1.'));
-  return { context, github, rows, cache, logs, cacheFaults, propFaults, lockState, store, clock, replayKeys };
+  return { context, github, authCalls, rows, cache, logs, cacheFaults, propFaults, lockState, store, clock, replayKeys };
 }
 
 const settle = () => new Promise((resolve) => setImmediate(resolve));
@@ -179,10 +226,10 @@ function contractWith(overrides = {}) {
     Project: 'AISYNC',
     'Source method': 'ZASSIMPLE',
     Operation: 'SAVE',
-    'Record type': 'proof',
-    'Record ID': 'TEST_ONLY_T008B_LOCAL',
-    'Content/change': '# T-008B TEST_ONLY\n\nSimpan rekod — ujian ✓\n',
-    Lineage: ['T-008A'],
+    'Record type': 'checkpoint',
+    'Record ID': 'PROD-001',
+    'Content/change': '# T-016 production write\n\nSimpan rekod — ujian ✓\n',
+    Lineage: ['T-016'],
     Destination: ['GitHub'],
     ...overrides
   };
@@ -201,7 +248,13 @@ function envelopeWith(contract, requestId = 'TEST_ONLY_T008B_LOCAL_001', times =
 }
 
 const confirmFor = (requestId = 'TEST_ONLY_T008B_LOCAL_001') => ({ confirmed: true, action: 'CONFIRM_AND_SYNC', requestId });
-const fullProps = { GITHUB_TOKEN: FAKE_TOKEN, ASC_MAIN_UI_URL: SITES_URL };
+const fullProps = {
+  ASC_MAIN_UI_URL: SITES_URL,
+  GITHUB_APP_CLIENT_ID: 'Iv1.testclient',
+  GITHUB_APP_INSTALLATION_ID: '12345678',
+  GITHUB_APP_PRIVATE_KEY: FAKE_PRIVATE_KEY,
+  ASC_GITHUB_PROJECT_REGISTRY: JSON.stringify(REGISTRY)
+};
 
 async function run(world, envelope, confirmation) {
   const immediate = world.context.confirmAndSync({ fragment: encodeFragment(envelope), confirmation });
@@ -239,6 +292,7 @@ for (const confirmation of [undefined, {}, { confirmed: true, action: 'CONFIRM_A
   assert.equal(final.state, 'AWAITING_CONFIRMATION');
   assert.equal(final.redirect, null);
   assert.equal(w.github.calls.length, 0);
+  assert.equal(w.authCalls.length, 0, 'no GitHub App token request before explicit confirmation');
   assert.equal(w.rows.length, 0);
   assert.equal(w.replayKeys().length, 0, 'no replay claim without explicit confirmation');
 }
@@ -286,7 +340,8 @@ for (const confirmation of [undefined, {}, { confirmed: true, action: 'CONFIRM_A
 
 // 4. Redirect accepted only for https://sites.google.com/ from Script Properties.
 for (const url of [null, '', 'https://example.test/ui', 'http://sites.google.com/view/x', 'https://sites.google.com.evil.test/x', 'https://sites.google.com/', 'https://sites.google.com/view/x y']) {
-  const props = { GITHUB_TOKEN: FAKE_TOKEN };
+  const props = { ...fullProps };
+  delete props.ASC_MAIN_UI_URL;
   if (url !== null) props.ASC_MAIN_UI_URL = url;
   const w = createWorld({ props });
   const { final } = await run(w, envelopeWith(contractWith()), confirmFor());
@@ -296,7 +351,7 @@ for (const url of [null, '', 'https://example.test/ui', 'http://sites.google.com
 }
 
 // 5. Failed / unverified writes stay FAILED, are recorded in HISTORY, and never redirect.
-for (const [putMode, outcome] of [['conflict', 'WRITE_ERROR'], ['throw', 'WRITE_ERROR'], ['corrupt', 'WRITE_UNVERIFIED']]) {
+for (const [putMode, outcome] of [['conflict', 'WRITE_CONFLICT'], ['throw', 'WRITE_ERROR'], ['corrupt', 'WRITE_UNVERIFIED']]) {
   const w = createWorld({ props: fullProps, putMode });
   const { final } = await run(w, envelopeWith(contractWith()), confirmFor());
   assert.equal(final.state, 'FAILED', putMode);
@@ -324,9 +379,10 @@ for (const [putMode, outcome] of [['conflict', 'WRITE_ERROR'], ['throw', 'WRITE_
   assert.equal(w.rows.length, 0);
 }
 
-// 7. TEST_ONLY scope, owner, and destination guards reject before any I/O.
+// 7. Production registry, owner, Record ID, and destination guards reject before destination I/O.
 for (const [label, contract, opts] of [
-  ['non TEST_ONLY record', contractWith({ 'Record ID': 'D-030' }), {}],
+  ['unknown project', contractWith({ Project: 'OTHER' }), {}],
+  ['path-like record id', contractWith({ 'Record ID': '../escape' }), {}],
   ['mixed destination', contractWith({ Destination: ['GitHub', 'ASC_DB'] }), {}],
   ['non-owner session', contractWith(), { activeUser: 'someone@example.test' }],
   ['empty active user', contractWith(), { activeUser: '' }]
@@ -336,27 +392,36 @@ for (const [label, contract, opts] of [
   assert.equal(final.state, 'FAILED', label);
   assert.equal(final.redirect, null, label);
   assert.equal(w.github.calls.length, 0, label);
+  assert.equal(w.authCalls.length, 0, label + ': no GitHub App token request before authorization');
   assert.equal(w.rows.length, 0, label);
 }
 
-// 8. Non-string content under TEST_ONLY policy → factual INVALID_INPUT FAILED, no GitHub I/O.
+// 8. Non-string content is outside the current production GitHub artifact policy and fails before GitHub I/O.
 {
   const w = createWorld({ props: fullProps });
   const { final } = await run(w, envelopeWith(contractWith({ 'Content/change': { a: 1 } })), confirmFor());
   assert.equal(final.state, 'FAILED');
-  assert.equal(final.receipt.adapter_outcome, 'INVALID_INPUT');
-  assert.equal(w.github.calls.length, 0);
+  assert.equal(final.stage, 'CORE');
   assert.equal(final.redirect, null);
+  assert.equal(w.github.calls.length, 0);
+  assert.equal(w.authCalls.length, 0);
+  assert.equal(w.rows.length, 0);
 }
 
 // 9. Config / input failures before the flow.
 {
-  const noToken = createWorld({ props: { ASC_MAIN_UI_URL: SITES_URL } });
-  const r = noToken.context.confirmAndSync({ fragment: encodeFragment(envelopeWith(contractWith())), confirmation: confirmFor() });
+  const noApp = createWorld({
+    props: {
+      ASC_MAIN_UI_URL: SITES_URL,
+      ASC_GITHUB_PROJECT_REGISTRY: JSON.stringify(REGISTRY)
+    }
+  });
+  const r = noApp.context.confirmAndSync({ fragment: encodeFragment(envelopeWith(contractWith())), confirmation: confirmFor() });
   assert.equal(r.state, 'FAILED');
-  assert.equal(r.error.code, 'GITHUB_TOKEN_MISSING');
+  assert.equal(r.error.code, 'GITHUB_APP_CONFIG_MISSING');
   await settle();
-  assert.equal(noToken.github.calls.length, 0);
+  assert.equal(noApp.github.calls.length, 0);
+  assert.equal(noApp.authCalls.length, 0);
 
   const w = createWorld({ props: fullProps });
   for (const fragment of [undefined, '', '#asc=', '#asc=not valid!', 'asc=abc']) {

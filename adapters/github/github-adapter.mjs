@@ -240,17 +240,89 @@ export async function runGitHubAdapter(invocation, writeSpec, githubClient) {
   const writeResult = await callClient(githubClient.writeFile.bind(githubClient), writeInput);
 
   if (!writeResult || writeResult.ok !== true) {
+    const writeError = cloneValue(writeResult && writeResult.error) ||
+      errorResult('WRITE_ERROR', 'GitHub write failed.');
+
+    if (writeError && writeError.code === 'GITHUB_WRITE_CONFLICT') {
+      return {
+        outcome: 'WRITE_CONFLICT',
+        adapterId: 'github',
+        destination: 'GitHub',
+        repository: writeSpec.repository,
+        path: writeSpec.path,
+        branch: writeSpec.branch,
+        writePerformed: false,
+        commitSha: null,
+        verified: false,
+        error: writeError
+      };
+    }
+
+    if (!writeError || writeError.outcomeKnown !== false) {
+      return {
+        outcome: 'WRITE_ERROR',
+        adapterId: 'github',
+        destination: 'GitHub',
+        repository: writeSpec.repository,
+        path: writeSpec.path,
+        branch: writeSpec.branch,
+        writePerformed: false,
+        commitSha: writeResult && writeResult.commitSha ? writeResult.commitSha : null,
+        verified: false,
+        error: writeError
+      };
+    }
+
+    // Unknown write outcome: do not blindly retry. Re-read the deterministic
+    // destination and reconcile against the exact desired content.
+    const reconciliationRead = await callClient(githubClient.readFile.bind(githubClient), readInput);
+    if (reconciliationRead && reconciliationRead.ok === true &&
+        isValidReadResult(reconciliationRead)) {
+      if (reconciliationRead.found === true &&
+          reconciliationRead.content === writeSpec.content) {
+        return {
+          outcome: 'VERIFIED_WRITE_RECONCILED',
+          adapterId: 'github',
+          destination: 'GitHub',
+          repository: writeSpec.repository,
+          path: writeSpec.path,
+          branch: writeSpec.branch,
+          writePerformed: null,
+          commitSha: null,
+          contentSha: reconciliationRead.sha,
+          persistedSha: reconciliationRead.sha,
+          verified: true,
+          reconciliation: 'DESIRED_CONTENT_PRESENT'
+        };
+      }
+      return {
+        outcome: 'WRITE_ERROR',
+        adapterId: 'github',
+        destination: 'GitHub',
+        repository: writeSpec.repository,
+        path: writeSpec.path,
+        branch: writeSpec.branch,
+        writePerformed: false,
+        commitSha: null,
+        verified: false,
+        error: writeError,
+        reconciliation: 'DESIRED_CONTENT_ABSENT'
+      };
+    }
+
     return {
-      outcome: 'WRITE_ERROR',
+      outcome: 'WRITE_OUTCOME_UNKNOWN',
       adapterId: 'github',
       destination: 'GitHub',
       repository: writeSpec.repository,
       path: writeSpec.path,
       branch: writeSpec.branch,
-      writePerformed: false,
-      commitSha: writeResult && writeResult.commitSha ? writeResult.commitSha : null,
+      writePerformed: null,
+      commitSha: null,
       verified: false,
-      error: cloneValue(writeResult && writeResult.error) || errorResult('WRITE_ERROR', 'GitHub write failed.')
+      error: writeError,
+      reconciliationError: cloneValue(reconciliationRead && reconciliationRead.error) ||
+        errorResult('RECONCILIATION_READ_FAILED', 'GitHub write outcome could not be reconciled.')
     };
   }
 
