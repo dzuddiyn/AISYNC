@@ -1,4 +1,4 @@
-﻿// T-015 â€” private continuity state binding.
+// T-015 â€” private continuity state binding.
 //
 // All functions are private server-side helpers (trailing underscore). They are not
 // exposed as browser-callable entry points. Authorization/public UX is later work.
@@ -56,4 +56,3 @@ function ascDeletePrivateContinuityThread_(input) {
 function ascAssessProjectIndexFreshness_(input) {
   return ascRuntime_().indexFreshness.assessIndexFreshness(input);
 }
-

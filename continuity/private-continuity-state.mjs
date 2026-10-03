@@ -1,4 +1,4 @@
-﻿const ULID_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const ULID_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 const ULID_RE = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 function isPlainObject(value) {
@@ -625,4 +625,3 @@ export function createPrivateContinuityService({
 }
 
 export const PRIVATE_CONTINUITY_STATE_VERSION = '0.1';
-

@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { buildRuntime } from './build-runtime.mjs';
@@ -134,5 +134,3 @@ assert.doesNotMatch(FRESHNESS, /progress_percent|lifecycle_stage|ZASSPILL|ZASSEL
 console.log('T-015 factual project-index freshness Apps Script binding: PASS');
 console.log('canonical default-branch head -> exact repo/ref/commit comparison: PASS');
 console.log('Sheets mutation / semantic inference: none');
-
-

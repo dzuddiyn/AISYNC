@@ -1,4 +1,4 @@
-﻿import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import {
@@ -284,4 +284,3 @@ assert.doesNotMatch(source, /\.title\b|\.state\b|\.continuity\b|\.resume_cues\b|
 console.log('T-015 private continuity state mechanics: PASS');
 console.log('identity/revision/event/idempotency/concurrency/bootstrap/delete: PASS');
 console.log('method-specific semantic inference in persistence engine: none');
-
