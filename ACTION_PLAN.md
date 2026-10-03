@@ -80,17 +80,19 @@ Feeds design: YES
 
 Source: D-031, D-032, D-033, D-034
 
-AP-009 | CURRENT
+AP-009 | PASS
 Action: Implement canonical project/thread/index state for Production v1: stable thread identity, revision + semantic event lineage, optimistic-concurrency inputs, bootstrap/duplicate protection, tombstone/delete handling, and truthful GitHub → ASC DB/index freshness.
 Dependencies: T-012 technical baseline, frozen ZASSPILL v1 upstream contract, D-032 private continuity authority, D-033 native continuity contract boundary, D-034 transport/semantic request-identity separation.
 Constraint / feasibility note: authoritative private Current Thread Records/events/tombstones live in the dedicated ASC Private Continuity Store; the existing ASC DB remains a derived index. Do not force bootstrap/thread mutations through the eight-field ASC Write Contract and do not reuse transport replay IDs as semantic idempotency IDs.
 Pass / stop condition: ASC can identify the current project/thread revision and index freshness factually without relying on manually maintained stale PROJECTS metadata.
+Result: PASS — live private continuity mechanics and factual stale-index detection are verified; protected Apps Script deployment version 10 carries the merged implementation.
 Feeds design: YES
 
-AP-010 | QUEUED
+AP-010 | CURRENT
 Action: Replace TEST_ONLY write policy with the production GitHub write boundary: authorized project registry, deterministic Record ID → repo/branch/path mapping, GitHub App auth, idempotency, optimistic concurrency, and unknown-write reconciliation.
-Dependencies: AP-009.
+Dependencies: AP-009 — satisfied.
 Pass / stop condition: an allowed human user can SAVE a supported production project without TEST_ONLY rules or arbitrary destination paths.
+Current result: NOT STARTED — promoted after AP-009 / T-015 PASS.
 Feeds design: YES
 
 AP-011 | QUEUED
@@ -176,7 +178,7 @@ Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is
 
 ## Design feedback
 
-The core DESIGN blockers are resolved. The confirmed technical design is maintained in `DESIGN.md`. T-014 has locked the Production v1 delivery track; T-015 is the current executable task, followed by T-016 through T-021.
+The core DESIGN blockers are resolved. The confirmed technical design is maintained in `DESIGN.md`. T-014 locked the Production v1 delivery track; T-015 is PASS and T-016 is now the current executable task, followed by T-017 through T-021.
 
 
 PF-005 | RESOLVED BY D-017  
@@ -388,3 +390,8 @@ Finding: T-015 now has a local, method-agnostic continuity-state implementation 
 `apps-script/PrivateContinuityDriveStore.gs` selects a dedicated private Google Drive JSON file as the closed-beta ASC Private Continuity Store backing, with Script Lock serialization and read-back verification; Script Properties contain only store locators. Exact GitHub→index freshness is implemented as repository/ref/commit evidence using the canonical default-branch head.
 
 The live PROJECTS sheet was backward-compatibly extended with `source_ref=main` for AISYNC, while its stale source_commit/semantic values were deliberately not manually repaired. All repository `test-*.mjs` tests pass locally and `git diff --check` must remain clean before save. T-015 remains IN PROGRESS until the implementation is saved to canonical GitHub, deployed, the real private Drive store is created/verified, and a live dashboard read shows factual freshness from the live index. T-016 must not start yet.
+
+
+PF-058 | T-015 CLOSED / T-016 PROMOTED
+
+Finding: T-015 is PASS. Canonical implementation PR #10 merged at `120d2d7042d9adfbacf3f4edea8943deb79c29b7`; live defect recovery/hotfix PR #11 merged at `7a4c8777c0f79a8e34d29dff8972d0f906e1d3f8`. The private continuity live proof verified create/read/revision-2 mutation, semantic duplicate idempotency, stale-revision conflict, matching event lineage, delete, and tombstone behavior, with independent private Drive read-back of the authoritative JSON. The factual index proof correctly reported `STALE / CANONICAL_HEAD_DIFFERS_FROM_INDEXED_COMMIT` rather than silently repairing the ASC DB index. All 22 repository tests pass. Apps Script version 10 (`T-015 canonical continuity state verified hotfix`) is deployed on the protected production deployment and the owner-only endpoint remains behind the Google sign-in gate. AP-009 is complete; AP-010 / T-016 is promoted. No Production write-path claim is made yet.
