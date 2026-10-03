@@ -163,9 +163,14 @@ For small payloads, prefer client-side fragment transport rather than exposing r
 
 Main dashboard/navigation shell.
 
-Top-level routes:
-- DECIDE
-- DESIGN
+Current product routes, aligned with D-020:
+- DUMP → ZASSPILL
+- DECIDE → ZASSELECTION / PICKS
+- DESIGN → ZASSIMPLE / IDEA
+
+Full ZASS is not a peer landing route; it remains an explicit stronger-governance escalation from DESIGN.
+
+The dashboard/read projection may group indexed projects by these three operational `ui_entry` values. DUMP also provides a path to the public ASC Front Door; ASC does not copy ZASSPILL method semantics into the dashboard.
 
 Project list shows:
 - project progress bar
