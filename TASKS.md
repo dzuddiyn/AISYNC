@@ -2,7 +2,7 @@
 
 **Status:** ASC v0.1 CORE/FALLBACK DELIVERED — T-012 ACTIVE  
 **Method:** ZASSIMPLE v0.3.0  
-**Lifecycle stage:** DELIVERED !!  
+**Lifecycle stage:** DO IT  
 **Design:** v1.0.10 CONFIRMED  
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
@@ -40,7 +40,7 @@ Live evidence:
 - HISTORY row 6: `SUCCESS`, `write_performed=true`, `verified=true`, matching commit ID and request ID.
 - Success page exposed `Return to main ASC UI`; owner reported that a user click was required. D-030 locks this as the guaranteed v0.1 return behavior; automatic top-level navigation is optional rather than a pass requirement.
 Scope limit: this remains the owner-locked TEST_ONLY destination policy; general production Record ID → GitHub path mapping is still not defined by this proof.  
-Current result: PASS. ASC v0.1 core/fallback proof is delivered; T-012 remains BLOCKED / LATER.
+Current result: PASS. ASC v0.1 core/fallback proof is delivered. Historical note: at T-011 closure, T-012 was still BLOCKED / LATER; that dependency is now satisfied and T-012 is CURRENT.
 
 T-010 | PASS — SECURITY / REPLAY CONTROLS  
 Source: AP-007  
