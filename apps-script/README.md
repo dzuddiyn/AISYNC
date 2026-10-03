@@ -357,4 +357,34 @@ Production deployment evidence:
 - post-deploy source verification matched those three files to AISYNC merge commit `f515a7d1379534501cd7a032563bfa968f8012ae`;
 - the pre-existing T-017 development HEAD was restored exactly after the versioned production release and remains separate from production v21.
 
-Remaining Gate 2 closure evidence: owner-visible verification that the protected/main ASC dashboard actually renders the coherent DUMP / DECIDE / DESIGN surface.
+Gate 2 owner-visible closure: PASS — the protected/main ASC surfaces visibly rendered DUMP / DECIDE / DESIGN, DUMP → ZASSPILL, and working DECIDE / DESIGN navigation.
+
+
+## ZASS SYSTEM Gate 3 workspace + contextual cards patch — 2026-10-04
+
+Scope: replace the permanent technical project-detail wall with a conversational-first project workspace while preserving ASC as a read/projection layer.
+
+Implemented in source:
+- project opens on **Workspace** by default;
+- explicit **Workspace / Review / History** controls provide progressive disclosure;
+- Workspace shows a compact **Project Pulse** using only indexed stage, next stage, factual progress, latest update, and index freshness;
+- Workspace provides **Continue naturally → ASC Front Door** without implying SAVE/persistence;
+- one primary contextual card is selected only from explicit factual state;
+- `STALE` index state suppresses Current Task / decision-currentness claims and shows a refresh warning instead;
+- Review contains commit-linked ZASS CI, current-state summaries, Action Plan, and ZASS/project records;
+- History contains the factual HISTORY audit trail separately;
+- internal `AP-xxx` / `D-xxx` IDs are not shown in the default Workspace;
+- no new write operation, validator logic, method semantics, or automatic Full-ZASS migration is introduced.
+
+Contextual-card eligibility:
+- **Current Task** — explicit `CURRENT / ACTIVE / IN PROGRESS / OPEN` Action Plan row;
+- **Ready to Lock** — explicit decision state `READY TO LOCK / READY_TO_LOCK / PROPOSED FOR PROCEED`;
+- **Design Forming** — explicit DESIGN lifecycle plus factual progress/summary;
+- **Delivered** — explicit DELIVERED / COMPLETE lifecycle state.
+
+Verification:
+- all **26** repository `test-*.mjs` files PASS from the current T-017-inclusive baseline;
+- `git diff --check` PASS;
+- dashboard regression verifies default Workspace, progressive disclosure, stale-state suppression, each contextual-card family, Review-only CI/IDs, History-only audit data, and absence of write controls from Workspace.
+
+Production deployment and owner-visible proof remain required before Gate 3 closure.

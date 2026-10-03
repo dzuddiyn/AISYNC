@@ -111,44 +111,97 @@ const project = (o) => ({
   assert.match(sb.renderProjectList(null, 'DECIDE'), /FAILED/);
 }
 
-// Detail: seven locked sections in order; empty tables graceful; values exact.
+// Gate 3 project workspace: Workspace default; Review/History explicit; contextual cards factual.
 {
+  const currentMeta = { ...meta, freshness: 'CURRENT' };
   const detail = {
     ok: true,
-    project: project(),
-    records: [{ project_id: 'AISYNC', record_type: 'decision', record_id: 'D-015', status: 'LOCKED', summary: 's', lineage_json: '["D-006"]', source_artifact: 'ZASSIM-AISYNC.md', source_commit: 'c1', canonical_url: 'https://github.com/dzuddiyn/AISYNC', updated_at: 'u' },
-      { project_id: 'AISYNC', record_type: 'x', record_id: 'J', status: 'OPEN', canonical_url: 'javascript:alert(1)' }],
-    action_plan: [{ project_id: 'AISYNC', ap_id: 'AP-003', status: 'OPEN', action: 'UI <flow>' }],
-    history: [{ request_id: 'TEST_ONLY_T008B_LIVE_20261003_0415', status: 'SUCCESS', commit_or_record_id: 'fb1da42abaac61d5568548ec254e48c1a1b5aa6b', receipt_json: '{"verified":true}' },
-      { request_id: 'r-fail', status: 'FAILED', failure_reason: 'Adapter write was not verified as persisted.' }]
+    project: project({ index_metadata: currentMeta, next_action_plan: 'Deploy owner preview', next_stage: 'DO IT' }),
+    records: [
+      { project_id: 'AISYNC', record_type: 'decision', record_id: 'D-015', status: 'LOCKED', summary: 's', lineage_json: '["D-006"]', source_artifact: 'ZASSIM-AISYNC.md', source_commit: 'c1', canonical_url: 'https://github.com/dzuddiyn/AISYNC', updated_at: 'u' },
+      { project_id: 'AISYNC', record_type: 'x', record_id: 'J', status: 'OPEN', canonical_url: 'javascript:alert(1)' }
+    ],
+    action_plan: [
+      { project_id: 'AISYNC', ap_id: 'AP-003', status: 'OPEN', action: 'UI <flow>', pass_condition: 'Owner preview renders correctly.' }
+    ],
+    history: [
+      { request_id: 'TEST_ONLY_T008B_LIVE_20261003_0415', status: 'SUCCESS', commit_or_record_id: 'fb1da42abaac61d5568548ec254e48c1a1b5aa6b', receipt_json: '{"verified":true}' },
+      { request_id: 'r-fail', status: 'FAILED', failure_reason: 'Adapter write was not verified as persisted.' }
+    ]
   };
-  const html = sb.renderProjectDetail(detail);
-  const titles = ['1. Project progress bar', '2. Progress summary', '3. Next Action Plan summary', '4. Next stage summary', '5. Action Plan table', '6. ZASS table', '7. History'];
-  let last = -1;
-  for (const t of titles) {
-    const i = html.indexOf('<h2>' + t + '</h2>');
-    assert.ok(i > last, t + ' present and in order');
-    last = i;
-  }
-  assert.equal((html.match(/<section class="card">/g) || []).length, 7);
-  assert.match(html, /Progress: Not provided/);
-  assert.match(html, /<p>Current T-004<\/p>/);
-  assert.match(html, /<p>AP-003<\/p>/);
-  assert.match(html, /<p>T-004<\/p>/);
-  assert.match(html, /UI &lt;flow&gt;/);
-  assert.match(html, /<a href="https:\/\/github.com\/dzuddiyn\/AISYNC"/);
-  assert.doesNotMatch(html, /href="javascript:/);
-  assert.match(html, /<td>SUCCESS<\/td>/);
-  assert.match(html, /<td>FAILED<\/td>/);
-  assert.match(html, /fb1da42abaac61d5568548ec254e48c1a1b5aa6b/);
-  assert.match(html, /freshness UNVERIFIED/);
-  assert.match(html, /Commit-linked ZASS CI/);
-  assert.match(html, /Loading factual GitHub CI status/);
+
+  const workspace = sb.renderProjectDetail(detail);
+  assert.match(workspace, /data-project-view="WORKSPACE" aria-pressed="true"/);
+  assert.match(workspace, /Project Pulse/);
+  assert.match(workspace, /Current stage/);
+  assert.match(workspace, /Next stage/);
+  assert.match(workspace, /Index freshness/);
+  assert.match(workspace, /Continue naturally/);
+  assert.match(workspace, /Open ASC Front Door/);
+  assert.match(workspace, /🚀 Current Task/);
+  assert.match(workspace, /UI &lt;flow&gt;/);
+  assert.match(workspace, /Owner preview renders correctly/);
+  assert.match(workspace, /Then/);
+  assert.doesNotMatch(workspace, /AP-003/);
+  assert.doesNotMatch(workspace, /D-015/);
+  assert.doesNotMatch(workspace, /Commit-linked ZASS CI/);
+  assert.doesNotMatch(workspace, /TEST_ONLY_T008B/);
+  assert.doesNotMatch(workspace, /confirmAndSync|writeToGitHub|writeToSheets/);
+
+  const stale = sb.renderProjectDetail({
+    ...detail,
+    project: project({ index_metadata: { ...meta, freshness: 'STALE' } })
+  });
+  assert.match(stale, /Project state needs refresh/);
+  assert.doesNotMatch(stale, /🚀 Current Task/);
+
+  const ready = sb.renderProjectDetail({
+    ...detail,
+    records: [
+      { project_id: 'AISYNC', record_type: 'decision', record_id: 'D-099', status: 'READY_TO_LOCK', summary: 'Use the protected production route.' }
+    ],
+    action_plan: []
+  });
+  assert.match(ready, /🔒 Ready to lock/);
+  assert.match(ready, /Use the protected production route/);
+  assert.doesNotMatch(ready, /D-099/);
+  assert.match(ready, /does not lock automatically/);
+
+  const forming = sb.renderProjectDetail({
+    ...detail,
+    project: project({
+      lifecycle_stage: 'DESIGN',
+      progress: { state: 'PROVIDED', value: 60, raw: '60' },
+      progress_summary: 'Design coverage is explicit.',
+      index_metadata: currentMeta
+    }),
+    action_plan: [],
+    records: [
+      { record_type: 'decision', record_id: 'D-001', status: 'LOCKED' },
+      { record_type: 'decision', record_id: 'D-002', status: 'LOCKED' }
+    ]
+  });
+  assert.match(forming, /🎨 Design forming/);
+  assert.match(forming, /width:60%/);
+  assert.match(forming, /Locked decisions in current index: 2/);
+  assert.doesNotMatch(forming, /D-001|D-002/);
+
+  const delivered = sb.renderProjectDetail({
+    ...detail,
+    project: project({
+      lifecycle_stage: 'DELIVERED',
+      progress_summary: 'Production outcome verified.',
+      index_metadata: currentMeta
+    }),
+    action_plan: []
+  });
+  assert.match(delivered, /✅ DELIVERED !!/);
+  assert.match(delivered, /Production outcome verified/);
 
   const ciProject = project({
     github_repo: 'dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint',
     index_metadata: {
-      ...meta,
+      ...currentMeta,
       source_commit: '7cdbd6818198f22245ebcaf107a3cc87611a3d72'
     }
   });
@@ -165,13 +218,19 @@ const project = (o) => ({
     run_url: 'https://github.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/actions/runs/37084823055',
     fetched_at: '2026-10-03T01:30:00.000Z'
   };
-  const ciHtml = sb.renderProjectDetail(ciDetail, ciSuccess);
-  assert.match(ciHtml, /Status: <strong>SUCCESS<\/strong>/);
-  assert.match(ciHtml, /Workflow \/ job: ZASS CI \/ zass-check/);
-  assert.match(ciHtml, /Run ID: 37084823055/);
-  assert.match(ciHtml, /7cdbd6818198f22245ebcaf107a3cc87611a3d72/);
-  assert.match(ciHtml, /Open GitHub Actions run/);
-  assert.doesNotMatch(ciHtml, /Z001|Z101|project valid|validation PASS/i);
+
+  const review = sb.renderProjectDetail(ciDetail, ciSuccess, 'REVIEW');
+  assert.match(review, /data-project-view="REVIEW" aria-pressed="true"/);
+  assert.match(review, /Commit-linked ZASS CI/);
+  assert.match(review, /Status: <strong>SUCCESS<\/strong>/);
+  assert.match(review, /Action Plan/);
+  assert.match(review, /ZASS \/ project records/);
+  assert.match(review, /AP-003/);
+  assert.match(review, /D-015/);
+  assert.match(review, /<a href="https:\/\/github.com\/dzuddiyn\/AISYNC"/);
+  assert.doesNotMatch(review, /href="javascript:/);
+  assert.doesNotMatch(review, /TEST_ONLY_T008B/);
+  assert.doesNotMatch(review, /Z001|Z101|project valid|validation PASS/i);
 
   const notFoundHtml = sb.renderProjectDetail(ciDetail, {
     ...ciSuccess,
@@ -179,7 +238,7 @@ const project = (o) => ({
     status: 'NOT_FOUND',
     conclusion: null,
     run_url: null
-  });
+  }, 'REVIEW');
   assert.match(notFoundHtml, /NOT_FOUND/);
   assert.match(notFoundHtml, /This is not a PASS result/);
 
@@ -191,19 +250,53 @@ const project = (o) => ({
     conclusion: null,
     run_url: null,
     error: { code: 'GITHUB_READ_FAILED', message: 'GitHub read request failed.' }
-  });
+  }, 'REVIEW');
   assert.match(readErrorHtml, /READ_ERROR/);
   assert.match(readErrorHtml, /GITHUB_READ_FAILED/);
 
-  const emptyHtml = sb.renderProjectDetail({ ok: true, project: project({ progress_summary: '', next_action_plan: '', next_stage: '' }), records: [], action_plan: [], history: [] });
-  assert.match(emptyHtml, /No ACTION_PLAN rows for this project\./);
-  assert.match(emptyHtml, /No RECORDS rows for this project\./);
-  assert.match(emptyHtml, /No HISTORY rows for this project\./);
-  assert.equal((emptyHtml.match(/Not provided/g) || []).length >= 4, true);
-  assert.doesNotMatch(emptyHtml, /<table>/);
+  const history = sb.renderProjectDetail(detail, null, 'HISTORY');
+  assert.match(history, /data-project-view="HISTORY" aria-pressed="true"/);
+  assert.match(history, /<h2>History<\/h2>/);
+  assert.match(history, /TEST_ONLY_T008B_LIVE_20261003_0415/);
+  assert.match(history, /<td>SUCCESS<\/td>/);
+  assert.match(history, /<td>FAILED<\/td>/);
+  assert.doesNotMatch(history, /Action Plan/);
+  assert.doesNotMatch(history, /Commit-linked ZASS CI/);
+
+  const empty = sb.renderProjectDetail({
+    ok: true,
+    project: project({ progress_summary: '', next_action_plan: '', next_stage: '', index_metadata: currentMeta }),
+    records: [],
+    action_plan: [],
+    history: []
+  });
+  assert.match(empty, /No protected action needed right now/);
+  assert.match(empty, /Not provided/);
+  assert.doesNotMatch(empty, /<table>/);
+
+  const emptyReview = sb.renderProjectDetail({
+    ok: true,
+    project: project({ progress_summary: '', next_action_plan: '', next_stage: '', index_metadata: currentMeta }),
+    records: [],
+    action_plan: [],
+    history: []
+  }, null, 'REVIEW');
+  assert.match(emptyReview, /No ACTION_PLAN rows for this project\./);
+  assert.match(emptyReview, /No RECORDS rows for this project\./);
+
+  const emptyHistory = sb.renderProjectDetail({
+    ok: true,
+    project: project({ index_metadata: currentMeta }),
+    records: [],
+    action_plan: [],
+    history: []
+  }, null, 'HISTORY');
+  assert.match(emptyHistory, /No HISTORY rows for this project\./);
+
   assert.match(sb.renderProjectDetail(undefined), /FAILED/);
   assert.match(sb.renderProjectDetail({ ok: false, error: { code: 'PROJECT_NOT_FOUND', message: 'No PROJECTS row has this exact project_id.' } }), /PROJECT_NOT_FOUND/);
   assert.match(sb.renderTable(['a'], undefined, 'Empty.'), /Empty\./);
 }
+
 
 console.log('T-009B/C dashboard UI + routing test: PASS');
