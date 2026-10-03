@@ -92,7 +92,7 @@ AP-010 | CURRENT
 Action: Replace TEST_ONLY write policy with the production GitHub write boundary: authorized project registry, deterministic Record ID → repo/branch/path mapping, GitHub App auth, idempotency, optimistic concurrency, and unknown-write reconciliation.
 Dependencies: AP-009 — satisfied.
 Pass / stop condition: an allowed human user can SAVE a supported production project without TEST_ONLY rules or arbitrary destination paths.
-Current result: NOT STARTED — promoted after AP-009 / T-015 PASS.
+Current result: IN PROGRESS — local registry/App-auth/concurrency/idempotency/unknown-write handling PASS; controlled live GitHub App SAVE PASS with independent GitHub + HISTORY verification. Canonical save/merge and final protected production deployment remain pending.
 Feeds design: YES
 
 AP-011 | QUEUED
@@ -395,3 +395,23 @@ The live PROJECTS sheet was backward-compatibly extended with `source_ref=main` 
 PF-058 | T-015 CLOSED / T-016 PROMOTED
 
 Finding: T-015 is PASS. Canonical implementation PR #10 merged at `120d2d7042d9adfbacf3f4edea8943deb79c29b7`; live defect recovery/hotfix PR #11 merged at `7a4c8777c0f79a8e34d29dff8972d0f906e1d3f8`. The private continuity live proof verified create/read/revision-2 mutation, semantic duplicate idempotency, stale-revision conflict, matching event lineage, delete, and tombstone behavior, with independent private Drive read-back of the authoritative JSON. The factual index proof correctly reported `STALE / CANONICAL_HEAD_DIFFERS_FROM_INDEXED_COMMIT` rather than silently repairing the ASC DB index. All 22 repository tests pass. Apps Script version 10 (`T-015 canonical continuity state verified hotfix`) is deployed on the protected production deployment and the owner-only endpoint remains behind the Google sign-in gate. AP-009 is complete; AP-010 / T-016 is promoted. No Production write-path claim is made yet.
+
+
+PF-059 | T-016 CONTROLLED LIVE PRODUCTION WRITE — PASS; CANONICAL SAVE / FINAL DEPLOYMENT PENDING
+
+Finding: T-016 Production v1 write mechanics are locally implemented and a controlled owner-confirmed live SAVE has passed through the temporary protected deployment using the server-side production project registry and a GitHub App installation credential scoped to exactly `dzuddiyn/AISYNC`.
+
+Live request:
+- request_id `ASC-T016-20261003181842`;
+- Record ID `T016-LIVE-20261003181842`;
+- deterministic target `dzuddiyn/AISYNC@main -> records/T016-LIVE-20261003181842.md`;
+- adapter outcome `VERIFIED_WRITE`;
+- GitHub commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca`;
+- GitHub author `aisync-production-writer-dzuddiyn[bot]`;
+- HISTORY row 7 `SUCCESS`, `write_performed=true`, `verified=true`, exactly matching request/commit/resource.
+
+Independent GitHub read-back confirmed exact file content and that the commit changed only the deterministic production target. Independent Sheets re-read found one matching HISTORY row.
+
+GitHub App bootstrap is also independently proven: app slug `aisync-production-writer-dzuddiyn`, exact repository installation `dzuddiyn/AISYNC`, installation ID present, production registry configured, and GitHub App configuration valid. Temporary setup/recovery deployment was removed after proof; Apps Script @HEAD was cleaned back to the non-temporary T-016 implementation.
+
+Local proof after cleanup: all 24 repository `test-*.mjs` tests PASS; runtime freshness check PASS; `git diff --check` PASS; changed-file credential-pattern scan PASS. T-016 remains IN PROGRESS until its branch is canonically saved/merged and the protected production deployment is updated from merged `main`.

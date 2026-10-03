@@ -178,8 +178,9 @@ const writeError = await createGitHubRestClient({
   fetchImpl: async () => response(409, { message: 'conflict' })
 }).writeFile({ ...readInput, content, commitMessage: 'write' });
 assert.equal(writeError.ok, false);
-assert.equal(writeError.error.code, 'GITHUB_WRITE_FAILED');
+assert.equal(writeError.error.code, 'GITHUB_WRITE_CONFLICT');
 assert.equal(writeError.error.status, 409);
+assert.equal(writeError.error.outcomeKnown, true);
 assertNoSecret(writeError);
 
 const malformedWrite = await createGitHubRestClient({
@@ -188,6 +189,7 @@ const malformedWrite = await createGitHubRestClient({
 }).writeFile({ ...readInput, content, commitMessage: 'write' });
 assert.equal(malformedWrite.ok, false);
 assert.equal(malformedWrite.error.code, 'MALFORMED_WRITE_RESPONSE');
+assert.equal(malformedWrite.error.outcomeKnown, false);
 assertNoSecret(malformedWrite);
 
 for (const method of ['readFile', 'writeFile']) {
@@ -199,6 +201,11 @@ for (const method of ['readFile', 'writeFile']) {
     : { ...readInput, content, commitMessage: 'write' });
   assert.equal(rejected.ok, false);
   assert.equal(rejected.error.code, 'GITHUB_FETCH_ERROR');
+  if (method === 'writeFile') {
+    assert.equal(rejected.error.outcomeKnown, false);
+  } else {
+    assert.equal(Object.prototype.hasOwnProperty.call(rejected.error, 'outcomeKnown'), false);
+  }
   assertNoSecret(rejected);
 }
 

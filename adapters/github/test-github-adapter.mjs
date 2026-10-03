@@ -136,6 +136,90 @@ const writeErrorResult = await adapter.runGitHubAdapter(
 assert.equal(writeErrorResult.outcome, 'WRITE_ERROR');
 assert.deepStrictEqual(writeErrorCalls.map(call => call.method), ['read', 'write']);
 
+const conflictCalls = [];
+const conflictResult = await adapter.runGitHubAdapter(
+  invocation,
+  writeSpec,
+  makeClient([
+    { ok: true, found: true, sha: 'stale-sha', content: 'old content\n' }
+  ], {
+    ok: false,
+    error: {
+      code: 'GITHUB_WRITE_CONFLICT',
+      message: 'target changed',
+      status: 409,
+      outcomeKnown: true
+    }
+  }, conflictCalls)
+);
+assert.equal(conflictResult.outcome, 'WRITE_CONFLICT');
+assert.equal(conflictResult.writePerformed, false);
+assert.deepStrictEqual(conflictCalls.map(call => call.method), ['read', 'write']);
+
+const reconciledCalls = [];
+const reconciledResult = await adapter.runGitHubAdapter(
+  invocation,
+  writeSpec,
+  makeClient([
+    { ok: true, found: false, sha: null, content: null },
+    { ok: true, found: true, sha: 'reconciled-sha', content: writeSpec.content }
+  ], {
+    ok: false,
+    error: {
+      code: 'GITHUB_FETCH_ERROR',
+      message: 'transport lost after request',
+      outcomeKnown: false
+    }
+  }, reconciledCalls)
+);
+assert.equal(reconciledResult.outcome, 'VERIFIED_WRITE_RECONCILED');
+assert.equal(reconciledResult.writePerformed, null);
+assert.equal(reconciledResult.verified, true);
+assert.equal(reconciledResult.persistedSha, 'reconciled-sha');
+assert.deepStrictEqual(reconciledCalls.map(call => call.method), ['read', 'write', 'read']);
+
+const unknownAbsentCalls = [];
+const unknownAbsent = await adapter.runGitHubAdapter(
+  invocation,
+  writeSpec,
+  makeClient([
+    { ok: true, found: false, sha: null, content: null },
+    { ok: true, found: false, sha: null, content: null }
+  ], {
+    ok: false,
+    error: {
+      code: 'GITHUB_FETCH_ERROR',
+      message: 'transport lost after request',
+      outcomeKnown: false
+    }
+  }, unknownAbsentCalls)
+);
+assert.equal(unknownAbsent.outcome, 'WRITE_ERROR');
+assert.equal(unknownAbsent.writePerformed, false);
+assert.equal(unknownAbsent.reconciliation, 'DESIRED_CONTENT_ABSENT');
+assert.deepStrictEqual(unknownAbsentCalls.map(call => call.method), ['read', 'write', 'read']);
+
+const unknownCalls = [];
+const unknownResult = await adapter.runGitHubAdapter(
+  invocation,
+  writeSpec,
+  makeClient([
+    { ok: true, found: false, sha: null, content: null },
+    { ok: false, error: { code: 'READ_FAILED', message: 'cannot reconcile' } }
+  ], {
+    ok: false,
+    error: {
+      code: 'GITHUB_FETCH_ERROR',
+      message: 'transport lost after request',
+      outcomeKnown: false
+    }
+  }, unknownCalls)
+);
+assert.equal(unknownResult.outcome, 'WRITE_OUTCOME_UNKNOWN');
+assert.equal(unknownResult.writePerformed, null);
+assert.equal(unknownResult.verified, false);
+assert.deepStrictEqual(unknownCalls.map(call => call.method), ['read', 'write', 'read']);
+
 const verifyReadErrorCalls = [];
 const verifyReadErrorResult = await adapter.runGitHubAdapter(
   invocation,
