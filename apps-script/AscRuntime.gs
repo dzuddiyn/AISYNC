@@ -1578,7 +1578,7 @@ function ascRuntime_() {
   // ---- module: continuity/private-continuity-state.mjs ----
   ASC_NS.continuity = (function (Buffer, atob, btoa, TextEncoder, TextDecoder) {
     'use strict';
-    ﻿const ULID_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+    const ULID_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
     const ULID_RE = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
     function isPlainObject(value) {
@@ -2205,7 +2205,6 @@ function ascRuntime_() {
     }
 
     const PRIVATE_CONTINUITY_STATE_VERSION = '0.1';
-
 
     return Object.freeze({ createEmptyPrivateContinuityState, createInMemoryPrivateContinuityStore, createPrivateContinuityService, PRIVATE_CONTINUITY_STATE_VERSION });
   })(shims.Buffer, shims.atob, shims.btoa, shims.TextEncoder, shims.TextDecoder);
