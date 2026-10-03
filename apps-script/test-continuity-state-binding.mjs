@@ -12,6 +12,7 @@ const BINDING = read('ContinuityState.gs');
 
 assert.equal(RUNTIME, buildRuntime(), 'AscRuntime.gs is stale');
 assert.match(RUNTIME, /continuity\/private-continuity-state\.mjs/);
+assert.match(RUNTIME, /continuity\/zasspill-continuity\.mjs/);
 assert.match(RUNTIME, /continuity\/index-freshness\.mjs/);
 
 function signed(bytes) {
@@ -108,6 +109,9 @@ function createWorld() {
       },
       computeDigest(_alg, text) {
         return signed(crypto.createHash('sha256').update(String(text), 'utf8').digest());
+      },
+      getUuid() {
+        return '12345678-1234-1234-1234-123456789abc';
       }
     },
     UrlFetchApp: {
@@ -230,14 +234,141 @@ const current = w.context.ascAssessProjectIndexFreshness_({
 });
 assert.equal(current.status, 'CURRENT');
 
+// T-017: private ZASSPILL retrieval / Packet v2 / handoff / scoped-reference bindings.
+const zReq = 'req_01ARZ3NDEKTSV4RRFFQ69G5FB3';
+const zCreated = w.context.ascBootstrapPrivateContinuityThread_({
+  projectId: 'ALPHA',
+  requestId: zReq,
+  resolution: { status: 'NO_MATCH' },
+  semanticRecord: {
+    title: 'T-017 Binding Thread',
+    state: 'ACTIVE',
+    continuity: {
+      who: 'private user context',
+      about: 'cross AI continuity',
+      current: 'binding proof state',
+      matters: ['retrieval', 'handoff'],
+      open: ['provider continuation'],
+      origin: 'user'
+    },
+    resume_cues: ['binding proof', 'cross ai'],
+    lineage: {}
+  }
+});
+assert.equal(zCreated.status, 'CREATED');
+
+const zFound = w.context.ascZasspillGetById_('ALPHA', zCreated.thread_id);
+assert.equal(zFound.status, 'FOUND');
+assert.equal(zFound.operation, 'GET_BY_ID');
+
+const zResolved = w.context.ascZasspillResolveThread_(
+  'ALPHA',
+  'T-017 Binding Thread',
+  [],
+  null
+);
+assert.equal(zResolved.status, 'UNIQUE_MATCH');
+assert.equal(zResolved.thread_id, zCreated.thread_id);
+
+const zList = w.context.ascZasspillListThreads_('ALPHA');
+assert.equal(zList.status, 'LIST_RESULT');
+assert.equal(zList.threads.length, 1);
+assert.equal(Object.prototype.hasOwnProperty.call(zList.threads[0], 'who'), false);
+
+const zPacket = w.context.ascZasspillExportPacketV2_(
+  'ALPHA',
+  zCreated.thread_id,
+  '2026-10-04T02:00:00.000Z',
+  { source: 'ASC Private Continuity Store' }
+);
+assert.equal(zPacket.packet_format_version, 2);
+assert.equal(zPacket.packet_state, 'SYNCED');
+const zMarkdown = w.context.ascZasspillRenderPacketV2_(zPacket);
+const zParsed = w.context.ascZasspillParsePacketV2_(zMarkdown);
+assert.equal(zParsed.ok, true);
+assert.equal(zParsed.packet.thread_id, zCreated.thread_id);
+const zReconcile = w.context.ascZasspillReconcilePacket_(zPacket, zFound, true);
+assert.equal(zReconcile.status, 'IN_SYNC');
+
+const zHandoff = w.context.ascZasspillCreateMethodHandoff_({
+  projectId: 'ALPHA',
+  threadId: zCreated.thread_id,
+  sourceMethod: 'ZASSPILL',
+  targetMethod: 'ZASSELECTION',
+  transition: 'DECIDE',
+  minimumRelevantContinuity: {
+    current: 'binding proof state',
+    matters: ['retrieval', 'handoff'],
+    open: ['provider continuation']
+  },
+  methodLineage: []
+});
+assert.equal(zHandoff.status, 'HANDOFF_CREATED');
+
+const zResultEnvelope = {
+  handoff_id: zHandoff.handoff.handoff_id,
+  thread_id: zCreated.thread_id,
+  source_revision: 1,
+  producing_method: 'ZASSELECTION',
+  result_status: 'CONFIRMED_RESULT',
+  confirmed_outcome: 'Option B selected',
+  still_open: ['provider continuation'],
+  artifact_refs: ['selection_matrix_binding']
+};
+assert.equal(
+  w.context.ascZasspillRecordMethodResult_({
+    projectId: 'ALPHA',
+    resultEnvelope: zResultEnvelope
+  }).status,
+  'METHOD_RESULT_RECORDED'
+);
+const zResultReconcile = w.context.ascZasspillReconcileMethodResult_({
+  projectId: 'ALPHA',
+  resultEnvelope: zResultEnvelope
+});
+assert.equal(zResultReconcile.status, 'SAFE_TO_APPLY');
+assert.equal(zResultReconcile.requires_second_confirmation, false);
+
+const zRef = w.context.ascZasspillIssueScopedReference_({
+  projectId: 'ALPHA',
+  threadId: zCreated.thread_id,
+  revision: 1,
+  targetProvider: 'Gemini',
+  targetMethod: 'ZASSPILL',
+  handoffId: zHandoff.handoff.handoff_id,
+  ttlSeconds: 600
+});
+assert.equal(zRef.status, 'REFERENCE_ISSUED');
+assert.match(zRef.token, /^ct_[A-Za-z0-9_-]{32,128}$/);
+const zRedeemed = w.context.ascZasspillRedeemScopedReference_({
+  projectId: 'ALPHA',
+  referenceId: zRef.reference_id,
+  token: zRef.token,
+  targetProvider: 'Gemini',
+  targetMethod: 'ZASSPILL'
+});
+assert.equal(zRedeemed.status, 'REFERENCE_REDEEMED');
+assert.equal(zRedeemed.thread_id, zCreated.thread_id);
+assert.equal(
+  w.context.ascZasspillRedeemScopedReference_({
+    projectId: 'ALPHA',
+    referenceId: zRef.reference_id,
+    token: zRef.token,
+    targetProvider: 'Gemini',
+    targetMethod: 'ZASSPILL'
+  }).status,
+  'REFERENCE_CONSUMED'
+);
+
 assert.equal(w.folders.size, 1);
-assert.equal(w.files.size, 4, 'initial + create + update + delete versions are retained in the fake registry');
+assert.equal(w.files.size, 9, 'private store versions include T-015 mutations plus T-017 handoff/result/reference state changes');
 assert.ok(w.properties.get('ASC_CONTINUITY_FOLDER_ID'));
 assert.ok(w.properties.get('ASC_CONTINUITY_STATE_FILE_ID'));
 
 assert.doesNotMatch(BINDING, /google\.script\.run|doGet|SpreadsheetApp|UrlFetchApp/);
-assert.doesNotMatch(BINDING, /ZASSPILL|ZASSELECTION|ZASSIMPLE/);
+assert.doesNotMatch(BINDING, /ZASSELECTION|ZASSIMPLE/);
+assert.match(BINDING, /ascZasspillResolveThread_/);
 
-console.log('T-015 Apps Script continuity runtime binding: PASS');
-console.log('private Drive store + bundled state mechanics + freshness comparator: PASS');
-console.log('public/client write surface added: none');
+console.log('T-015 + T-017 Apps Script continuity runtime binding: PASS');
+console.log('private Drive store + ZASSPILL retrieval/Packet/handoff/scoped-reference mechanics: PASS');
+console.log('public/client continuity mutation surface added: none');

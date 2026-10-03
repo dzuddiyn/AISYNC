@@ -99,7 +99,7 @@ AP-011 | CURRENT
 Action: Implement controlled/private continuity + retrieval using the frozen ZASSPILL v1 contract, including retrieval result contracts, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, stale-result reconciliation, and scoped private continuity references.
 Dependencies: AP-009, AP-010 where persistence is required — satisfied.
 Pass / stop condition: an ordinary user can continue the same project/thread across supported AI providers without a long manual handover packet and without publicizing private project continuity.
-Current result: NOT STARTED — promoted after AP-010 / T-016 PASS.
+Current result: IN PROGRESS — local continuity/retrieval contract and private Drive live proof PASS. Gemini field evidence revealed stale public ZASSPILL gateway metadata/content and ambiguous revision/reference labeling; both are locally corrected, with receiver re-proof pending publication of the canonical gateway refresh.
 Feeds design: YES
 
 AP-012 | QUEUED
@@ -421,3 +421,17 @@ Local proof after cleanup: all 24 repository `test-*.mjs` tests PASS; runtime fr
 PF-060 | T-016 CLOSED / T-017 PROMOTED
 
 Finding: T-016 is PASS. Canonical Production v1 source merged through PR #13 at `cfbc379408080ee22b4eaf47835455829858b949` and protected Apps Script production was deployed from merged `main` as version 17 (`T016-production-write-canonical`). Controlled live owner SAVE `ASC-T016-20261003181842` produced GitHub App commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca` at deterministic target `records/T016-LIVE-20261003181842.md`, with exact GitHub read-back and matching HISTORY row 7. Final protected-production verification `ASC-T016-FINAL-20261003185851` returned `NO_CHANGE`, `write_performed=false`, `verified=true`; HISTORY row 8 matched, canonical main stayed at the PR #13 merge commit, and the success flow returned to the main ASC UI. All 24 repository tests pass from merged main. AP-010 is complete; AP-011 / T-017 is promoted.
+
+
+PF-061 | T-017 FIRST EXTERNAL RECEIVER FIELD RUN — INTEGRATION DEFECTS FOUND / FIX PREPARED
+
+Finding: The first Gemini continuation run preserved the correct synthetic `thread_id` and `current` continuity value, but returned `method_version: 0.1.0` and placed the scoped `cr_<ULID>` continuity reference in `source_revision`. Independent inspection showed that the receiver-facing GitHub Pages ZASSPILL gateway itself was stale at v0.1.0 / source commit `38760ddbc194ea530730bb615be2553cc38f267b`, while the frozen canonical upstream contract is ZASSPILL v1.0.0. Therefore the method-version result was faithful to the stale gateway rather than a receiver hallucination. The revision/reference mix-up exposed an ambiguity in the transfer bootstrap presentation.
+
+Local remediation prepared:
+- refresh `docs/method/zasspill/my/index.html` from canonical upstream commit `9a6755ea4dc2f9a067343855331078d9a1773a0c`, ZASSPILL v1.0.0;
+- emit separate `thread_id`, numeric `source_revision`, and `continuity_reference` fields;
+- carry `expected_method_version` and require receivers to stop with `STALE_METHOD_GATEWAY` on version mismatch;
+- add static gateway regression coverage;
+- keep private WHO/provider memory outside transferred context.
+
+The synthetic provider test project was removed from the ASC Private Continuity Store and the temporary proof deployment was undeployed after evidence capture. T-017 remains IN PROGRESS until the refreshed gateway is canonically published and external receiver re-proof passes.
