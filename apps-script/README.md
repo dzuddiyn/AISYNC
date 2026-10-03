@@ -387,4 +387,11 @@ Verification:
 - `git diff --check` PASS;
 - dashboard regression verifies default Workspace, progressive disclosure, stale-state suppression, each contextual-card family, Review-only CI/IDs, History-only audit data, and absence of write controls from Workspace.
 
-Production deployment and owner-visible proof remain required before Gate 3 closure.
+Production deployment evidence:
+- protected production deployment now points to **Apps Script version 23**, `Gate3-project-workspace-contextual-cards`;
+- v23 was constructed from immutable Gate 2 production v21 plus exactly `Dashboard.html` and `DashboardClient.html`;
+- independent post-deploy pull verified both files match AISYNC Gate 3 merge `3d006eb4bde64ab9cca9878c0ca4e9c69db4dbf9`;
+- every other production file in v23 matches production v21;
+- the current development HEAD containing T-017 was restored after release and remains separate from production v23.
+
+Remaining Gate 3 closure evidence: owner-visible production verification of Workspace default, Project Pulse, progressive disclosure, Review, and History.
