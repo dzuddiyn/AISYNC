@@ -22,6 +22,7 @@ export const RUNTIME_MODULES = Object.freeze([
   { file: 'core/asc-core.mjs', namespace: 'core' },
   { file: 'adapters/github/github-adapter.mjs', namespace: 'githubAdapter' },
   { file: 'adapters/github/github-rest-client.mjs', namespace: 'githubRest' },
+  { file: 'ci/zass-ci-status.mjs', namespace: 'zassCi' },
   { file: 'receipts/write-receipt.mjs', namespace: 'receipts' },
   { file: 'flow/confirm-sync.mjs', namespace: 'flow' }
 ]);
@@ -34,7 +35,7 @@ const SHIM_PARAMS = ['Buffer', 'atob', 'btoa', 'TextEncoder', 'TextDecoder'];
 
 function wrapModule(moduleDef, byFile) {
   const absolute = path.join(ROOT, moduleDef.file);
-  let source = fs.readFileSync(absolute, 'utf8');
+  let source = fs.readFileSync(absolute, 'utf8').replace(/\r\n?/g, '\n');
   const exportsList = [];
 
   source = source.replace(
@@ -77,7 +78,7 @@ function wrapModule(moduleDef, byFile) {
 
 export function buildRuntime() {
   const byFile = new Map(RUNTIME_MODULES.map(function (m) { return [m.file, m]; }));
-  const history = fs.readFileSync(path.join(ROOT, HISTORY_SOURCE), 'utf8');
+  const history = fs.readFileSync(path.join(ROOT, HISTORY_SOURCE), 'utf8').replace(/\r\n?/g, '\n');
   const modules = RUNTIME_MODULES.map(function (m) { return wrapModule(m, byFile); });
 
   return [

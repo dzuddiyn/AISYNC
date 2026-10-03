@@ -34,6 +34,8 @@ const INDEX_HTML = read('Index.html');
   assert.match(INDEX_HTML, /include\('Client'\)/, 'T-008 preview page still includes its own client');
   assert.doesNotMatch(DASH_HTML, /include\('Client'\)/);
   assert.doesNotMatch(CLIENT, /confirmAndSync|getConfirmSyncResult|SpreadsheetApp|UrlFetchApp|GITHUB_TOKEN/);
+  assert.match(CLIENT, /getDashboardZassCiStatus\(repository, commitSha\)/, 'project detail requests factual commit-linked CI status');
+  assert.doesNotMatch(CLIENT, /\bZ(?:0\d{2}|10[01])\b/, 'dashboard client contains no ZASS rule-code logic');
 }
 
 // ---- rendering --------------------------------------------------------------------------
@@ -123,6 +125,58 @@ const project = (o) => ({
   assert.match(html, /<td>FAILED<\/td>/);
   assert.match(html, /fb1da42abaac61d5568548ec254e48c1a1b5aa6b/);
   assert.match(html, /freshness UNVERIFIED/);
+  assert.match(html, /Commit-linked ZASS CI/);
+  assert.match(html, /Loading factual GitHub CI status/);
+
+  const ciProject = project({
+    github_repo: 'dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint',
+    index_metadata: {
+      ...meta,
+      source_commit: '7cdbd6818198f22245ebcaf107a3cc87611a3d72'
+    }
+  });
+  const ciDetail = { ...detail, project: ciProject };
+  const ciSuccess = {
+    ok: true,
+    repository: ciProject.github_repo,
+    commit_sha: ciProject.index_metadata.source_commit,
+    workflow_name: 'ZASS CI',
+    job_name: 'zass-check',
+    run_id: 37084823055,
+    status: 'SUCCESS',
+    conclusion: 'success',
+    run_url: 'https://github.com/dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint/actions/runs/37084823055',
+    fetched_at: '2026-10-03T01:30:00.000Z'
+  };
+  const ciHtml = sb.renderProjectDetail(ciDetail, ciSuccess);
+  assert.match(ciHtml, /Status: <strong>SUCCESS<\/strong>/);
+  assert.match(ciHtml, /Workflow \/ job: ZASS CI \/ zass-check/);
+  assert.match(ciHtml, /Run ID: 37084823055/);
+  assert.match(ciHtml, /7cdbd6818198f22245ebcaf107a3cc87611a3d72/);
+  assert.match(ciHtml, /Open GitHub Actions run/);
+  assert.doesNotMatch(ciHtml, /Z001|Z101|project valid|validation PASS/i);
+
+  const notFoundHtml = sb.renderProjectDetail(ciDetail, {
+    ...ciSuccess,
+    run_id: null,
+    status: 'NOT_FOUND',
+    conclusion: null,
+    run_url: null
+  });
+  assert.match(notFoundHtml, /NOT_FOUND/);
+  assert.match(notFoundHtml, /This is not a PASS result/);
+
+  const readErrorHtml = sb.renderProjectDetail(ciDetail, {
+    ...ciSuccess,
+    ok: false,
+    run_id: null,
+    status: 'READ_ERROR',
+    conclusion: null,
+    run_url: null,
+    error: { code: 'GITHUB_READ_FAILED', message: 'GitHub read request failed.' }
+  });
+  assert.match(readErrorHtml, /READ_ERROR/);
+  assert.match(readErrorHtml, /GITHUB_READ_FAILED/);
 
   const emptyHtml = sb.renderProjectDetail({ ok: true, project: project({ progress_summary: '', next_action_plan: '', next_stage: '' }), records: [], action_plan: [], history: [] });
   assert.match(emptyHtml, /No ACTION_PLAN rows for this project\./);

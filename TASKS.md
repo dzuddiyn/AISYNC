@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** ASC v0.1 CORE/FALLBACK DELIVERED — T-012 ACTIVE  
+**Status:** ASC v0.1 CORE/FALLBACK DELIVERED — T-012 PASS
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Design:** v1.0.10 CONFIRMED  
@@ -10,7 +10,11 @@
 
 ## Current task
 
-T-012 | CURRENT — CONSUME COMMIT-LINKED ZASS CI STATUS  
+None — T-012 PASS. No further task is currently queued; do not invent one silently.
+
+## Completed
+
+T-012 | PASS — CONSUME COMMIT-LINKED ZASS CI STATUS
 Source: PF-006, D-018  
 Decision / Design lineage: D-018, DESIGN v1.0 § Cross-system validation boundary  
 Do: Consume and display commit-linked ZASS CI validation status in ASC without implementing ZASS rules inside ASC.  
@@ -21,9 +25,36 @@ Dependency evidence:
 - GitHub Actions run: `37084654404`;
 - the workflow uses the existing ZASS CLI/core semantics with explicit historical baseline selection; ASC must consume the result only and must not reproduce Z001–Z101 rules.
 Pass: ASC displays CI result tied to a commit while CLI/CI continue to use the same ZASS Core semantics.  
-Current result: UNBLOCKED / CURRENT.
+Current result: **PASS** — T-012A/B/C completed. The read-only consumer, Apps Script binding, dashboard rendering, deployment, real GitHub reads, and owner-visible UI observation all passed.
+T-012A evidence:
+- exact integration identity: workflow `ZASS CI`, job `zass-check`;
+- input boundary: GitHub repository + full commit SHA;
+- transport: GitHub Actions workflow-runs GET → matching run jobs GET;
+- normalized factual states: `SUCCESS`, `FAILURE`, `IN_PROGRESS`, `QUEUED`, `NOT_FOUND`, `READ_ERROR`;
+- absence of matching CI data never becomes SUCCESS;
+- malformed/API/fetch failures remain READ_ERROR;
+- consumer exposes GET-only behavior and no mutation/write API;
+- source-level regression test confirms no ZASS rule-code implementation (no Z001–Z101 logic) and no `zass check`/project validation logic;
+- `node ci/test-zass-ci-status.mjs`: PASS.
+T-012B evidence:
+- `ci/zass-ci-status.mjs` remains the status-identity/normalization owner and is mechanically bundled as `ascRuntime_().zassCi`;
+- `apps-script/DashboardCiRead.gs` exposes `getDashboardZassCiStatus(repository, commitSha)` through the existing Apps Script dashboard server surface;
+- Apps Script binding performs only public GitHub API GET reads; no Spreadsheet, Properties, Cache, GitHub write, or project mutation path is used;
+- exact `ZASS CI / zass-check` mapping remains in the shared consumer, not reimplemented as ZASS validation logic in the dashboard binding;
+- `node apps-script/test-zass-ci-binding.mjs`: PASS.
+T-012C evidence:
+- project detail now requests CI using exactly the project `github_repo` + indexed `source_commit`;
+- rendered card shows repository, exact commit, workflow/job identity, factual status, conclusion, run ID, fetched timestamp, and GitHub Actions run link when present;
+- `NOT_FOUND` explicitly states it is not PASS; `READ_ERROR` stays visibly read-error; no project-validity interpretation is added;
+- the seven locked project-detail sections remain unchanged/in order; CI is an additional factual transport-status card;
+- `node apps-script/test-dashboard-ui.mjs`: PASS with SUCCESS / NOT_FOUND / READ_ERROR rendering proof and no ZASS rule-code logic;
+- full existing dashboard + confirm-sync regressions remain PASS;
+- protected Apps Script deployment updated to version 7: `T-012C commit-linked ZASS CI dashboard`;
+- controlled real GitHub read for commit `7cdbd6818198f22245ebcaf107a3cc87611a3d72` returned workflow `ZASS CI`, job `zass-check`, run `37084823055`, status `SUCCESS`, conclusion `success`;
+- current ASC DB AISYNC project metadata points to `dzuddiyn/AISYNC@2e0c773faaa2597a5df72fa77fea42d911bb0412`; a controlled real lookup for that exact project commit returns `NOT_FOUND`, which is the truthful expected owner-visible card state because that commit has no matching `ZASS CI / zass-check` run;
+- no live write or ASC DB mutation occurred.
+- Owner-visible protected dashboard screenshot confirmed the deployed card renders the factual `NOT_FOUND` state for `dzuddiyn/AISYNC@2e0c773faaa2597a5df72fa77fea42d911bb0412`, including the explicit text that this is not a PASS result.
 
-## Completed
 
 T-011 | PASS — MINIMUM END-TO-END ASC v0.1 ZASSIMPLE SAVE PROOF  
 Source: AP-001 through AP-007  
@@ -40,7 +71,7 @@ Live evidence:
 - HISTORY row 6: `SUCCESS`, `write_performed=true`, `verified=true`, matching commit ID and request ID.
 - Success page exposed `Return to main ASC UI`; owner reported that a user click was required. D-030 locks this as the guaranteed v0.1 return behavior; automatic top-level navigation is optional rather than a pass requirement.
 Scope limit: this remains the owner-locked TEST_ONLY destination policy; general production Record ID → GitHub path mapping is still not defined by this proof.  
-Current result: PASS. ASC v0.1 core/fallback proof is delivered. Historical note: at T-011 closure, T-012 was still BLOCKED / LATER; that dependency is now satisfied and T-012 is CURRENT.
+Current result: PASS. ASC v0.1 core/fallback proof is delivered. Historical note: at T-011 closure, T-012 was still BLOCKED / LATER; the dependency was later satisfied and T-012 subsequently completed PASS.
 
 T-010 | PASS — SECURITY / REPLAY CONTROLS  
 Source: AP-007  
@@ -267,18 +298,18 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-None — T-012 is now active.
+None — T-012 is complete; no further task is currently queued.
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001 through T-011 and T-013A/B. T-012 is now unblocked/current after live ZASS GitHub CI PASS on main.
+Implementation evidence exists for T-001 through T-012 and T-013A/B. T-012 completed with local, deployed, live-read, and owner-visible UI proof.
 
 Closure checks:
-- Built: YES — ASC v0.1 core/fallback path and method gateway slices required through T-011 are implemented
-- Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY
+- Built: YES — ASC v0.1 core/fallback path, method gateway slices, and commit-linked ZASS CI consumer through T-012 are implemented
+- Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY; T-012 added deployed/live-read/owner-visible commit-linked ZASS CI proof
 - Matches design: YES — including D-029 security/replay and D-030 successful-return refinement
 - Recorded: YES — canonical GitHub tracking/evidence updated
-- Current: T-012, external ZASS GitHub CI dependency satisfied
+- Current: none — T-012 PASS; no further task is queued
 
 
 T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  

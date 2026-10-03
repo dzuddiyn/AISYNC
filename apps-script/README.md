@@ -268,3 +268,38 @@ Live proof:
 - Reusing the same request_id returned `REPLAY_REJECTED` with no second HISTORY row.
 - Expired request returned `REQUEST_EXPIRED`; tampered request returned `INTEGRITY_MISMATCH`; both kept CONFIRM & SYNC disabled and produced no HISTORY row.
 - T-010 is PASS; T-011 is the next execution task.
+
+## T-012B ZASS CI dashboard read binding — LOCAL PASS
+
+- `ci/zass-ci-status.mjs` is mechanically bundled into `AscRuntime.gs` as the shared factual CI status consumer.
+- `DashboardCiRead.gs` exposes `getDashboardZassCiStatus(repository, commitSha)` for the existing Apps Script dashboard server surface.
+- The binding performs public GitHub API GET reads only: commit-linked workflow runs, then jobs for the selected `ZASS CI` run.
+- Workflow/job identity and status normalization remain owned by the shared consumer; the binding does not implement ZASS rule codes or inspect project files to infer PASS/FAIL.
+- No SpreadsheetApp, PropertiesService, CacheService, or GitHub mutation API is used by this read path.
+- No dashboard HTML/UI was changed in T-012B.
+
+Local proof:
+
+```text
+node ci/test-zass-ci-status.mjs
+node apps-script/build-runtime.mjs --check
+node apps-script/test-zass-ci-binding.mjs
+node apps-script/test-dashboard-read.mjs
+node apps-script/test-dashboard-ui.mjs
+node apps-script/test-apps-script-binding.mjs
+```
+
+Next: T-012C renders the factual commit-linked result in project detail and performs a controlled live read proof.
+
+## T-012C commit-linked ZASS CI project-detail rendering — DEPLOYED / LIVE READ PASS
+
+- `DashboardClient.html` requests CI only from the selected project's existing `github_repo` and indexed `source_commit`.
+- The UI renders factual repository, commit, workflow/job identity, status, conclusion, run ID, fetched timestamp, and run URL.
+- `NOT_FOUND` is explicitly not represented as PASS; `READ_ERROR` remains visible as an error.
+- The seven locked project-detail sections remain unchanged; CI is an additional factual status card.
+- Local rendering tests cover SUCCESS / NOT_FOUND / READ_ERROR and confirm no ZASS rule-code logic is present in the dashboard client.
+- Apps Script web deployment version 7: `T-012C commit-linked ZASS CI dashboard`.
+- Controlled live GitHub read for `dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint@7cdbd6818198f22245ebcaf107a3cc87611a3d72` returned `ZASS CI / zass-check`, run `37084823055`, status `SUCCESS`, conclusion `success`.
+- No GitHub write, Sheet write, or project mutation was performed by this proof.
+
+Owner-visible proof: PASS — the protected dashboard displayed `dzuddiyn/AISYNC@2e0c773faaa2597a5df72fa77fea42d911bb0412` with `Status: NOT_FOUND`, `Workflow / job: ZASS CI / zass-check`, and explicit text that no matching CI result for the exact commit is not a PASS result. T-012 is complete.

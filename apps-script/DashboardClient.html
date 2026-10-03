@@ -39,6 +39,50 @@ function renderIndexMeta(meta) {
     ' · freshness ' + escapeHtml(meta.freshness || 'UNVERIFIED') + '</div>';
 }
 
+function renderZassCiStatus(project, ciResult) {
+  const repository = project && typeof project.github_repo === 'string' ? project.github_repo : '';
+  const commitSha = project && project.index_metadata &&
+    typeof project.index_metadata.source_commit === 'string'
+    ? project.index_metadata.source_commit
+    : '';
+  const identity = '<div class="muted">Repository: ' + textOrNotProvided(repository) +
+    ' · commit ' + textOrNotProvided(commitSha) + '</div>';
+
+  if (!repository || !commitSha) {
+    return '<div class="card ci-status"><strong>Commit-linked ZASS CI</strong>' + identity +
+      '<p class="not-provided">CI lookup not available because repository or commit metadata is missing.</p></div>';
+  }
+
+  if (!ciResult) {
+    return '<div class="card ci-status"><strong>Commit-linked ZASS CI</strong>' + identity +
+      '<p class="muted">Loading factual GitHub CI status…</p></div>';
+  }
+
+  const status = ciResult.status || 'READ_ERROR';
+  let detail = '<div>Status: <strong>' + escapeHtml(status) + '</strong></div>' +
+    '<div>Workflow / job: ' + textOrNotProvided(ciResult.workflow_name) +
+    ' / ' + textOrNotProvided(ciResult.job_name) + '</div>' +
+    '<div>Conclusion: ' + textOrNotProvided(ciResult.conclusion) + '</div>' +
+    '<div>Run ID: ' + textOrNotProvided(ciResult.run_id) + '</div>' +
+    '<div>Fetched at: ' + textOrNotProvided(ciResult.fetched_at) + '</div>';
+
+  if (typeof ciResult.run_url === 'string' && /^https:\/\/\S+$/.test(ciResult.run_url)) {
+    detail += '<div><a href="' + escapeHtml(ciResult.run_url) +
+      '" target="_blank" rel="noopener">Open GitHub Actions run</a></div>';
+  }
+
+  if (status === 'NOT_FOUND') {
+    detail += '<p class="muted">No matching ZASS CI result was found for this exact commit. This is not a PASS result.</p>';
+  } else if (status === 'READ_ERROR') {
+    const error = ciResult.error || {};
+    detail += '<p class="error">CI read error' +
+      (error.code ? ' (' + escapeHtml(error.code) + ')' : '') +
+      (error.message ? ' — ' + escapeHtml(error.message) : '') + '</p>';
+  }
+
+  return '<div class="card ci-status"><strong>Commit-linked ZASS CI</strong>' + identity + detail + '</div>';
+}
+
 function renderError(result) {
   const error = (result && result.error) || { code: 'UNKNOWN', message: 'No result returned.' };
   let detail = '';
@@ -110,7 +154,7 @@ function renderSection(title, body) {
   return '<section class="card"><h2>' + escapeHtml(title) + '</h2>' + body + '</section>';
 }
 
-function renderProjectDetail(result) {
+function renderProjectDetail(result, ciResult) {
   if (!result || result.ok !== true) {
     return '<button type="button" class="back" data-back="1">← Back</button>' + renderError(result);
   }
@@ -120,6 +164,7 @@ function renderProjectDetail(result) {
     '<div class="muted">project_id ' + escapeHtml(p.project_id) + ' · ui_entry ' + textOrNotProvided(p.ui_entry) +
     ' · source_method ' + textOrNotProvided(p.source_method) + ' · lifecycle_stage ' + textOrNotProvided(p.lifecycle_stage) + '</div>' +
     renderIndexMeta(p.index_metadata) +
+    renderZassCiStatus(p, ciResult) +
     renderSection('1. Project progress bar', renderProgress(p.progress)) +
     renderSection('2. Progress summary', '<p>' + textOrNotProvided(p.progress_summary) + '</p>') +
     renderSection('3. Next Action Plan summary', '<p>' + textOrNotProvided(p.next_action_plan) + '</p>') +
@@ -138,7 +183,57 @@ function showList() {
 function openProject(projectId) {
   dashboardRoot().innerHTML = 'Loading project…';
   google.script.run
-    .withSuccessHandler(function (result) { dashboardRoot().innerHTML = renderProjectDetail(result); })
+    .withSuccessHandler(function (result) {
+      if (!result || result.ok !== true) {
+        dashboardRoot().innerHTML = renderProjectDetail(result);
+        return;
+      }
+
+      dashboardRoot().innerHTML = renderProjectDetail(result, null);
+      const project = result.project || {};
+      const repository = typeof project.github_repo === 'string' ? project.github_repo : '';
+      const commitSha = project.index_metadata &&
+        typeof project.index_metadata.source_commit === 'string'
+        ? project.index_metadata.source_commit
+        : '';
+
+      if (!repository || !commitSha) {
+        dashboardRoot().innerHTML = renderProjectDetail(result, {
+          ok: true,
+          repository: repository || null,
+          commit_sha: commitSha || null,
+          workflow_name: 'ZASS CI',
+          job_name: 'zass-check',
+          run_id: null,
+          status: 'NOT_FOUND',
+          conclusion: null,
+          run_url: null,
+          fetched_at: null
+        });
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function (ciResult) {
+          dashboardRoot().innerHTML = renderProjectDetail(result, ciResult);
+        })
+        .withFailureHandler(function () {
+          dashboardRoot().innerHTML = renderProjectDetail(result, {
+            ok: false,
+            repository: repository,
+            commit_sha: commitSha,
+            workflow_name: 'ZASS CI',
+            job_name: 'zass-check',
+            run_id: null,
+            status: 'READ_ERROR',
+            conclusion: null,
+            run_url: null,
+            fetched_at: null,
+            error: { code: 'SERVER_CALL_FAILED', message: 'CI status could not be loaded.' }
+          });
+        })
+        .getDashboardZassCiStatus(repository, commitSha);
+    })
     .withFailureHandler(function () {
       dashboardRoot().innerHTML = renderProjectDetail({ ok: false, error: { code: 'SERVER_CALL_FAILED', message: 'Project could not be loaded.' } });
     })

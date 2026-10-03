@@ -1,11 +1,11 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.31  
+**Project record version:** 0.6.32
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DELIVERED !!  
-**Status:** ASC v0.1 core/fallback proof delivered; deferred T-012 remains blocked/later  
+**Status:** ASC v0.1 core/fallback proof delivered; T-012 commit-linked ZASS CI consumer/display PASS
 **Owner:** Project Owner
 
 > AISYNC is shared infrastructure for moving, translating, writing, and verifying meaningful information produced by methods and projects. It is not itself a reasoning method.
@@ -62,9 +62,9 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Sites shell + Apps Script engine + redirect | PASS | Simple UI with programmable confirmation flow | App Script implementation remains | Interaction pattern locked | D-015 LOCKED |
 | Fine-grained PAT v0.1 → GitHub App later | PASS | Low v0.1 burden with migration path | Secret handling must be correct | Auth path locked | D-016 LOCKED |
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
-| ZASS Core shared by CLI / future CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | GitHub CI not implemented yet | Cross-system boundary locked | D-018 LOCKED |
+| ZASS Core shared by CLI / GitHub CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | ASC depends on factual commit-linked CI availability; absence must remain NOT_FOUND, not PASS | T-012 deployed/live-read/owner-visible proof PASS | D-018 LOCKED |
 
-Current direction: DESIGN v1.0.10 remains CONFIRMED. T-001 through T-011 and T-013A/B are PASS. D-029 secures write-capable envelopes; D-030 refines the successful post-sync return path to a user-activated main-ASC link/button for v0.1. T-012 remains BLOCKED / LATER pending ZASS GitHub CI. ASC v0.1 core/fallback proof is delivered.
+Current direction: DESIGN v1.0.10 remains CONFIRMED. T-001 through T-012 and T-013A/B are PASS. D-029 secures write-capable envelopes; D-030 refines the successful post-sync return path to a user-activated main-ASC link/button for v0.1. T-012 preserves D-018 by consuming factual `ZASS CI / zass-check` status only; it does not implement ZASS validation rules. ASC v0.1 core/fallback proof is delivered, and no further task is currently queued.
 
 ---
 
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.32 | 2026-10-03 | T-012 PASS: read-only commit-linked ZASS CI consumer, Apps Script binding, project-detail rendering, protected deployment v7, real SUCCESS/NOT_FOUND reads, and owner-visible NOT_FOUND proof completed without duplicating ZASS validation semantics. No further task is currently queued. |
 | 0.6.31 | 2026-10-03 | LOCKED D-030 successful-return refinement from T-011 live evidence; user-activated `Return to main ASC UI` is the guaranteed v0.1 return path after verified SUCCESS + HISTORY, automatic top-level navigation is optional, and T-011 minimum end-to-end ZASSIMPLE SAVE proof is PASS. ASC v0.1 core/fallback proof is delivered; T-012 remains BLOCKED / LATER. |
 | 0.6.30 | 2026-10-03 | LOCKED D-029 T-010 v0.1 envelope security/replay rules (30-minute expiry, SHA-256 integrity as error detection only, one confirmed attempt per request_id via LockService + Script Properties, owner-only gate, server-side-only GITHUB_TOKEN, preview + confirm double validation). T-010A/B LOCAL PASS; T-010 remains IN PROGRESS pending live proof. |
 | 0.6.29 | 2026-10-03 | T-006 PASS: real GitHub Contents API adapter completed one controlled VERIFIED_WRITE; commit and persisted file SHA independently verified; AP-005 done and T-007 promoted. |
@@ -1178,6 +1179,44 @@ Live basis: T-011 owner-issued ZASSIMPLE SAVE completed a verified GitHub write 
 
 Locked by: Project Owner\
 Date: 2026-10-03
+
+## T-012 CLOSURE CHECKPOINT
+
+Date: 2026-10-03
+Status: **PASS**
+
+Boundary proven:
+
+```text
+GitHub repository + exact commit SHA
+↓
+GitHub Actions read
+↓
+exact workflow: ZASS CI
+↓
+exact job: zass-check
+↓
+factual status model
+↓
+ASC project-detail display
+```
+
+Evidence:
+- T-012A local consumer tests PASS for SUCCESS, FAILURE, IN_PROGRESS, QUEUED, NOT_FOUND, and READ_ERROR;
+- T-012B Apps Script/dashboard binding PASS with GET-only GitHub Actions transport and no project/Sheet mutation;
+- T-012C project-detail rendering PASS locally for SUCCESS / NOT_FOUND / READ_ERROR;
+- protected Apps Script deployment version 7: `T-012C commit-linked ZASS CI dashboard`;
+- real upstream read of `dzuddiyn/ZASS-Zero-to-Architecture-Structured-Sprint@7cdbd6818198f22245ebcaf107a3cc87611a3d72` returned `ZASS CI / zass-check`, run `37084823055`, SUCCESS;
+- current ASC DB AISYNC index points to `dzuddiyn/AISYNC@2e0c773faaa2597a5df72fa77fea42d911bb0412`; real lookup correctly returned NOT_FOUND;
+- owner-visible protected dashboard screenshot confirmed that exact AISYNC commit is displayed with `Status: NOT_FOUND` and explicit wording that absence is not a PASS result.
+
+Guardrail preserved:
+- ASC does not implement or copy ZASS validation rules;
+- ASC does not infer PASS/FAIL from project files;
+- missing CI data does not become PASS;
+- this path is read-only and does not mutate GitHub, ASC DB, or project state.
+
+Current execution state: **no further task queued**.
 
 ## T-013B CLOSURE CHECKPOINT
 

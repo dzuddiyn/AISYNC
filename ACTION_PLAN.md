@@ -126,15 +126,15 @@ Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is
 
 ## Design feedback
 
-The core DESIGN blockers are resolved by D-013 through D-018. The confirmed technical design is now maintained in `DESIGN.md`. The Action Plan has now been sliced into `TASKS.md`. Current executable task: T-001. Future tasks remain queued until prior dependencies pass or are explicitly replanned.
+The core DESIGN blockers are resolved by D-013 through D-018. The confirmed technical design is now maintained in `DESIGN.md`. The Action Plan has been sliced into `TASKS.md`. T-012 has now completed PASS; no further task is currently queued, and no new task should be invented without owner direction or a recorded implementation finding.
 
 
 PF-005 | RESOLVED BY D-017  
 Finding: Google Account is the v0.1 identity gate with owner-only access; pending ASC Link requests survive sign-in, preview precedes persistence, and successful sync returns to the main ASC UI.
 
 
-PF-006 | RESOLVED BY D-018  
-Finding: ZASS Core owns validation semantics; local CLI and future GitHub CI are runners over the same core. ASC may consume/display commit-linked validation results but must not duplicate validator logic. GitHub CI is not yet implemented and must remain represented as future work until built.
+PF-006 | RESOLVED BY D-018 + T-012
+Finding: ZASS Core owns validation semantics; local CLI and GitHub CI are runners over the same core. GitHub CI is now operational upstream. T-012 proved ASC can consume and display factual commit-linked `ZASS CI / zass-check` status through a read-only GitHub Actions consumer without copying ZASS rule codes, inferring project validity, or mutating project state. The current AISYNC project commit correctly renders `NOT_FOUND` because no matching ZASS CI run exists for that exact commit.
 
 
 PF-007 | RESOLVED BY T-003  
