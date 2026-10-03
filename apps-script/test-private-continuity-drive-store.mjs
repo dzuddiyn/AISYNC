@@ -24,11 +24,14 @@ function createWorld({ lockAvailable = true } = {}) {
       this.name = name;
       this.content = content;
       this.sharingAccess = 'PRIVATE';
+      this.trashed = false;
     }
     getId() { return this.id; }
     getName() { return this.name; }
     getBlob() { return new FakeBlob(this); }
     setContent(value) { this.content = value; return this; }
+    setTrashed(value) { this.trashed = Boolean(value); return this; }
+    isTrashed() { return this.trashed; }
     getSharingAccess() { return this.sharingAccess; }
   }
 
@@ -151,7 +154,11 @@ function createWorld({ lockAvailable = true } = {}) {
   const reread = w.context.ascContinuityStoreRead_();
   assert.equal(reread.projects.ALPHA.project_id, 'ALPHA');
   assert.equal(w.folders.size, 1, 'store folder must be reused');
-  assert.equal(w.files.size, 1, 'store file must be reused');
+  assert.equal(w.files.size, 2, 'changed transaction must create a verified next version');
+  const nextFileId = w.properties.get('ASC_CONTINUITY_STATE_FILE_ID');
+  assert.notEqual(nextFileId, fileId, 'authoritative pointer must move to the verified next version');
+  assert.equal(w.files.get(fileId).isTrashed(), true, 'previous version is retired after pointer swap');
+  assert.equal(w.files.get(nextFileId).isTrashed(), false);
 
   const noChange = w.context.ascContinuityStoreTransact_(function (state) {
     assert.equal(state.projects.ALPHA.project_id, 'ALPHA');
@@ -159,7 +166,7 @@ function createWorld({ lockAvailable = true } = {}) {
   });
   assert.equal(noChange.status, 'READ_ONLY_RESULT');
   assert.equal(w.lockReleases, 2);
-  assert.equal(w.files.size, 1);
+  assert.equal(w.files.size, 2, 'read-only transaction must not create another version');
 }
 
 {
@@ -213,6 +220,7 @@ function createWorld({ lockAvailable = true } = {}) {
 assert.match(SOURCE, /DriveApp/);
 assert.match(SOURCE, /PRIVATE/);
 assert.doesNotMatch(SOURCE, /setSharing/);
+assert.doesNotMatch(SOURCE, /setContent/);
 assert.doesNotMatch(SOURCE, /SpreadsheetApp|UrlFetchApp|github\.com|api\.github\.com/i);
 assert.doesNotMatch(SOURCE, /ZASSPILL|ZASSELECTION|ZASSIMPLE/);
 assert.doesNotMatch(SOURCE, /\b(?:CORRECT|RENAME|DORMANT|RESUME|ARCHIVE|REOPEN|SPLIT|MERGE)\b/);

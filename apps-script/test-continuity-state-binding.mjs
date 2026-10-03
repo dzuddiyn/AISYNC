@@ -52,6 +52,7 @@ function createWorld() {
     getSharingAccess() { return 'PRIVATE'; }
     getBlob() { return { getDataAsString: () => this.content }; }
     setContent(text) { this.content = String(text); return this; }
+    setTrashed(value) { this.trashed = Boolean(value); return this; }
   }
 
   class FakeFolder {
@@ -230,7 +231,7 @@ const current = w.context.ascAssessProjectIndexFreshness_({
 assert.equal(current.status, 'CURRENT');
 
 assert.equal(w.folders.size, 1);
-assert.equal(w.files.size, 1);
+assert.equal(w.files.size, 4, 'initial + create + update + delete versions are retained in the fake registry');
 assert.ok(w.properties.get('ASC_CONTINUITY_FOLDER_ID'));
 assert.ok(w.properties.get('ASC_CONTINUITY_STATE_FILE_ID'));
 

@@ -97,15 +97,35 @@ function ascContinuityReadState_() {
 function ascContinuityWriteState_(file, state) {
   ascContinuityValidateState_(state);
   var serialized = JSON.stringify(state);
+  var properties = PropertiesService.getScriptProperties();
+  var folderId = properties.getProperty(ASC_CONTINUITY_FOLDER_PROPERTY_);
+  if (!folderId) {
+    throw new Error('PRIVATE_CONTINUITY_STORE_FOLDER_UNAVAILABLE');
+  }
+
+  var folder;
   try {
-    file.setContent(serialized);
+    folder = DriveApp.getFolderById(folderId);
+  } catch (error) {
+    throw new Error('PRIVATE_CONTINUITY_STORE_FOLDER_UNAVAILABLE');
+  }
+  ascContinuityRequirePrivate_(folder);
+
+  var nextFile;
+  try {
+    nextFile = folder.createFile(
+      'continuity-state-v0.1-' + new Date().getTime() + '.json',
+      serialized,
+      MimeType.PLAIN_TEXT
+    );
   } catch (error) {
     throw new Error('PRIVATE_CONTINUITY_STORE_WRITE_FAILED');
   }
+  ascContinuityRequirePrivate_(nextFile);
 
   var verifiedText;
   try {
-    verifiedText = file.getBlob().getDataAsString();
+    verifiedText = nextFile.getBlob().getDataAsString();
   } catch (error) {
     throw new Error('PRIVATE_CONTINUITY_STORE_VERIFY_READ_FAILED');
   }
@@ -120,6 +140,14 @@ function ascContinuityWriteState_(file, state) {
 
   if (JSON.stringify(verified) !== serialized) {
     throw new Error('PRIVATE_CONTINUITY_STORE_VERIFY_MISMATCH');
+  }
+
+  properties.setProperty(ASC_CONTINUITY_FILE_PROPERTY_, nextFile.getId());
+  try {
+    file.setTrashed(true);
+  } catch (error) {
+    // The Script Property switch above is the authoritative commit point.
+    // A trash failure leaves an orphaned prior version, not two authorities.
   }
 }
 
