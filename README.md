@@ -2,7 +2,7 @@
 
 > Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** DESIGN CONFIRMED — DO IT in progress; current task T-004  
+**Status:** DESIGN CONFIRMED — DO IT in progress; T-016 PASS, T-017 CURRENT  
 **Method used to develop this project:** ZASSIMPLE v0.3.0  
 **Repository:** AISYNC
 
@@ -21,7 +21,7 @@ AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DO IT** — DESIGN is confirmed, ASC v0.1 core/fallback is delivered, Production v1 delivery is active, T-016 is PASS, and current task is **T-017 — Private Continuity + Retrieval**.
+Current stage: **DO IT** — DESIGN is confirmed, T-016 Production Write Path is PASS, and T-017 private continuity + retrieval is the current AISYNC delivery task. ZASS SYSTEM Gate 2 three-route UI integration is a bounded compatibility patch and does not replace T-017.
 
 The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, design/technical architecture, executable tasks, verification, and delivery.
 
@@ -319,15 +319,18 @@ Locked minimum fields:
 
 ### Google Sites UI
 
-Landing:
+Current ZASS SYSTEM product landing:
 
 ```text
 ASC
-├── DECIDE
-└── DESIGN
+├── DUMP   → ZASSPILL
+├── DECIDE → ZASSELECTION
+└── DESIGN → ZASSIMPLE
 ```
 
-After entering **DECIDE** or **DESIGN**, show the project list with:
+Full ZASS remains an explicit stronger-governance escalation from DESIGN, not a fourth landing route.
+
+After entering **DUMP**, **DECIDE**, or **DESIGN**, show the matching project view when indexed; DUMP also links to the ASC Front Door for natural-conversation handoff. The project list shows:
 
 - project progress bar
 - latest update
