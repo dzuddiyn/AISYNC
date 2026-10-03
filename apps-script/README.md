@@ -351,4 +351,10 @@ Verification:
 - dashboard read/UI regressions explicitly cover DUMP grouping, the DUMP front-door link, and existing DECIDE / DESIGN behavior;
 - live Sheet read-back confirms strict `DUMP / DECIDE / DESIGN` validation on `PROJECTS.ui_entry`.
 
-Production Apps Script deployment and owner-visible production verification are separate closure evidence for Gate 2.
+Production deployment evidence:
+- protected production deployment now points to **Apps Script version 21**, `Gate2-three-route-production-integration`;
+- version 21 was built from immutable production version 17 plus exactly `Dashboard.html`, `DashboardClient.html`, and `DashboardRead`;
+- post-deploy source verification matched those three files to AISYNC merge commit `f515a7d1379534501cd7a032563bfa968f8012ae`;
+- the pre-existing T-017 development HEAD was restored exactly after the versioned production release and remains separate from production v21.
+
+Remaining Gate 2 closure evidence: owner-visible verification that the protected/main ASC dashboard actually renders the coherent DUMP / DECIDE / DESIGN surface.
