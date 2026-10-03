@@ -5,7 +5,11 @@
 const DASHBOARD_ENTRIES = ['DUMP', 'DECIDE', 'DESIGN'];
 const ASC_FRONT_DOOR_URL = 'https://dzuddiyn.github.io/AISYNC/asc/';
 const NOT_PROVIDED = 'Not provided';
-let dashboardState = { entry: 'DUMP', list: null };
+const PROJECT_VIEWS = ['WORKSPACE', 'REVIEW', 'HISTORY'];
+const CURRENT_TASK_STATUSES = ['CURRENT', 'ACTIVE', 'IN PROGRESS', 'OPEN'];
+const READY_LOCK_STATUSES = ['READY TO LOCK', 'PROPOSED FOR PROCEED'];
+const DELIVERED_STAGES = ['DELIVERED', 'DELIVERED !!', 'COMPLETE', 'COMPLETED'];
+let dashboardState = { entry: 'DUMP', list: null, projectResult: null, ciResult: null, projectView: 'WORKSPACE' };
 
 function escapeHtml(value) {
   return String(value === undefined || value === null ? '' : value)
@@ -164,30 +168,185 @@ function renderSection(title, body) {
   return '<section class="card"><h2>' + escapeHtml(title) + '</h2>' + body + '</section>';
 }
 
-function renderProjectDetail(result, ciResult) {
+function normalizeStateToken(value) {
+  return String(value === undefined || value === null ? '' : value)
+    .trim()
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .toUpperCase();
+}
+
+function projectFreshness(project) {
+  return project && project.index_metadata && project.index_metadata.freshness
+    ? String(project.index_metadata.freshness).toUpperCase()
+    : 'UNVERIFIED';
+}
+
+function renderProjectViewTabs(active) {
+  const current = PROJECT_VIEWS.indexOf(active) >= 0 ? active : 'WORKSPACE';
+  return '<div class="tabs project-tabs" role="tablist">' + PROJECT_VIEWS.map(function (view) {
+    const label = view.charAt(0) + view.slice(1).toLowerCase();
+    return '<button type="button" data-project-view="' + view + '" aria-pressed="' + (view === current) + '">' + label + '</button>';
+  }).join('') + '</div>';
+}
+
+function renderProjectPulse(project) {
+  return '<section class="card pulse">' +
+    '<h2>Project Pulse</h2>' +
+    '<div class="pulse-grid">' +
+      '<div><span class="pulse-label">Current stage</span><strong>' + textOrNotProvided(project.lifecycle_stage) + '</strong></div>' +
+      '<div><span class="pulse-label">Next stage</span><strong>' + textOrNotProvided(project.next_stage) + '</strong></div>' +
+      '<div><span class="pulse-label">Progress</span>' + renderProgress(project.progress) + '</div>' +
+      '<div><span class="pulse-label">Index freshness</span><strong>' + escapeHtml(projectFreshness(project)) + '</strong></div>' +
+    '</div>' +
+    '<div class="pulse-latest"><span class="pulse-label">Latest update</span>' + textOrNotProvided(project.latest_update) + '</div>' +
+  '</section>';
+}
+
+function renderConversationContinuation(project) {
+  return '<section class="card workspace-conversation">' +
+    '<strong>Continue naturally</strong>' +
+    '<p>Tell the AI what changed, what you are unsure about, or what you want to do next.</p>' +
+    '<p class="muted">Route: ' + textOrNotProvided(project.ui_entry) + ' · opening the front door does not save or change project state.</p>' +
+    '<p><a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open ASC Front Door</a></p>' +
+  '</section>';
+}
+
+function firstReadyToLock(records) {
+  const rows = Array.isArray(records) ? records : [];
+  return rows.find(function (row) {
+    return String(row.record_type || '').toLowerCase() === 'decision' &&
+      READY_LOCK_STATUSES.indexOf(normalizeStateToken(row.status)) >= 0;
+  }) || null;
+}
+
+function firstCurrentTask(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  return list.find(function (row) {
+    return CURRENT_TASK_STATUSES.indexOf(normalizeStateToken(row.status)) >= 0 &&
+      String(row.action || '').trim() !== '';
+  }) || null;
+}
+
+function renderContextualCard(result) {
+  const p = result.project;
+  const freshness = projectFreshness(p);
+
+  if (freshness === 'STALE') {
+    return '<section class="card contextual-card state-warning">' +
+      '<strong>Project state needs refresh</strong>' +
+      '<p>The indexed project state is marked STALE, so ASC is not presenting a task or decision as current.</p>' +
+      '<p class="muted">Use Review to inspect the factual indexed state.</p>' +
+    '</section>';
+  }
+
+  const stage = normalizeStateToken(p.lifecycle_stage);
+  if (DELIVERED_STAGES.indexOf(stage) >= 0) {
+    return '<section class="card contextual-card delivered-card">' +
+      '<strong>✅ DELIVERED !!</strong>' +
+      '<p>' + textOrNotProvided(p.progress_summary || p.latest_update) + '</p>' +
+    '</section>';
+  }
+
+  const ready = firstReadyToLock(result.records);
+  if (ready) {
+    return '<section class="card contextual-card ready-lock-card">' +
+      '<strong>🔒 Ready to lock</strong>' +
+      '<p>' + textOrNotProvided(ready.summary) + '</p>' +
+      '<p class="muted">Owner confirmation is still required. This read-only workspace does not lock automatically.</p>' +
+    '</section>';
+  }
+
+  const task = firstCurrentTask(result.action_plan);
+  if (task) {
+    return '<section class="card contextual-card current-task-card">' +
+      '<strong>🚀 Current Task</strong>' +
+      '<p>' + textOrNotProvided(task.action) + '</p>' +
+      '<div><span class="pulse-label">Pass</span>' + textOrNotProvided(task.pass_condition) + '</div>' +
+      '<div><span class="pulse-label">Then</span>' + textOrNotProvided(p.next_action_plan) + '</div>' +
+    '</section>';
+  }
+
+  if (stage === 'DESIGN' && (
+    (p.progress && p.progress.state === 'PROVIDED') ||
+    String(p.progress_summary || '').trim() !== ''
+  )) {
+    const lockedDecisions = (Array.isArray(result.records) ? result.records : []).filter(function (row) {
+      return String(row.record_type || '').toLowerCase() === 'decision' &&
+        normalizeStateToken(row.status) === 'LOCKED';
+    }).length;
+    return '<section class="card contextual-card design-forming-card">' +
+      '<strong>🎨 Design forming</strong>' +
+      '<div>' + renderProgress(p.progress) + '</div>' +
+      '<p>' + textOrNotProvided(p.progress_summary) + '</p>' +
+      '<p class="muted">Locked decisions in current index: ' + escapeHtml(lockedDecisions) + '</p>' +
+    '</section>';
+  }
+
+  return '<section class="card contextual-card">' +
+    '<strong>No protected action needed right now</strong>' +
+    '<p class="muted">ASC has no explicit Ready-to-Lock, Current Task, Design Forming, or Delivered state to surface.</p>' +
+  '</section>';
+}
+
+function renderProjectWorkspace(result) {
+  const p = result.project;
+  return renderProjectPulse(p) +
+    renderConversationContinuation(p) +
+    renderContextualCard(result);
+}
+
+function renderProjectReview(result, ciResult) {
+  const p = result.project;
+  return '<section class="review-intro">' +
+      '<p class="muted">Technical/project evidence is shown here on demand. Workspace remains the default.</p>' +
+      renderIndexMeta(p.index_metadata) +
+    '</section>' +
+    renderZassCiStatus(p, ciResult) +
+    renderSection('Progress summary', '<p>' + textOrNotProvided(p.progress_summary) + '</p>') +
+    renderSection('Next Action Plan summary', '<p>' + textOrNotProvided(p.next_action_plan) + '</p>') +
+    renderSection('Next stage summary', '<p>' + textOrNotProvided(p.next_stage) + '</p>') +
+    renderSection('Action Plan', renderTable(ACTION_PLAN_COLUMNS, result.action_plan, 'No ACTION_PLAN rows for this project.')) +
+    renderSection('ZASS / project records', renderTable(ZASS_COLUMNS, result.records, 'No RECORDS rows for this project.'));
+}
+
+function renderProjectHistory(result) {
+  return renderSection('History', renderTable(HISTORY_COLUMNS, result.history, 'No HISTORY rows for this project.'));
+}
+
+function renderProjectDetail(result, ciResult, view) {
   if (!result || result.ok !== true) {
     return '<button type="button" class="back" data-back="1">← Back</button>' + renderError(result);
   }
   const p = result.project;
+  const active = PROJECT_VIEWS.indexOf(view) >= 0 ? view : 'WORKSPACE';
+  let body = '';
+  if (active === 'REVIEW') body = renderProjectReview(result, ciResult);
+  else if (active === 'HISTORY') body = renderProjectHistory(result);
+  else body = renderProjectWorkspace(result);
+
   return '<button type="button" class="back" data-back="1">← Back</button>' +
-    '<h2>' + textOrNotProvided(p.project_name) + '</h2>' +
-    '<div class="muted">project_id ' + escapeHtml(p.project_id) + ' · ui_entry ' + textOrNotProvided(p.ui_entry) +
-    ' · source_method ' + textOrNotProvided(p.source_method) + ' · lifecycle_stage ' + textOrNotProvided(p.lifecycle_stage) + '</div>' +
-    renderIndexMeta(p.index_metadata) +
-    renderZassCiStatus(p, ciResult) +
-    renderSection('1. Project progress bar', renderProgress(p.progress)) +
-    renderSection('2. Progress summary', '<p>' + textOrNotProvided(p.progress_summary) + '</p>') +
-    renderSection('3. Next Action Plan summary', '<p>' + textOrNotProvided(p.next_action_plan) + '</p>') +
-    renderSection('4. Next stage summary', '<p>' + textOrNotProvided(p.next_stage) + '</p>') +
-    renderSection('5. Action Plan table', renderTable(ACTION_PLAN_COLUMNS, result.action_plan, 'No ACTION_PLAN rows for this project.')) +
-    renderSection('6. ZASS table', renderTable(ZASS_COLUMNS, result.records, 'No RECORDS rows for this project.')) +
-    renderSection('7. History', renderTable(HISTORY_COLUMNS, result.history, 'No HISTORY rows for this project.'));
+    '<div class="project-heading"><h2>' + textOrNotProvided(p.project_name) + '</h2>' +
+      '<span class="badge">' + textOrNotProvided(p.ui_entry) + '</span></div>' +
+    renderProjectViewTabs(active) +
+    body;
 }
 
 function dashboardRoot() { return document.getElementById('dashboard'); }
 
 function showList() {
+  dashboardState.projectResult = null;
+  dashboardState.ciResult = null;
+  dashboardState.projectView = 'WORKSPACE';
   dashboardRoot().innerHTML = renderProjectList(dashboardState.list, dashboardState.entry);
+}
+
+function showProject() {
+  dashboardRoot().innerHTML = renderProjectDetail(
+    dashboardState.projectResult,
+    dashboardState.ciResult,
+    dashboardState.projectView
+  );
 }
 
 function openProject(projectId) {
@@ -195,11 +354,16 @@ function openProject(projectId) {
   google.script.run
     .withSuccessHandler(function (result) {
       if (!result || result.ok !== true) {
+        dashboardState.projectResult = result;
         dashboardRoot().innerHTML = renderProjectDetail(result);
         return;
       }
 
-      dashboardRoot().innerHTML = renderProjectDetail(result, null);
+      dashboardState.projectResult = result;
+      dashboardState.ciResult = null;
+      dashboardState.projectView = 'WORKSPACE';
+      showProject();
+
       const project = result.project || {};
       const repository = typeof project.github_repo === 'string' ? project.github_repo : '';
       const commitSha = project.index_metadata &&
@@ -208,7 +372,7 @@ function openProject(projectId) {
         : '';
 
       if (!repository || !commitSha) {
-        dashboardRoot().innerHTML = renderProjectDetail(result, {
+        dashboardState.ciResult = {
           ok: true,
           repository: repository || null,
           commit_sha: commitSha || null,
@@ -219,16 +383,18 @@ function openProject(projectId) {
           conclusion: null,
           run_url: null,
           fetched_at: null
-        });
+        };
+        showProject();
         return;
       }
 
       google.script.run
         .withSuccessHandler(function (ciResult) {
-          dashboardRoot().innerHTML = renderProjectDetail(result, ciResult);
+          dashboardState.ciResult = ciResult;
+          showProject();
         })
         .withFailureHandler(function () {
-          dashboardRoot().innerHTML = renderProjectDetail(result, {
+          dashboardState.ciResult = {
             ok: false,
             repository: repository,
             commit_sha: commitSha,
@@ -240,12 +406,14 @@ function openProject(projectId) {
             run_url: null,
             fetched_at: null,
             error: { code: 'SERVER_CALL_FAILED', message: 'CI status could not be loaded.' }
-          });
+          };
+          showProject();
         })
         .getDashboardZassCiStatus(repository, commitSha);
     })
     .withFailureHandler(function () {
-      dashboardRoot().innerHTML = renderProjectDetail({ ok: false, error: { code: 'SERVER_CALL_FAILED', message: 'Project could not be loaded.' } });
+      dashboardState.projectResult = { ok: false, error: { code: 'SERVER_CALL_FAILED', message: 'Project could not be loaded.' } };
+      dashboardRoot().innerHTML = renderProjectDetail(dashboardState.projectResult);
     })
     .getDashboardProject(projectId);
 }
@@ -255,6 +423,11 @@ function handleDashboardClick(event) {
   if (!target) return;
   if (target.dataset.entry) { dashboardState.entry = target.dataset.entry; showList(); return; }
   if (target.dataset.projectId !== undefined) { openProject(target.dataset.projectId); return; }
+  if (target.dataset.projectView) {
+    dashboardState.projectView = target.dataset.projectView;
+    showProject();
+    return;
+  }
   if (target.dataset.back) { showList(); }
 }
 
