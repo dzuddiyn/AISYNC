@@ -335,15 +335,25 @@ After entering **DUMP**, **DECIDE**, or **DESIGN**, show the matching project vi
 - project progress bar
 - latest update
 
-After opening a project, show:
+After opening a project, the current product direction is progressive disclosure:
 
-1. Project progress bar
-2. Progress summary
-3. Next Action Plan summary
-4. Next stage summary
-5. Action Plan table
-6. ZASS table — all applicable ZASS-family record components for that project/method
-7. History
+```text
+Workspace (default)
+├── Project Pulse
+├── continue naturally
+└── one factual contextual card when supported
+
+Review
+├── commit-linked ZASS CI
+├── progress/current-state evidence
+├── Action Plan
+└── ZASS/project records
+
+History
+└── audit trail
+```
+
+Internal IDs/ledgers are hidden from the default Workspace and remain available in Review/History. Contextual cards never create method state; they project explicit indexed state only.
 
 ### Primary external integrations
 
