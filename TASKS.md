@@ -16,7 +16,7 @@ Do: Implement controlled/private continuity + retrieval using the frozen ZASSPIL
 Depends on: T-015 PASS; T-016 PASS where persistence is required — satisfied.
 Boundary: private continuity authority remains the dedicated ASC Private Continuity Store; GitHub remains canonical for project artifacts; ASC DB/Sheets remains derived/index state; native ZASSPILL continuity semantics are not forced into the eight-field ASC Write Contract.
 Pass: same private project/thread continues across supported AI providers using controlled continuity/retrieval without long manual handover packets.
-Current result: NOT STARTED — promoted after T-016 PASS on 2026-10-04.
+Current result: IN PROGRESS — local retrieval/Portable Packet v2/reconciliation/cross-method/scoped-reference implementation PASS; real private Drive synthetic proof PASS with cleanup verified. First Gemini receiver field run exposed two integration defects: the public ZASSPILL Method Gateway was stale at v0.1.0 while canonical ZASSPILL is v1.0.0, and the bootstrap combined thread/revision wording allowed `continuity_reference` to be misread as `source_revision`. Local fixes are prepared: static gateway refreshed from canonical ZASS commit `9a6755ea4dc2f9a067343855331078d9a1773a0c`, explicit `thread_id` / numeric `source_revision` / `continuity_reference` fields, plus expected-method-version stale-gateway guard. External receiver re-proof remains pending after canonical SAVE/merge publishes the refreshed gateway.
 
 ## Completed
 

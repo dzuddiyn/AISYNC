@@ -21,7 +21,7 @@ AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DO IT** — DESIGN is confirmed, with technical architecture contained inside `DESIGN.md`; T-013 Method Gateway proof is complete and current task is **T-004**.
+Current stage: **DO IT** — DESIGN is confirmed, ASC v0.1 core/fallback is delivered, Production v1 delivery is active, T-016 is PASS, and current task is **T-017 — Private Continuity + Retrieval**.
 
 The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, design/technical architecture, executable tasks, verification, and delivery.
 

@@ -14,7 +14,7 @@ The gateway must serve an AI-SYNC-held snapshot itself. It must not solve the pr
 
 | Method | Canonical path | Current review version | Approx. characters |
 |---|---|---:|---:|
-| ZASSPILL | `ZASSPILL/ZASSPILL_MY.md` | 0.1.0 | 20,040 |
+| ZASSPILL | `ZASSPILL/ZASSPILL_MY.md` | 1.0.0 | 62,797 |
 | ZASSIMPLE | `ZASSIMPLE/ZASSIMPLE_MY.md` | 0.2.5 | 18,334 |
 | ZASSELECTION | `ZASSELECTION/ZASSELECTION_MY.md` | 0.2.2 | 16,025 |
 
@@ -321,3 +321,18 @@ Proof record:
 - `proofs/zasspill-to-zassimple-handoff.md`
 
 D-028 records the host refinement and receiver-source guardrail. T-013 is closed for the v0.1 proof; execution resumes at T-004.
+
+
+## T-017 receiver-freshness hardening
+
+T-017 external-provider field evidence showed that the static GitHub Pages ZASSPILL receiver page had remained at the historical v0.1.0 proof snapshot even though canonical ZASSPILL had advanced to frozen v1.0.0. The receiver correctly read the stale page, which means the transport was reachable but the snapshot was not current enough for Production v1 continuity.
+
+Remediation for T-017:
+- refresh the static ZASSPILL MY receiver page from canonical upstream ZASS commit `9a6755ea4dc2f9a067343855331078d9a1773a0c`;
+- expose version 1.0.0 and exact source commit in page metadata;
+- make transfer bootstraps carry `expected_method_version`;
+- require the receiver to stop with `STALE_METHOD_GATEWAY` instead of silently continuing when gateway version differs;
+- keep the exact-source/no-substitution rule;
+- cover the static receiver snapshot with a regression test.
+
+This is evidence-triggered hardening allowed by D-028/T-013B. It does not move semantic authority from the canonical ZASS repository to AISYNC.

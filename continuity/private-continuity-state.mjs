@@ -276,6 +276,16 @@ export function createPrivateContinuityService({
       });
   }
 
+  function listThreadRecords({ projectId }) {
+    assertProjectId(projectId);
+    const state = store.read();
+    const project = projectState(state, projectId);
+    if (!project) return [];
+    return Object.values(project.threads)
+      .map(record => cloneJson(record))
+      .sort((a, b) => a.thread_id.localeCompare(b.thread_id));
+  }
+
   function readEvents({ projectId, threadId }) {
     assertProjectId(projectId);
     assertThreadId(threadId);
@@ -617,6 +627,7 @@ export function createPrivateContinuityService({
   return Object.freeze({
     getThread,
     listThreads,
+    listThreadRecords,
     readEvents,
     bootstrap,
     applyMutation,
