@@ -318,7 +318,7 @@ Owner-visible proof: PASS — the protected dashboard displayed `dzuddiyn/AISYNC
 - T-015 is PASS. T-016 Production Write Path is the next/current task.
 
 
-## T-016 Production write path — CONTROLLED LIVE WRITE PASS; final canonical deployment pending
+## T-016 Production write path — PASS / DEPLOYED
 
 - Proof-only TEST_ONLY repository/path authorization is replaced in source by `ProductionWritePolicy.gs` + `production/github-write-policy.mjs`: server-side authorized project registry, deterministic safe Record ID mapping, exact repo/branch/path selection, and owner gate before destination I/O.
 - Production write credentials use `GitHubAppAuth.gs`: RS256 GitHub App JWT, short-lived installation token, and installation credentials stored only in Script Properties. The installed GitHub App is scoped to exactly `dzuddiyn/AISYNC` with Contents read/write permission.
@@ -329,4 +329,6 @@ Owner-visible proof: PASS — the protected dashboard displayed `dzuddiyn/AISYNC
 - Factual receipts preserve `write_performed=true|false|null`; reconciled success does not invent a commit SHA.
 - Controlled live owner-confirmed SAVE PASS: request `ASC-T016-20261003181842` wrote `records/T016-LIVE-20261003181842.md` through GitHub App commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca`. Independent GitHub read-back matched exact content; independent HISTORY read-back found one matching SUCCESS row with `verified=true`.
 - Temporary GitHub App setup/recovery web routes and temporary deployment were removed after bootstrap proof. Apps Script @HEAD contains only the non-temporary T-016 source.
-- All 24 repository `test-*.mjs` tests PASS after the live fixes. Final T-016 closure still requires canonical Git save/merge and updating the protected production deployment from merged `main`.
+- PR #13 merged the canonical implementation at `cfbc379408080ee22b4eaf47835455829858b949`; protected Apps Script production is version 17, `T016-production-write-canonical`.
+- Final protected-production request `ASC-T016-FINAL-20261003185851` returned `NO_CHANGE`, `write_performed=false`, `verified=true`; HISTORY row 8 matched exactly and GitHub `main` remained at the PR #13 merge commit, proving no duplicate write.
+- All 24 repository `test-*.mjs` tests PASS from merged `main`. T-016 is PASS; T-017 is current.

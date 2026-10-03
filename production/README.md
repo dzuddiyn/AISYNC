@@ -1,6 +1,6 @@
 # T-016 Production GitHub Write Boundary
 
-Status: **LOCAL + CONTROLLED LIVE WRITE PASS; canonical save/production deployment pending**
+Status: **PASS / CANONICAL / PROTECTED PRODUCTION DEPLOYED**
 
 T-016 replaces the proof-only TEST_ONLY destination policy with a deterministic,
 server-authorized Production v1 GitHub write boundary.
@@ -126,4 +126,4 @@ HISTORY:    row 7, one matching request
 
 Independent GitHub read-back matched the exact intended content. The commit changed only the deterministic target file. Independent Sheets read-back matched the receipt/request/commit/resource exactly.
 
-This live proof does not by itself close T-016. Canonical branch save/merge and final protected production deployment from merged `main` are still required.
+Canonical T-016 source merged through PR #13 at `cfbc379408080ee22b4eaf47835455829858b949` and protected Apps Script production was updated from merged `main` to version 17 (`T016-production-write-canonical`). Final protected-production request `ASC-T016-FINAL-20261003185851` returned `NO_CHANGE`, `write_performed=false`, `verified=true`; independent HISTORY row 8 re-read matched exactly and GitHub `main` remained unchanged, proving deterministic idempotent behavior without a duplicate commit. T-016 is PASS.
