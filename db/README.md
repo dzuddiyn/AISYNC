@@ -132,7 +132,7 @@ Verified on the native Google Sheet:
 - frozen header row exists on all four tabs;
 - filters are active;
 - AISYNC bootstrap data is readable;
-- DUMP / DECIDE / DESIGN validation is the current production target; the repository read model accepts all three routes. Any live Sheet validation still limited to DECIDE / DESIGN must be migrated before Gate 2 production acceptance;
+- DUMP / DECIDE / DESIGN validation is active on the live PROJECTS `ui_entry` column and the repository read model accepts all three routes; existing project values are preserved;
 - Action Plan status validation exists;
 - HISTORY SUCCESS / FAILED validation exists;
 - timezone is `Asia/Kuala_Lumpur`;
