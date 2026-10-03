@@ -61,7 +61,7 @@ Columns:
 - authority
 
 Notes:
-- `ui_entry` is constrained to `DECIDE` / `DESIGN`.
+- `ui_entry` supports the released ZASS SYSTEM product routes `DUMP` / `DECIDE` / `DESIGN`. The value is an operational/index routing projection; it does not transfer method-semantic authority to ASC.
 - `progress_percent` may remain blank until the source method explicitly provides a semantic value.
 - `source_ref` records the exact canonical Git ref used by the index row. T-015 compares `github_repo + source_ref + source_commit` against a live GitHub default-branch head read and reports `CURRENT`, `STALE`, `SOURCE_MISMATCH`, or `UNVERIFIED`; it does not infer lifecycle/progress.
 
@@ -132,7 +132,7 @@ Verified on the native Google Sheet:
 - frozen header row exists on all four tabs;
 - filters are active;
 - AISYNC bootstrap data is readable;
-- DECIDE / DESIGN validation exists;
+- DUMP / DECIDE / DESIGN validation is the current production target; the repository read model accepts all three routes. Any live Sheet validation still limited to DECIDE / DESIGN must be migrated before Gate 2 production acceptance;
 - Action Plan status validation exists;
 - HISTORY SUCCESS / FAILED validation exists;
 - timezone is `Asia/Kuala_Lumpur`;
