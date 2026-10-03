@@ -23,6 +23,9 @@ export const RUNTIME_MODULES = Object.freeze([
   { file: 'adapters/github/github-adapter.mjs', namespace: 'githubAdapter' },
   { file: 'adapters/github/github-rest-client.mjs', namespace: 'githubRest' },
   { file: 'ci/zass-ci-status.mjs', namespace: 'zassCi' },
+  { file: 'continuity/private-continuity-state.mjs', namespace: 'continuity' },
+  { file: 'continuity/index-freshness.mjs', namespace: 'indexFreshness' },
+  { file: 'continuity/github-source-head.mjs', namespace: 'sourceHead' },
   { file: 'receipts/write-receipt.mjs', namespace: 'receipts' },
   { file: 'flow/confirm-sync.mjs', namespace: 'flow' }
 ]);

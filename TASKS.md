@@ -16,6 +16,7 @@ Do: Implement the smallest Production v1 state slice: stable project/thread iden
 Depends on: T-012 PASS, T-014 PASS, frozen upstream ZASSPILL v1.0 contract, and owner-locked D-032/D-033/D-034 production continuity boundaries — satisfied.
 Boundary: ASC owns persistence/transport/index mechanics; ZASSPILL owns semantic contract meaning. Private Current Thread Records/events/tombstones belong to the ASC Private Continuity Store, not GitHub project repos or the derived ASC DB index. Native ZASSPILL continuity writes remain separate from the eight-field ASC Write Contract, and transport request IDs remain separate from semantic idempotency IDs.
 Pass: a project/thread can be read at an explicit authoritative revision; stale/duplicate/conflicting/bootstrap/delete states are distinguishable; ASC DB freshness is factual rather than manually stale; automated tests prove no silent semantic inference.
+Current result: IN PROGRESS — local T-015 mechanics PASS (private continuity state engine, private Drive JSON store binding, exact GitHub source-head/freshness comparison, 22-test repository suite). Live Apps Script deployment/private-store proof and owner-visible factual dashboard freshness remain pending; T-016 is not promoted.
 
 ## Completed
 

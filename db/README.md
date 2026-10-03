@@ -54,6 +54,7 @@ Columns:
 - next_stage
 - latest_update
 - github_repo
+- source_ref
 - source_artifact
 - source_commit
 - updated_at
@@ -62,6 +63,7 @@ Columns:
 Notes:
 - `ui_entry` is constrained to `DECIDE` / `DESIGN`.
 - `progress_percent` may remain blank until the source method explicitly provides a semantic value.
+- `source_ref` records the exact canonical Git ref used by the index row. T-015 compares `github_repo + source_ref + source_commit` against a live GitHub default-branch head read and reports `CURRENT`, `STALE`, `SOURCE_MISMATCH`, or `UNVERIFIED`; it does not infer lifecycle/progress.
 
 ### RECORDS
 

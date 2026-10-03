@@ -4,7 +4,7 @@
 // (openById → getSheetByName → getDataRange → getDisplayValues). No mutation calls.
 // Values are returned as display strings exactly as stored. ASC does not calculate,
 // infer, or refresh method-owned semantics (stage, progress, latest update). Index
-// freshness is never proven by this layer and is reported as UNVERIFIED.
+// freshness is attached from exact GitHub source evidence by T-015; method-owned semantics are never inferred.
 
 const ASC_DB_READ_CONFIG_ = Object.freeze({
   spreadsheetId: '11pWE0E-jEZhigVAYGcsfVXW0TODRcNMgOZHFfUQIHKw'
@@ -14,7 +14,7 @@ const ASC_DB_SCHEMA_ = Object.freeze({
   PROJECTS: Object.freeze([
     'project_id', 'project_name', 'ui_entry', 'source_method', 'lifecycle_stage',
     'progress_percent', 'progress_summary', 'next_action_plan', 'next_stage',
-    'latest_update', 'github_repo', 'source_artifact', 'source_commit', 'updated_at', 'authority'
+    'latest_update', 'github_repo', 'source_ref', 'source_artifact', 'source_commit', 'updated_at', 'authority'
   ]),
   RECORDS: Object.freeze([
     'project_id', 'record_type', 'record_id', 'status', 'summary', 'lineage_json',
@@ -132,6 +132,7 @@ function ascProjectView_(row) {
     latest_update: row.latest_update,
     github_repo: row.github_repo,
     index_metadata: {
+      source_ref: row.source_ref,
       source_artifact: row.source_artifact,
       source_commit: row.source_commit,
       updated_at: row.updated_at,
@@ -155,7 +156,7 @@ function getDashboardProjects() {
     const groups = { DECIDE: [], DESIGN: [] };
     const unrecognized = [];
     projects.rows.forEach(function (row) {
-      const view = ascProjectView_(row);
+      const view = ascAttachProjectIndexFreshness_(ascProjectView_(row));
       if (ASC_UI_ENTRIES_.indexOf(row.ui_entry) >= 0) {
         groups[row.ui_entry].push(view);
       } else {
@@ -204,7 +205,7 @@ function getDashboardProject(projectId) {
     return {
       ok: true,
       source: ascDbSourceInfo_(tabs),
-      project: ascProjectView_(matches[0]),
+      project: ascAttachProjectIndexFreshness_(ascProjectView_(matches[0])),
       records: read.RECORDS.filter(exact),
       action_plan: read.ACTION_PLAN.filter(exact),
       history: read.HISTORY.filter(exact)

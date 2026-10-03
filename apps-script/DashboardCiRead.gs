@@ -19,7 +19,7 @@ function ascZassCiTransportError_(code, message, httpStatus) {
   };
 }
 
-function ascReadGitHubActionsJson_(url) {
+function ascReadGitHubJson_(url) {
   if (typeof url !== 'string' || url.indexOf(ASC_ZASS_CI_GITHUB_API_PREFIX_) !== 0) {
     return ascZassCiTransportError_('INVALID_GITHUB_API_URL', 'Only the GitHub API origin is allowed.');
   }
@@ -52,6 +52,10 @@ function ascReadGitHubActionsJson_(url) {
   }
 
   return { ok: true, data: data };
+}
+
+function ascReadGitHubActionsJson_(url) {
+  return ascReadGitHubJson_(url);
 }
 
 function getDashboardZassCiStatus(repository, commitSha) {

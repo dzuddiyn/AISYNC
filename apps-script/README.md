@@ -303,3 +303,12 @@ Next: T-012C renders the factual commit-linked result in project detail and perf
 - No GitHub write, Sheet write, or project mutation was performed by this proof.
 
 Owner-visible proof: PASS — the protected dashboard displayed `dzuddiyn/AISYNC@2e0c773faaa2597a5df72fa77fea42d911bb0412` with `Status: NOT_FOUND`, `Workflow / job: ZASS CI / zass-check`, and explicit text that no matching CI result for the exact commit is not a PASS result. T-012 is complete.
+
+## T-015 private continuity / factual index state — LOCAL PASS; live deployment pending
+
+- `continuity/private-continuity-state.mjs` adds runtime-neutral stable thread identity, authoritative revision reads, matching semantic-event lineage, semantic-request idempotency, optimistic concurrency, explicit bootstrap outcomes, delete/tombstone protection, and a derived thread index without inspecting method-owned semantic fields.
+- `PrivateContinuityDriveStore.gs` selects a dedicated private Google Drive JSON file as the Production v1 closed-beta backing store. Script Properties hold only the folder/file locators; the Drive JSON file is the continuity authority. `LockService` serializes read-modify-write transactions and changed writes are read back before success is returned.
+- `ContinuityState.gs` binds the shared state engine to the private Drive store with server-private helper functions only; no browser-callable continuity mutation surface is added in T-015.
+- `continuity/github-source-head.mjs` + `ProjectFreshness.gs` read the GitHub repository default branch/head and compare exact `github_repo + source_ref + source_commit` evidence. Dashboard project views can report `CURRENT`, `STALE`, `SOURCE_MISMATCH`, or `UNVERIFIED` without deriving lifecycle/progress semantics.
+- The live ASC DB PROJECTS tab has been backward-compatibly extended with `source_ref`; AISYNC currently records `main`. Existing stale semantic/index values were intentionally not manually repaired.
+- Pending before T-015 PASS: canonical Git save, Apps Script deployment, real private Drive continuity-store proof, and owner-visible factual dashboard freshness proof.
