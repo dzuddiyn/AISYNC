@@ -332,3 +332,23 @@ Owner-visible proof: PASS — the protected dashboard displayed `dzuddiyn/AISYNC
 - PR #13 merged the canonical implementation at `cfbc379408080ee22b4eaf47835455829858b949`; protected Apps Script production is version 17, `T016-production-write-canonical`.
 - Final protected-production request `ASC-T016-FINAL-20261003185851` returned `NO_CHANGE`, `write_performed=false`, `verified=true`; HISTORY row 8 matched exactly and GitHub `main` remained at the PR #13 merge commit, proving no duplicate write.
 - All 24 repository `test-*.mjs` tests PASS from merged `main`. T-016 is PASS; T-017 is current.
+
+## ZASS SYSTEM Gate 2 three-route integration patch — 2026-10-04
+
+Scope: reconcile the older DECIDE / DESIGN dashboard projection with the released ZASS SYSTEM DUMP / DECIDE / DESIGN product contract without moving method semantics into ASC.
+
+Implemented in source:
+- dashboard/read entries now support `DUMP`, `DECIDE`, and `DESIGN`;
+- dashboard defaults to DUMP and shows `DUMP → ZASSPILL` plus a link to the existing public ASC Front Door;
+- DUMP project rows can be projected from `PROJECTS.ui_entry` when present;
+- DECIDE / DESIGN grouping, project detail, History, and commit-linked ZASS CI rendering remain unchanged;
+- the dashboard adds no write/persistence function and does not implement ZASSPILL semantics;
+- live ASC DB `PROJECTS.ui_entry` data validation was expanded in place from `DECIDE / DESIGN` to `DUMP / DECIDE / DESIGN`; the existing AISYNC `DESIGN` value was preserved.
+
+Verification:
+- all 24 repository `test-*.mjs` tests PASS in a LF-normalized checkout;
+- `git diff --check` PASS;
+- dashboard read/UI regressions explicitly cover DUMP grouping, the DUMP front-door link, and existing DECIDE / DESIGN behavior;
+- live Sheet read-back confirms strict `DUMP / DECIDE / DESIGN` validation on `PROJECTS.ui_entry`.
+
+Production Apps Script deployment and owner-visible production verification are separate closure evidence for Gate 2.
