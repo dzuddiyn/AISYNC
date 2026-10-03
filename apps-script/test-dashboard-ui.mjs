@@ -66,27 +66,44 @@ const project = (o) => ({
   assert.match(sb.renderProgress(undefined), /Not provided/);
 }
 
-// Landing: DECIDE / DESIGN tabs; grouping from read result only; latest_update exact.
+// Landing: DUMP / DECIDE / DESIGN tabs; grouping from read result only; latest_update exact.
 {
   const list = {
     ok: true,
     source: { freshness: 'UNVERIFIED' },
-    groups: { DECIDE: [project({ project_id: 'P2', project_name: 'Decide <b>One</b>', ui_entry: 'DECIDE', progress: { state: 'PROVIDED', value: 40, raw: '40' } })], DESIGN: [project()] },
+    groups: {
+      DUMP: [project({ project_id: 'P0', project_name: 'Dump One', ui_entry: 'DUMP', source_method: 'ZASSPILL' })],
+      DECIDE: [project({ project_id: 'P2', project_name: 'Decide <b>One</b>', ui_entry: 'DECIDE', progress: { state: 'PROVIDED', value: 40, raw: '40' } })],
+      DESIGN: [project()]
+    },
     unrecognized_ui_entry: [project({ project_id: 'ODD', ui_entry: 'BUILD' })]
   };
+  const dump = sb.renderProjectList(list, 'DUMP');
+  assert.match(dump, /data-entry="DUMP" aria-pressed="true"/);
+  assert.match(dump, /data-entry="DECIDE" aria-pressed="false"/);
+  assert.match(dump, /data-entry="DESIGN" aria-pressed="false"/);
+  assert.match(dump, /data-project-id="P0"/);
+  assert.match(dump, /DUMP → ZASSPILL/);
+  assert.match(dump, /https:\/\/dzuddiyn\.github\.io\/AISYNC\/asc\//);
+  assert.doesNotMatch(dump, /confirmAndSync|writeToGitHub|writeToSheets/);
+
   const decide = sb.renderProjectList(list, 'DECIDE');
+  assert.match(decide, /data-entry="DUMP" aria-pressed="false"/);
   assert.match(decide, /data-entry="DECIDE" aria-pressed="true"/);
   assert.match(decide, /data-entry="DESIGN" aria-pressed="false"/);
   assert.match(decide, /data-project-id="P2"/);
   assert.doesNotMatch(decide, /data-project-id="AISYNC"/);
   assert.match(decide, /Decide &lt;b&gt;One&lt;\/b&gt;/, 'escaped');
-  assert.match(decide, /1 project row\(s\) have a ui_entry other than DECIDE\/DESIGN/);
+  assert.match(decide, /1 project row\(s\) have a ui_entry other than DUMP\/DECIDE\/DESIGN/);
   const design = sb.renderProjectList(list, 'DESIGN');
   assert.match(design, /data-project-id="AISYNC"/);
   assert.match(design, /Latest update: 2026-10-02 T-004 preview/);
   assert.match(design, /Progress: Not provided/);
   assert.match(design, /freshness UNVERIFIED/);
-  const empty = sb.renderProjectList({ ok: true, groups: { DECIDE: [], DESIGN: [] }, unrecognized_ui_entry: [] }, 'DECIDE');
+  const emptyDump = sb.renderProjectList({ ok: true, groups: { DUMP: [], DECIDE: [], DESIGN: [] }, unrecognized_ui_entry: [] }, 'DUMP');
+  assert.match(emptyDump, /No DUMP projects in ASC DB/);
+  assert.match(emptyDump, /Open ASC Front Door/);
+  const empty = sb.renderProjectList({ ok: true, groups: { DUMP: [], DECIDE: [], DESIGN: [] }, unrecognized_ui_entry: [] }, 'DECIDE');
   assert.match(empty, /No DECIDE projects in ASC DB/);
   const failed = sb.renderProjectList({ ok: false, error: { code: 'SCHEMA_INCOMPATIBLE', message: 'Required headers are missing or duplicated.' }, tab: 'PROJECTS', missing: ['ui_entry'] }, 'DECIDE');
   assert.match(failed, /FAILED \(SCHEMA_INCOMPATIBLE\)/);

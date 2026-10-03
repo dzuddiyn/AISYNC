@@ -31,7 +31,7 @@ const ASC_DB_SCHEMA_ = Object.freeze({
 });
 
 const ASC_DB_FRESHNESS_ = 'UNVERIFIED';
-const ASC_UI_ENTRIES_ = Object.freeze(['DECIDE', 'DESIGN']);
+const ASC_UI_ENTRIES_ = Object.freeze(['DUMP', 'DECIDE', 'DESIGN']);
 
 function ascDbReadError_(code, message, extra) {
   return Object.assign({ ok: false, error: { code: code, message: message } }, extra || {});
@@ -153,7 +153,7 @@ function getDashboardProjects() {
     if (!projects.ok) {
       return projects;
     }
-    const groups = { DECIDE: [], DESIGN: [] };
+    const groups = { DUMP: [], DECIDE: [], DESIGN: [] };
     const unrecognized = [];
     projects.rows.forEach(function (row) {
       const view = ascAttachProjectIndexFreshness_(ascProjectView_(row));

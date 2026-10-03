@@ -19,6 +19,7 @@ function baseTabs() {
     PROJECTS: [H.PROJECTS,
       row('PROJECTS', { project_id: 'AISYNC', project_name: 'AISYNC', ui_entry: 'DESIGN', source_method: 'ZASSIMPLE', lifecycle_stage: 'DO IT', progress_percent: '', progress_summary: 'Current T-004 front door', next_action_plan: 'AP-003', next_stage: 'T-004', latest_update: '2026-10-02 T-004 preview', github_repo: 'dzuddiyn/AISYNC', source_ref: 'main', source_artifact: 'TASKS.md', source_commit: 'abc123', updated_at: '2026-10-02', authority: 'OPERATIONAL_INDEX' }),
       row('PROJECTS', { project_id: 'AISYNC-2', project_name: 'Lookalike', ui_entry: 'DECIDE', progress_percent: '40', latest_update: '  spaced  value  ' }),
+      row('PROJECTS', { project_id: 'DUMP-1', project_name: 'Dump Project', ui_entry: 'DUMP', source_method: 'ZASSPILL', progress_percent: '' }),
       row('PROJECTS', { project_id: 'ODD', project_name: 'Odd', ui_entry: 'BUILD', progress_percent: 'about half' }),
       H.PROJECTS.map(() => ''),
       row('PROJECTS', { project_id: 'PCT', project_name: 'Pct', ui_entry: 'DECIDE', progress_percent: '75%' }),
@@ -94,11 +95,12 @@ const plain = (v) => JSON.parse(JSON.stringify(v));
 // Static: no mutation API names in the read layer.
 assert.doesNotMatch(SOURCE, /\.(setValue|setValues|appendRow|insertRow|deleteRow|clear|setFormula|getRange\(|insertSheet|deleteSheet|setName|sort|flush)\b/);
 
-// 1. Project list: DECIDE vs DESIGN grouping from ui_entry only; blank row skipped; unrecognized kept visible.
+// 1. Project list: DUMP / DECIDE / DESIGN grouping from ui_entry only; blank row skipped; unrecognized kept visible.
 {
   const w = world();
   const r = plain(w.ctx.getDashboardProjects());
   assert.equal(r.ok, true);
+  assert.deepStrictEqual(r.groups.DUMP.map((p) => p.project_id), ['DUMP-1']);
   assert.deepStrictEqual(r.groups.DECIDE.map((p) => p.project_id), ['AISYNC-2', 'PCT']);
   assert.deepStrictEqual(r.groups.DESIGN.map((p) => p.project_id), ['AISYNC', 'ZERO']);
   assert.deepStrictEqual(r.unrecognized_ui_entry.map((p) => p.project_id), ['ODD']);
@@ -159,7 +161,7 @@ assert.doesNotMatch(SOURCE, /\.(setValue|setValues|appendRow|insertRow|deleteRow
   tabs.PROJECTS.push(row('PROJECTS', { project_id: 'AISYNC', project_name: 'dup', ui_entry: 'DESIGN' }));
   const dup = plain(world(tabs).ctx.getDashboardProject('AISYNC'));
   assert.equal(dup.error.code, 'DUPLICATE_PROJECT_ID');
-  assert.deepStrictEqual(dup.sheet_rows, [2, 8]);
+  assert.deepStrictEqual(dup.sheet_rows, [2, 9]);
 }
 
 // 4. Schema failures are structural and visible.
