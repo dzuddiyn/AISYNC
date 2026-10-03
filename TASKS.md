@@ -1,18 +1,36 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** ASC v0.1 CORE/FALLBACK DELIVERED — T-012 PASS
+**Status:** PRODUCTION v1 DELIVERY TRACK — T-014 PASS / T-015 CURRENT
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
-**Design:** v1.0.10 CONFIRMED  
+**Design:** v1.0.12 CONFIRMED
 **Authority:** Tasks execute the confirmed plan. They do not rewrite LOCKED decisions.
 
 > Surface one current task to the owner by default. Future tasks remain queued until the current task passes or is explicitly blocked/replanned.
 
 ## Current task
 
-None — T-012 PASS. No further task is currently queued; do not invent one silently.
+T-015 | CURRENT — CANONICAL PROJECT / THREAD / INDEX STATE
+Source: AP-009, D-014, D-027, D-031, D-032, D-033, D-034; frozen upstream ZASSPILL v1.0 Phase 3–6 contracts
+Do: Implement the smallest Production v1 state slice: stable project/thread identity, revision + semantic event lineage, optimistic-concurrency inputs, bootstrap/duplicate protection, tombstone/delete behavior, and factual GitHub → ASC DB/index freshness.
+Depends on: T-012 PASS, T-014 PASS, frozen upstream ZASSPILL v1.0 contract, and owner-locked D-032/D-033/D-034 production continuity boundaries — satisfied.
+Boundary: ASC owns persistence/transport/index mechanics; ZASSPILL owns semantic contract meaning. Private Current Thread Records/events/tombstones belong to the ASC Private Continuity Store, not GitHub project repos or the derived ASC DB index. Native ZASSPILL continuity writes remain separate from the eight-field ASC Write Contract, and transport request IDs remain separate from semantic idempotency IDs.
+Pass: a project/thread can be read at an explicit authoritative revision; stale/duplicate/conflicting/bootstrap/delete states are distinguishable; ASC DB freshness is factual rather than manually stale; automated tests prove no silent semantic inference.
 
 ## Completed
+
+T-014 | PASS — PRODUCTION BASELINE & DEFINITION OF DONE
+Source: D-031, owner `PROCEED & LOCK` on 2026-10-03
+Do: Reconcile current authority after the technical proof phase; define and lock the Production v1 scope, DELIVERED gate, non-goals, and execution track.
+Pass evidence:
+- D-031 locks technical proof ≠ project DELIVERED;
+- project lifecycle is DO IT until Production v1 acceptance;
+- Production v1 is a closed beta with minimum three distinct non-developer participants, target 3–5;
+- GitHub remains canonical SoT; Sheets remains operational/index DB; GitHub is the only required production write destination;
+- production write auth migrates to GitHub App; TEST_ONLY mapping is not production;
+- frozen ZASSPILL v1.0 / ZASSELECTION / ZASSIMPLE routing boundaries are preserved;
+- T-015 through T-021 provide the explicit path to Production v1 and final DELIVERED acceptance.
+Current result: PASS — baseline and release definition are locked; execution advances to T-015.
 
 T-012 | PASS — CONSUME COMMIT-LINKED ZASS CI STATUS
 Source: PF-006, D-018  
@@ -298,18 +316,46 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-None — T-012 is complete; no further task is currently queued.
+T-016 | QUEUED — PRODUCTION WRITE PATH
+Source: AP-010, D-016, D-031
+Depends on: T-015 PASS.
+Pass: supported human SAVE uses deterministic authorized project mapping + GitHub App + concurrency/idempotency/unknown-write handling; no TEST_ONLY policy.
+
+T-017 | QUEUED — PRIVATE CONTINUITY + RETRIEVAL
+Source: AP-011, D-027, D-031; frozen ZASSPILL v1.0
+Depends on: T-015 PASS; T-016 where persistence is required.
+Pass: same private project/thread continues across supported AI providers using controlled continuity/retrieval without long manual handover packets.
+
+T-018 | QUEUED — INTEGRATED HUMAN UX
+Source: AP-012, D-020, D-021, D-031
+Depends on: T-015 through T-017.
+Pass: login → project/thread → route/provider → handoff → SAVE → receipt/HISTORY → CI → reopen/transfer works as one ordinary-user journey without raw internal mechanics.
+
+T-019 | QUEUED — PRODUCTION RELIABILITY & OPERATIONS
+Source: AP-013, D-029, D-031
+Depends on: T-015 through T-018.
+Pass: backup/restore, migration, degraded/offline, replay/idempotency lifecycle, telemetry, secret rotation, deployment and rollback are proven and documented.
+
+T-020 | QUEUED — HUMAN CLOSED BETA
+Source: AP-014, D-031
+Depends on: T-015 through T-019.
+Pass: minimum three distinct non-developer humans complete the core journey with factual evidence and without developer-side data repair/hidden canonical-state patching.
+
+T-021 | QUEUED — PRODUCTION v1 RELEASE
+Source: AP-015, D-031
+Depends on: T-020 PASS.
+Pass: release commit/deployment, known limitations, operator runbook, rollback point, and owner acceptance are recorded. Only then advance lifecycle to DELIVERED !!.
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001 through T-012 and T-013A/B. T-012 completed with local, deployed, live-read, and owner-visible UI proof.
+Implementation evidence exists for T-001 through T-014 and T-013A/B. T-012 completed the technical proof baseline; T-014 locked Production v1 delivery criteria and T-015 is current.
 
 Closure checks:
 - Built: YES — ASC v0.1 core/fallback path, method gateway slices, and commit-linked ZASS CI consumer through T-012 are implemented
 - Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY; T-012 added deployed/live-read/owner-visible commit-linked ZASS CI proof
 - Matches design: YES — including D-029 security/replay and D-030 successful-return refinement
 - Recorded: YES — canonical GitHub tracking/evidence updated
-- Current: none — T-012 PASS; no further task is queued
+- Current: T-015 — canonical project/thread/index state for Production v1
 
 
 T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  

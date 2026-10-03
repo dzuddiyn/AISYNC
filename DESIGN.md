@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE DESIGN
 
-**Version:** 1.0.10  
+**Version:** 1.0.12
 **Status:** CONFIRMED  
 **Design Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.3.0  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-030 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-034 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 >
@@ -73,7 +73,7 @@ Rules:
 - The chosen route remains visible and user-overridable.
 - Later intent changes produce a switch suggestion; ASC does not silently change the active mode.
 - ASC selects the appropriate ZASS subsystem/contract but does not duplicate its semantic rules.
-- ZASSPILL remains an external dependency until its ZASS SYSTEM definition is complete.
+- DUMP uses the current frozen upstream ZASSPILL v1.0 semantic contract; ASC consumes/routes it without redefining its semantics.
 - Provider-specific prefill is capability-dependent; copy/paste is the required fallback.
 - Authentication/routing/handoff does not itself imply persistence.
 
@@ -343,17 +343,125 @@ For ASC v0.1, the guaranteed post-sync return mechanism is a **user-activated `R
 
 This refines D-015 / D-017 wording without reopening the confirmed design.
 
-## Open implementation details
+## Production v1 delivery gate — D-031 LOCKED
 
-These do not block architecture confirmation:
-- exact JSON data types and validation schema
-- exact ASC envelope encoding/compression
-- exact receipt JSON schema
-- retry/conflict strategy
-- progress field conventions emitted by different methods
-- large-payload fallback
-- integration adapter order after GitHub
-- multi-user authorization beyond the later GitHub App direction
+D-031 | LOCKED — **technical proof is not project delivery**.
+
+The completed ASC v0.1 core/fallback and T-001 through T-012 proofs establish that the architecture can work. They do **not** by themselves satisfy ZASSIMPLE `DELIVERED !!`.
+
+The first production target is **AISYNC Production v1 closed beta**, not a public multi-tenant SaaS release.
+
+Production v1 scope:
+- invited human users only; minimum three distinct non-developer participants, target 3–5;
+- Google Account remains the user identity gate with an explicit production allowlist;
+- GitHub remains the canonical project/method Source of Truth;
+- Google Sheets remains the operational/index ASC DB;
+- GitHub is the only production write destination required for Production v1;
+- production destination authentication migrates from the proof PAT path to a GitHub App boundary;
+- DUMP → ZASSPILL v1.0, DECIDE → ZASSELECTION, DESIGN → ZASSIMPLE remain the visible routing contract;
+- private project/thread continuity must be controlled and must not become a permanent public URL;
+- ordinary users must not need to understand raw ASC contracts, raw GitHub paths, or long handover packets to complete the normal flow.
+
+Production v1 can reach `DELIVERED !!` only when all of the following are proven:
+1. canonical project/thread state has stable identity, revision/event lineage, duplicate/bootstrap protection, tombstone/delete behavior, and truthful GitHub→ASC index freshness;
+2. the write path no longer depends on `TEST_ONLY`; production Record ID → authorized repository/branch/path mapping, optimistic concurrency, idempotency, unknown-write reconciliation, and GitHub App authorization are proven;
+3. private continuity/retrieval follows the frozen upstream ZASSPILL v1 contract, including retrieval results, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, and stale-result reconciliation;
+4. one integrated human UX works end-to-end: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → factual receipt/HISTORY → CI status → reopen/transfer;
+5. production reliability is proven for backup/restore, migration safety, degraded/offline behavior, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, and rollback;
+6. the closed beta is completed by at least three distinct human participants without developer-side data repair or hidden manual patching of canonical/project state;
+7. a release checkpoint records the production commit/deployment, known limitations, operator runbook, rollback point, and owner acceptance.
+
+Until those gates pass, the AISYNC project lifecycle remains **DO IT**. A subsystem or technical proof may be described as delivered, but the project must not claim `DELIVERED !!`.
+
+Production v1 non-goals:
+- public anonymous/multi-tenant SaaS;
+- production destinations beyond GitHub;
+- broad external connector rollout (Obsidian/Notion/OneNote/Logseq/Joplin remain later integration work);
+- EN method expansion or broad Method Gateway productization unless separately promoted.
+
+## Production continuity authority refinements — D-032 to D-034 LOCKED
+
+### D-032 — Private continuity authority/store
+
+The authoritative private thread continuity state does **not** live in a normal GitHub project repository and does **not** live in the derived ASC DB/index projection.
+
+Locked authority split:
+
+```text
+GitHub
+= canonical project/method artifacts + Git lineage
+
+ASC Private Continuity Store
+= authoritative private Current Thread Records
++ semantic event lineage
++ tombstones / deletion authority
+
+ASC DB / Sheets
+= derived operational/index projection
++ dashboard views
++ factual write/history receipts
+```
+
+Rules:
+- one authoritative private Current Thread Record exists per `thread_id`;
+- semantic events and tombstones belong to the private continuity authority;
+- the ASC DB may project continuity metadata for UI/index purposes but must not become a second semantic master;
+- private continuity must not be published as a permanent public URL;
+- the exact Production v1 backing technology for the ASC Private Continuity Store remains an implementation detail for T-015, provided this authority boundary is preserved.
+
+### D-033 — Native ZASSPILL continuity contract boundary
+
+The existing eight-field **ASC Write Contract v0.1 remains unchanged** for project/artifact writes that already use it.
+
+Frozen ZASSPILL v1 continuity semantics are **not forced into that eight-field shape**. In particular, ASC must not invent a `Record ID` / `thread_id` during bootstrap merely to satisfy the older contract.
+
+For continuity writes, ASC consumes the frozen upstream ZASSPILL write semantics natively:
+
+```text
+request_id
+thread_id
+expected_revision
+operation
+changes
+```
+
+Bootstrap may legitimately arrive without `thread_id`; ASC resolves identity according to the frozen bootstrap/import contract and generates a new `th_<ULID>` only when the semantic result is NO_MATCH → CREATE.
+
+ASC owns transport, persistence, protected metadata, verification, authorization mechanics, and generated technical identities. ZASSPILL retains semantic-contract authority.
+
+### D-034 — Transport request identity ≠ semantic idempotency identity
+
+The D-029 ASC envelope `request_id` is a **transport/security attempt identity**. It is not the frozen ZASSPILL logical semantic idempotency key.
+
+Locked separation:
+
+```text
+ASC envelope request_id
+= transport attempt / replay-security identity
+
+ZASSPILL request_id = req_<ULID>
+= logical semantic mutation / idempotency identity
+```
+
+Consequences:
+- D-029 replay protection remains valid for transport attempts;
+- retrying the same logical semantic mutation may use a new transport envelope attempt while preserving the same ZASSPILL `req_<ULID>`;
+- same semantic request ID + same semantic payload returns the original result / ALREADY_APPLIED rather than executing again;
+- same semantic request ID + different semantic payload is IDEMPOTENCY_KEY_REUSE_CONFLICT;
+- WRITE_OUTCOME_UNKNOWN recovery preserves the same semantic request ID;
+- transport replay handling must not be used as a substitute for semantic idempotency.
+
+## Open production implementation details
+
+These are the current production parameters to resolve through the locked delivery track:
+- canonical GitHub → ASC DB/index refresh and freshness rules;
+- production project/thread/revision/event persistence mapping;
+- production Record ID → authorized GitHub repository/branch/path mapping;
+- GitHub App installation/authorization mechanics;
+- controlled/private continuity protection and retrieval mechanics;
+- degraded/offline, restore, migration, telemetry, deployment, rollback, and operator procedures;
+- closed-beta onboarding/allowlist and acceptance evidence;
+- integration adapter order after GitHub and broader multi-user/public product scope remain later work.
 
 ## Lineage
 
@@ -376,9 +484,13 @@ Core decisions:
 - D-018 — ZASS Core / CLI / CI / ASC cross-system validation boundary
 - D-029 — v0.1 envelope security / replay controls
 - D-030 — v0.1 verified-success return path: user-activated main-ASC link/button; automatic top-level navigation optional
+- D-031 — Production v1 delivery gate: technical proof ≠ DELIVERED; closed-beta human/operations acceptance required
+- D-032 — private continuity authority: dedicated ASC Private Continuity Store; GitHub project repos and ASC DB are not the semantic thread master
+- D-033 — frozen native ZASSPILL continuity contract remains separate from the eight-field ASC Write Contract v0.1
+- D-034 — transport request identity is distinct from ZASSPILL semantic idempotency identity
 
 Action Plan lineage:
-- AP-001 through AP-007
+- AP-001 through AP-015
 
 ## Confirmed patch record
 
@@ -393,7 +505,7 @@ Confirmed by: **Project Owner**
 Date: **2026-10-01**  
 Confirmation phrase: `YA, CONFIRM ARCHITECTURE`
 
-Implementation status: **ASC v0.1 CORE/FALLBACK DELIVERED**. T-001 through T-011 and T-013A/B are PASS; T-012 remains BLOCKED / LATER pending ZASS GitHub CI.
+Implementation status: **ASC v0.1 TECHNICAL PROOF BASELINE COMPLETE**. T-001 through T-012 and T-013A/B are PASS. Production v1 is **NOT YET DELIVERED**; T-014 production baseline/definition gate is complete and execution advances to T-015 canonical project/thread/index state.
 
 
 ## Confirmed architecture patch record
@@ -404,7 +516,7 @@ Implementation status: **ASC v0.1 CORE/FALLBACK DELIVERED**. T-001 through T-011
 
 This patch adds mandatory AI-provider selection, authentication before intent routing, automatic DUMP/DECIDE/DESIGN routing, ZASS sub-system selection, and provider handoff/fallback behavior. It does not change GitHub/Sheets authority, the ASC Write Contract boundary, adapter semantics, or factual receipt requirements.
 
-Implementation of the DUMP route is intentionally deferred until ZASSPILL's own behavior/contract is available from ZASS SYSTEM.
+Historical note: this addendum originally deferred DUMP until ZASSPILL was available. The upstream dependency is now satisfied by frozen ZASSPILL v1.0; current routing uses that upstream semantic contract without redefinition.
 
 
 ### User-First UX principle
@@ -428,7 +540,7 @@ Default visible modes remain:
 - DECIDE — help me choose
 - DESIGN — help me build
 
-Internal method names and contracts remain hidden by default. The DUMP route will adopt ZASSPILL once ZASSPILL is finalized in ZASS SYSTEM.
+Internal method names and contracts remain hidden by default. The DUMP route now uses frozen upstream ZASSPILL v1.0; ASC remains transport/orchestration authority rather than semantic authority.
 
 
 ### Authentication-state preservation — B + A

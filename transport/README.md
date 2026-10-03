@@ -73,6 +73,22 @@ Expiry rejection, digest verification, and replay protection remain intentionall
 
 Digest input: canonical JSON (keys sorted recursively, array order preserved) of `{envelope_version, request_id, issued_at, expires_at, contract}`, UTF-8 encoded. This is integrity / error detection only — not a signature, MAC, or sender authentication. Replay and owner checks live in the server binding (T-010B).
 
+## Production semantic-idempotency boundary — D-034
+
+The envelope `request_id` above is a transport/security-attempt identity. It must not be treated as the frozen ZASSPILL semantic idempotency key.
+
+For private continuity writes:
+
+```text
+envelope request_id
+= transport replay/security identity
+
+ZASSPILL req_<ULID>
+= logical semantic request/idempotency identity
+```
+
+Therefore a semantic retry may use a new transport envelope while preserving the same semantic `req_<ULID>` when required by ZASSPILL idempotency or WRITE_OUTCOME_UNKNOWN recovery. D-029 replay protection remains intact; semantic idempotency is a separate Production v1 concern.
+
 ```text
 node transport/test-envelope-security.mjs
 ```

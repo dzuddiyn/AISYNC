@@ -15,6 +15,27 @@ Google Sheets is **not** a competing editable master for canonical ZASS/AISYNC p
 
 Semantic project state such as lifecycle stage/progress is method-owned. ASC stores/displays it; ASC Core must not invent it.
 
+## Production private continuity boundary — D-032
+
+The existing Google Sheets ASC DB remains an **operational/index projection**. It is not the authoritative private thread-continuity store.
+
+Production v1 authority is separated as follows:
+
+```text
+GitHub
+= canonical project/method artifacts
+
+ASC Private Continuity Store
+= authoritative Current Thread Records
++ semantic event lineage
++ tombstones
+
+ASC DB / this Sheet
+= derived project/thread index + dashboard/receipt views
+```
+
+The exact backing technology and schema of the ASC Private Continuity Store are intentionally left to T-015 implementation. Any projected thread metadata added to this Sheet must remain derived and must not create a second semantic master.
+
 ## Tabs
 
 ### PROJECTS

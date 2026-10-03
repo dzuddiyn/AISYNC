@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE ACTION PLAN
 
-**Status:** SLICED INTO TASKS  
+**Status:** PRODUCTION v1 DELIVERY TRACK
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Authority:** Planning artifact only. It must not override LOCKED owner decisions.
@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Turn the locked ASC boundaries into a minimum testable v0.1 without coupling ZASS-family methods to destination-specific mechanics.
+Turn the proven ASC v0.1 technical baseline into AISYNC Production v1: a coherent, recoverable closed-beta system that real humans can use end-to-end without developer-side data repair, while preserving the locked method/ASC/SoT boundaries.
 
 ## Current plan
 
@@ -31,20 +31,22 @@ Pass / stop condition: An ordinary AI app with no write integration can generate
 Result: PASS — envelope schema + fragment-only Base64URL link encoder/decoder implemented and verified in T-002; security enforcement remains in AP-007/T-010.  
 Feeds design: YES
 
-AP-003 | OPEN  
+AP-003 | DONE
 Source: D-006, D-009, D-012, D-019, D-020  
 Action: Implement the locked Google Sites + Apps Script UI flow, including the D-020 provider-selection/auth/intent-routing/AI-handoff front door, preview/confirm/write behavior, and redirect back to the main ASC UI after a successful confirmed update (D-015).  
 Dependencies: D-012 UI information architecture.  
 Constraint / feasibility note: Landing must stay simple: DUMP / DECIDE / DESIGN. User does not need to choose a mode before starting; AI-provider selection is mandatory, then ASC auto-routes after authentication. Project detail carries the richer lineage views.  
 Pass / stop condition: The UI can represent the locked navigation and project-detail sections without forcing users to inspect raw Markdown.  
+Result: PASS — T-004 front door/handoff, T-008 confirm-sync interaction, and T-009 dashboard/project-detail flows passed local/live proof.
 Feeds design: YES
 
-AP-004 | OPEN  
+AP-004 | DONE
 Source: D-002, D-004  
 Action: Implement the ASC Core boundary: validate, authorize, translate, route, write through adapter, verify, return receipt; use GitHub as canonical artifact destination and Sheets as operational ASC DB per D-014.  
 Dependencies: AP-001.  
 Constraint / feasibility note: ASC Core must not perform reasoning or silently rewrite method meaning / LOCKED decisions.  
 Pass / stop condition: The same contract can enter the Core regardless of which AI app generated it.  
+Result: PASS — T-005 pure Core boundary plus T-006/T-007/T-008 adapter, receipt, HISTORY, and confirm-sync composition proved the method-agnostic Core path.
 Feeds design: YES
 
 AP-005 | DONE  
@@ -65,12 +67,60 @@ Pass / stop condition: Receipt clearly reports success/failure, destination, aff
 Result: PASS — local receipt/HISTORY boundary tests passed; external live verification re-read HISTORY row 3 and confirmed all eleven persisted fields exactly, including SUCCESS status, GitHub destination/resource, commit identifier, request ID, timestamp, and receipt JSON verification fields.
 Feeds design: YES
 
-AP-007 | OPEN  
+AP-007 | DONE
 Source: D-003, R-004  
 Action: Define minimum v0.1 security/privacy controls.  
 Dependencies: AP-002, AP-003, AP-004.  
 Constraint / feasibility note: No silent writes; explicit confirmation before persistence; destination credentials must not be exposed to the AI-generated link.  
 Pass / stop condition: Prototype does not rely on exposed credentials, invisible persistence, or sensitive record content in ordinary query parameters.  
+Result: PASS — T-010 live proof established owner gate, explicit confirmation, expiry/integrity/replay controls, server-side destination credentials, and fail-closed behavior.
+Feeds design: YES
+
+## Production v1 delivery plan
+
+Source: D-031, D-032, D-033, D-034
+
+AP-009 | CURRENT
+Action: Implement canonical project/thread/index state for Production v1: stable thread identity, revision + semantic event lineage, optimistic-concurrency inputs, bootstrap/duplicate protection, tombstone/delete handling, and truthful GitHub → ASC DB/index freshness.
+Dependencies: T-012 technical baseline, frozen ZASSPILL v1 upstream contract, D-032 private continuity authority, D-033 native continuity contract boundary, D-034 transport/semantic request-identity separation.
+Constraint / feasibility note: authoritative private Current Thread Records/events/tombstones live in the dedicated ASC Private Continuity Store; the existing ASC DB remains a derived index. Do not force bootstrap/thread mutations through the eight-field ASC Write Contract and do not reuse transport replay IDs as semantic idempotency IDs.
+Pass / stop condition: ASC can identify the current project/thread revision and index freshness factually without relying on manually maintained stale PROJECTS metadata.
+Feeds design: YES
+
+AP-010 | QUEUED
+Action: Replace TEST_ONLY write policy with the production GitHub write boundary: authorized project registry, deterministic Record ID → repo/branch/path mapping, GitHub App auth, idempotency, optimistic concurrency, and unknown-write reconciliation.
+Dependencies: AP-009.
+Pass / stop condition: an allowed human user can SAVE a supported production project without TEST_ONLY rules or arbitrary destination paths.
+Feeds design: YES
+
+AP-011 | QUEUED
+Action: Implement controlled/private continuity + retrieval using the frozen ZASSPILL v1 contract, including retrieval result contracts, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, stale-result reconciliation, and scoped private continuity references.
+Dependencies: AP-009, AP-010 where persistence is required.
+Pass / stop condition: an ordinary user can continue the same project/thread across supported AI providers without a long manual handover packet and without publicizing private project continuity.
+Feeds design: YES
+
+AP-012 | QUEUED
+Action: Integrate the production human journey into one coherent UI: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → receipt/HISTORY → CI → reopen/transfer.
+Dependencies: AP-009 through AP-011.
+Pass / stop condition: the normal journey is usable without raw contracts, raw GitHub paths, or developer intervention.
+Feeds design: YES
+
+AP-013 | QUEUED
+Action: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
+Dependencies: AP-009 through AP-012.
+Pass / stop condition: critical state can be recovered or rolled back truthfully without silent duplication/data loss and without exposing secrets.
+Feeds design: YES
+
+AP-014 | QUEUED
+Action: Run a closed beta with invited humans. Minimum three distinct non-developer participants; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
+Dependencies: AP-009 through AP-013.
+Pass / stop condition: at least three participants complete the locked core journey without developer-side data repair or hidden manual patching of canonical/project state.
+Feeds design: YES
+
+AP-015 | QUEUED
+Action: Prepare and release AISYNC Production v1 after beta acceptance: freeze release commit/deployment, document known limitations, verify operator runbook/rollback point, and obtain final owner acceptance.
+Dependencies: AP-014 PASS.
+Pass / stop condition: Production v1 release evidence is complete and the owner explicitly accepts the release. Only then may project lifecycle advance to DELIVERED !!.
 Feeds design: YES
 
 ## UI data requirements
@@ -112,7 +162,7 @@ Integration order after GitHub is not yet locked.
 
 ## Planning findings
 
-PF-001 | OPEN  
+PF-001 | RESOLVED BY T-003
 Finding: Google Sheets is the locked ASC DB for v0.1 (D-005). A separate ASC database is not required for the first implementation.
 
 PF-002 | RESOLVED BY D-015  
@@ -126,7 +176,7 @@ Finding: GitHub is canonical for project artifacts/Git lineage; Google Sheets is
 
 ## Design feedback
 
-The core DESIGN blockers are resolved by D-013 through D-018. The confirmed technical design is now maintained in `DESIGN.md`. The Action Plan has been sliced into `TASKS.md`. T-012 has now completed PASS; no further task is currently queued, and no new task should be invented without owner direction or a recorded implementation finding.
+The core DESIGN blockers are resolved. The confirmed technical design is maintained in `DESIGN.md`. T-014 has locked the Production v1 delivery track; T-015 is the current executable task, followed by T-016 through T-021.
 
 
 PF-005 | RESOLVED BY D-017  
@@ -141,12 +191,12 @@ PF-007 | RESOLVED BY T-003
 Finding: ASC DB v0.1 exists as a native Google Sheet with PROJECTS, RECORDS, ACTION_PLAN, and HISTORY. The active Sheet was migrated on 2026-10-02 to the intended Google owner profile `dzuddiyn Google`. The bootstrap row model carries GitHub source artifact/commit and explicit authority fields, so Sheets functions as operational/index storage without becoming the canonical Markdown master. Native Sheet URL is documented in `db/README.md`.
 
 
-PF-008 | OPEN — T-004 DEPLOYMENT VERIFICATION  
+PF-008 | RESOLVED BY T-004
 Finding: The Apps Script Web App skeleton is implemented using owner-only Google Account deployment semantics (`MYSELF` / `USER_DEPLOYING`). Pending `#asc` state restoration and preview-only behavior pass local tests. T-004 cannot be closed until the real deployed Google authentication redirect is verified with an actual ASC Link; no write handler exists yet.
 
 
 PF-009 | RESOLVED BY D-020  
-Finding: ASC front-door UX now requires explicit AI-provider selection, authentication before routing, automatic DUMP/DECIDE/DESIGN classification, visible/overridable route, and capability-aware handoff to the selected AI app. DUMP maps to ZASSPILL, DECIDE to ZASSELECTION/PICKS, and DESIGN to ZASSIMPLE/IDEA. ASC selects the subsystem/contract but does not own or duplicate its semantics. ZASSPILL remains an external dependency before the DUMP path can be finalized.
+Finding: ASC front-door UX requires explicit AI-provider selection, authentication before routing, automatic DUMP/DECIDE/DESIGN classification, visible/overridable route, and capability-aware handoff to the selected AI app. DUMP maps to frozen upstream ZASSPILL v1.0, DECIDE to ZASSELECTION/PICKS, and DESIGN to ZASSIMPLE/IDEA. ASC selects the subsystem/contract but does not own or duplicate its semantics. The upstream ZASSPILL dependency is satisfied; production private continuity remains separate work under AP-011/T-017.
 
 
 PF-010 | RESOLVED BY LIVE T-004 TEST  
@@ -329,4 +379,4 @@ Finding: T-010 pass condition is met by local and live evidence. Apps Script dep
 
 PF-056 | T-011 CLOSED / D-030 SUCCESS RETURN REFINEMENT LOCKED
 
-Finding: The owner issued a real ZASSIMPLE `SAVE`, producing secure request `TEST_ONLY_T011_ZASSIMPLE_SAVE_20261002224115`. The protected Apps Script flow required explicit CONFIRM & SYNC, then produced GitHub `VERIFIED_WRITE` commit `50a3372c0540a9db021d0c0518b010836c58f247` to `proofs/t008-confirm-sync-live.md`; the persisted content was independently re-read (blob `b021e31686be01df064b1f13992f33d7fc2c5bc3`) and matched the ZASSIMPLE SAVE payload. HISTORY row 6 recorded SUCCESS with `write_performed=true` and `verified=true`. The success page exposed `Return to main ASC UI`, and live owner observation established that a user click was required rather than an automatic top-level redirect. D-030 therefore locks the user-activated return link/button as the guaranteed v0.1 success return path; automatic top-level navigation is optional when permitted by the platform, and failure/unverified states must not imply success. T-011 is PASS. The TEST_ONLY fixed destination remains a proof-only policy, not a general production Record ID → GitHub path rule. T-012 remains BLOCKED / LATER pending ZASS GitHub CI.
+Finding: The owner issued a real ZASSIMPLE `SAVE`, producing secure request `TEST_ONLY_T011_ZASSIMPLE_SAVE_20261002224115`. The protected Apps Script flow required explicit CONFIRM & SYNC, then produced GitHub `VERIFIED_WRITE` commit `50a3372c0540a9db021d0c0518b010836c58f247` to `proofs/t008-confirm-sync-live.md`; the persisted content was independently re-read (blob `b021e31686be01df064b1f13992f33d7fc2c5bc3`) and matched the ZASSIMPLE SAVE payload. HISTORY row 6 recorded SUCCESS with `write_performed=true` and `verified=true`. The success page exposed `Return to main ASC UI`, and live owner observation established that a user click was required rather than an automatic top-level redirect. D-030 therefore locks the user-activated return link/button as the guaranteed v0.1 success return path; automatic top-level navigation is optional when permitted by the platform, and failure/unverified states must not imply success. T-011 is PASS. The TEST_ONLY fixed destination remains a proof-only policy, not a general production Record ID → GitHub path rule. Historical note: at T-011 closure T-012 was still blocked; that dependency was later satisfied and T-012 completed PASS.

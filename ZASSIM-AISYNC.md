@@ -1,11 +1,11 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.32
+**Project record version:** 0.6.34
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
-**Lifecycle stage:** DELIVERED !!  
-**Status:** ASC v0.1 core/fallback proof delivered; T-012 commit-linked ZASS CI consumer/display PASS
+**Lifecycle stage:** DO IT
+**Status:** ASC v0.1 technical proof baseline complete; Production v1 delivery track active; T-014 PASS / T-015 CURRENT
 **Owner:** Project Owner
 
 > AISYNC is shared infrastructure for moving, translating, writing, and verifying meaningful information produced by methods and projects. It is not itself a reasoning method.
@@ -24,7 +24,7 @@ DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
 Current project stage: **DO IT**  
-Reason: ASC technical architecture/design was explicitly confirmed by the Project Owner on 2026-10-01. The project is now in active DO IT execution; T-013A and T-013B have PASSED and current work has resumed at T-004.
+Reason: the technical proof baseline is complete, but D-031 locks that proof completion is not project delivery. Production v1 requires canonical state, production write, private continuity, integrated human UX, reliability/operations, closed-beta human evidence, and final owner release acceptance. T-014 is PASS and T-015 is CURRENT.
 
 Current command surface:
 
@@ -64,7 +64,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / GitHub CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | ASC depends on factual commit-linked CI availability; absence must remain NOT_FOUND, not PASS | T-012 deployed/live-read/owner-visible proof PASS | D-018 LOCKED |
 
-Current direction: DESIGN v1.0.10 remains CONFIRMED. T-001 through T-012 and T-013A/B are PASS. D-029 secures write-capable envelopes; D-030 refines the successful post-sync return path to a user-activated main-ASC link/button for v0.1. T-012 preserves D-018 by consuming factual `ZASS CI / zass-check` status only; it does not implement ZASS validation rules. ASC v0.1 core/fallback proof is delivered, and no further task is currently queued.
+Current direction: DESIGN v1.0.12 remains CONFIRMED. T-001 through T-014 and T-013A/B are PASS. D-031 locks the Production v1 delivery gate. D-032 through D-034 now lock private continuity authority, native ZASSPILL continuity-contract separation, and transport-vs-semantic request identity. T-015 is CURRENT, followed by T-016 through T-021.
 
 ---
 
@@ -554,6 +554,8 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.34 | 2026-10-03 | LOCKED D-032/D-033/D-034 before T-015: private thread continuity authority uses a dedicated ASC Private Continuity Store; frozen native ZASSPILL continuity writes are not forced into the eight-field ASC Write Contract; transport request identity is separated from semantic idempotency identity. |
+| 0.6.33 | 2026-10-03 | LOCKED D-031 Production v1 delivery gate: technical proof ≠ project DELIVERED; lifecycle confirmed as DO IT; Production v1 closed-beta scope and T-014→T-021 delivery track locked; T-014 baseline PASS and T-015 promoted. |
 | 0.6.32 | 2026-10-03 | T-012 PASS: read-only commit-linked ZASS CI consumer, Apps Script binding, project-detail rendering, protected deployment v7, real SUCCESS/NOT_FOUND reads, and owner-visible NOT_FOUND proof completed without duplicating ZASS validation semantics. No further task is currently queued. |
 | 0.6.31 | 2026-10-03 | LOCKED D-030 successful-return refinement from T-011 live evidence; user-activated `Return to main ASC UI` is the guaranteed v0.1 return path after verified SUCCESS + HISTORY, automatic top-level navigation is optional, and T-011 minimum end-to-end ZASSIMPLE SAVE proof is PASS. ASC v0.1 core/fallback proof is delivered; T-012 remains BLOCKED / LATER. |
 | 0.6.30 | 2026-10-03 | LOCKED D-029 T-010 v0.1 envelope security/replay rules (30-minute expiry, SHA-256 integrity as error detection only, one confirmed attempt per request_id via LockService + Script Properties, owner-only gate, server-side-only GITHUB_TOKEN, preview + confirm double validation). T-010A/B LOCAL PASS; T-010 remains IN PROGRESS pending live proof. |
@@ -606,7 +608,7 @@ Decision: Lock the **User-First UX principle** for the ASC front door.
 - Initial route is automatic; DUMP remains the safe default for unclear intent.
 - Later mode changes are suggested, not silently forced.
 - Internal ZASS sub-system names may stay hidden unless the user explicitly wants to learn the system.
-- The exact DUMP implementation remains pending ZASSPILL completion. This decision does not pre-empt or redefine ZASSPILL semantics.
+- Historical dependency note: DUMP originally remained pending ZASSPILL completion. Frozen upstream ZASSPILL v1.0 is now available and is the current DUMP semantic contract; AISYNC does not redefine it.
 
 Reason: preserve a plain-user-first experience while keeping deeper ZASS method structure modular and hidden until needed.  
 Locked by: Project Owner  
@@ -1180,6 +1182,120 @@ Live basis: T-011 owner-issued ZASSIMPLE SAVE completed a verified GitHub write 
 Locked by: Project Owner\
 Date: 2026-10-03
 
+## D-032 — PRIVATE CONTINUITY AUTHORITY / STORE
+
+Date: 2026-10-03
+Status: **LOCKED**
+Owner instruction: lock before T-015.
+
+Decision:
+
+```text
+GitHub
+= canonical project/method artifacts
+
+ASC Private Continuity Store
+= authoritative private Current Thread Records
++ semantic event lineage
++ tombstones/deletion authority
+
+ASC DB / Sheets
+= derived operational/index projection
+```
+
+Private continuity is not stored as an ordinary GitHub project artifact and the ASC DB must not become a competing semantic thread master. The exact Production v1 backing technology remains an implementation detail for T-015.
+
+## D-033 — NATIVE ZASSPILL CONTINUITY CONTRACT BOUNDARY
+
+Date: 2026-10-03
+Status: **LOCKED**
+
+Decision: preserve the existing eight-field ASC Write Contract v0.1 for the project/artifact write path that already uses it, but do not force frozen ZASSPILL v1 thread-continuity semantics into that shape.
+
+Continuity writes retain the upstream semantic form:
+
+```text
+request_id
+thread_id
+expected_revision
+operation
+changes
+```
+
+Bootstrap may legitimately have no `thread_id`. ASC must resolve identity according to the frozen bootstrap/import contract and must not invent a Record ID merely to satisfy the older ASC Write Contract.
+
+## D-034 — TRANSPORT REQUEST ID ≠ SEMANTIC IDEMPOTENCY ID
+
+Date: 2026-10-03
+Status: **LOCKED**
+
+Decision:
+
+```text
+ASC envelope request_id
+= transport/security attempt identity
+
+ZASSPILL req_<ULID>
+= logical semantic mutation/idempotency identity
+```
+
+D-029 transport replay protection remains valid. Semantic retries preserve the same ZASSPILL request ID where the frozen idempotency/WRITE_OUTCOME_UNKNOWN contract requires it. The transport replay key must not substitute for semantic idempotency.
+
+## D-031 — PRODUCTION v1 DELIVERY GATE
+
+Date: 2026-10-03
+Status: **LOCKED**
+Owner command: `PROCEED & LOCK`
+
+Decision:
+
+> A technical proof, subsystem proof, or vertical prototype may be complete without the AISYNC project being `DELIVERED !!`.
+
+AISYNC Production v1 is the first human-usable closed-beta release. It requires:
+- minimum three distinct non-developer human participants (target 3–5);
+- production GitHub write mapping and GitHub App authorization rather than TEST_ONLY proof policy;
+- canonical project/thread/revision/event state with truthful index freshness;
+- private controlled continuity + retrieval aligned to frozen ZASSPILL v1;
+- one coherent ordinary-user journey across routing, provider handoff, SAVE, receipt/HISTORY, CI, reopen, and transfer;
+- recovery/operations proof including backup/restore, migration, degraded/offline behavior, telemetry, deployment, rollback, and secret rotation;
+- no developer-side data repair or hidden canonical-state patching during accepted beta journeys;
+- final release checkpoint + owner acceptance.
+
+Until those gates pass, lifecycle remains **DO IT**. Only T-021 may promote the project to `DELIVERED !!`.
+
+Non-goals for Production v1:
+- public anonymous/multi-tenant SaaS;
+- production destinations beyond GitHub;
+- broad connector rollout;
+- unrelated method-language expansion.
+
+## T-014 CLOSURE CHECKPOINT
+
+Date: 2026-10-03
+Status: **PASS**
+
+T-014 reconciled the current authority after the technical-proof phase and established the locked path:
+
+```text
+T-015 canonical state / freshness
+↓
+T-016 production write
+↓
+T-017 private continuity + retrieval
+↓
+T-018 integrated human UX
+↓
+T-019 reliability + operations
+↓
+T-020 human closed beta
+↓
+T-021 Production v1 release
+↓
+DELIVERED !!
+```
+
+Current task: **T-015**.
+
 ## T-012 CLOSURE CHECKPOINT
 
 Date: 2026-10-03
@@ -1216,7 +1332,7 @@ Guardrail preserved:
 - missing CI data does not become PASS;
 - this path is read-only and does not mutate GitHub, ASC DB, or project state.
 
-Current execution state: **no further task queued**.
+Historical T-012 closure state: no further task was queued at that checkpoint. D-031 subsequently opened the Production v1 delivery track; current task is **T-015**.
 
 ## T-013B CLOSURE CHECKPOINT
 

@@ -75,3 +75,15 @@ Method-distribution snapshot metadata such as:
 belongs to a separate **Method Snapshot Record v0.1** in the public read-plane/registry subsystem.
 
 Reason: method distribution/readability and semantic project writes are different responsibilities. Combining them would weaken the contract boundary established by D-011/D-013.
+
+## Production continuity boundary — D-033
+
+D-033 does **not** change this eight-field schema. It narrows its Production v1 role.
+
+This contract remains the project/artifact write contract for flows that already use it. Frozen ZASSPILL v1 private thread-continuity writes are a separate semantic contract and must not be coerced into this eight-field shape.
+
+In particular:
+- a bootstrap candidate may legitimately have no existing `thread_id`;
+- ASC must not invent a `Record ID` merely to satisfy this schema;
+- continuity semantics such as `thread_id`, `expected_revision`, semantic `request_id`, operation and changes remain governed by the frozen ZASSPILL contract;
+- ASC still owns transport, persistence, authorization mechanics and verification.
