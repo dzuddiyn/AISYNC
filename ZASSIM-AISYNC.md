@@ -1,11 +1,11 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.35
+**Project record version:** 0.6.36
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT
-**Status:** ASC v0.1 technical proof baseline complete; Production v1 delivery track active; T-015 PASS / T-016 CURRENT
+**Status:** ASC v0.1 technical proof baseline complete; Production v1 delivery track active; T-016 PASS / T-017 CURRENT
 **Owner:** Project Owner
 
 > AISYNC is shared infrastructure for moving, translating, writing, and verifying meaningful information produced by methods and projects. It is not itself a reasoning method.
@@ -24,7 +24,7 @@ DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
 Current project stage: **DO IT**  
-Reason: the technical proof baseline is complete, but D-031 locks that proof completion is not project delivery. Production v1 requires canonical state, production write, private continuity, integrated human UX, reliability/operations, closed-beta human evidence, and final owner release acceptance. T-015 is PASS and T-016 is CURRENT.
+Reason: the technical proof baseline is complete, but D-031 locks that proof completion is not project delivery. Production v1 requires canonical state, production write, private continuity, integrated human UX, reliability/operations, closed-beta human evidence, and final owner release acceptance. T-016 is PASS and T-017 is CURRENT.
 
 Current command surface:
 
@@ -64,7 +64,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / GitHub CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | ASC depends on factual commit-linked CI availability; absence must remain NOT_FOUND, not PASS | T-012 deployed/live-read/owner-visible proof PASS | D-018 LOCKED |
 
-Current direction: DESIGN v1.0.12 remains CONFIRMED. T-001 through T-015 and T-013A/B are PASS. D-031 locks the Production v1 delivery gate. D-032 through D-034 lock private continuity authority, native ZASSPILL continuity-contract separation, and transport-vs-semantic request identity. T-016 is CURRENT, followed by T-017 through T-021.
+Current direction: DESIGN v1.0.12 remains CONFIRMED. T-001 through T-016 and T-013A/B are PASS. D-031 locks the Production v1 delivery gate. D-032 through D-034 lock private continuity authority, native ZASSPILL continuity-contract separation, and transport-vs-semantic request identity. T-017 is CURRENT, followed by T-018 through T-021.
 
 ---
 
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.36 | 2026-10-04 | T-016 PASS: Production v1 deterministic GitHub write boundary, GitHub App auth, concurrency/idempotency/unknown-write handling, controlled live SAVE, canonical merge, protected Apps Script version 17 deployment, and final NO_CHANGE verification all passed; T-017 private continuity + retrieval promoted. |
 | 0.6.35 | 2026-10-03 | T-015 PASS: canonical project/thread/index state, private Drive continuity authority, optimistic concurrency/idempotency/tombstone live proof, factual stale-index detection, merged Drive-write/freshness hotfix, and protected Apps Script deployment version 10 verified; T-016 Production Write Path promoted. |
 | 0.6.34 | 2026-10-03 | LOCKED D-032/D-033/D-034 before T-015: private thread continuity authority uses a dedicated ASC Private Continuity Store; frozen native ZASSPILL continuity writes are not forced into the eight-field ASC Write Contract; transport request identity is separated from semantic idempotency identity. |
 | 0.6.33 | 2026-10-03 | LOCKED D-031 Production v1 delivery gate: technical proof ≠ project DELIVERED; lifecycle confirmed as DO IT; Production v1 closed-beta scope and T-014→T-021 delivery track locked; T-014 baseline PASS and T-015 promoted. |
@@ -1270,6 +1271,29 @@ Non-goals for Production v1:
 - broad connector rollout;
 - unrelated method-language expansion.
 
+## T-016 CLOSURE CHECKPOINT
+
+Date: 2026-10-04
+Status: **PASS**
+
+Evidence:
+- canonical T-016 implementation merged through PR #13 at `cfbc379408080ee22b4eaf47835455829858b949`;
+- 24/24 repository tests PASS from merged `main`;
+- GitHub App installation is scoped to exactly `dzuddiyn/AISYNC`, with server-side production registry and installation credential configured;
+- controlled live owner SAVE produced GitHub App commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca` at deterministic target `records/T016-LIVE-20261003181842.md`, with exact GitHub and HISTORY read-back;
+- protected Apps Script production deployment is version 17: `T016-production-write-canonical`;
+- final protected-production request `ASC-T016-FINAL-20261003185851` returned `NO_CHANGE`, `write_performed=false`, `verified=true`; HISTORY row 8 matched and canonical `main` did not move, proving idempotent no-duplicate behavior;
+- successful final flow returned to the main ASC UI.
+
+Boundary preserved:
+- caller cannot supply arbitrary repository/branch/path;
+- GitHub App private key and installation token remain server-side;
+- GitHub stays canonical for project artifacts;
+- private continuity authority remains the dedicated ASC Private Continuity Store;
+- transport replay identity remains separate from semantic idempotency identity.
+
+Execution advances to **T-017 — PRIVATE CONTINUITY + RETRIEVAL**.
+
 ## T-015 CLOSURE CHECKPOINT
 
 Date: 2026-10-03
@@ -1316,7 +1340,7 @@ T-021 Production v1 release
 DELIVERED !!
 ```
 
-Current task: **T-016**.
+Current task: **T-017**.
 
 ## T-012 CLOSURE CHECKPOINT
 
@@ -1354,7 +1378,7 @@ Guardrail preserved:
 - missing CI data does not become PASS;
 - this path is read-only and does not mutate GitHub, ASC DB, or project state.
 
-Historical T-012 closure state: no further task was queued at that checkpoint. D-031 subsequently opened the Production v1 delivery track; T-015 is now PASS and current task is **T-016**.
+Historical T-012 closure state: no further task was queued at that checkpoint. D-031 subsequently opened the Production v1 delivery track; T-016 is now PASS and current task is **T-017**.
 
 ## T-013B CLOSURE CHECKPOINT
 

@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** PRODUCTION v1 DELIVERY TRACK — T-015 PASS / T-016 CURRENT
+**Status:** PRODUCTION v1 DELIVERY TRACK — T-016 PASS / T-017 CURRENT
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Design:** v1.0.12 CONFIRMED
@@ -10,15 +10,29 @@
 
 ## Current task
 
-T-016 | CURRENT — PRODUCTION WRITE PATH
-Source: AP-010, D-016, D-031
-Do: Replace the proof-only TEST_ONLY write policy with the Production v1 GitHub write boundary: authorized project registry, deterministic Record ID → repository/branch/path mapping, GitHub App authentication, semantic idempotency, optimistic concurrency, and unknown-write reconciliation.
-Depends on: T-015 PASS — satisfied.
-Boundary: production writes must be authorized and deterministic; arbitrary destination paths remain forbidden. GitHub stays canonical for project artifacts, private continuity remains in the ASC Private Continuity Store, and transport replay identity remains separate from semantic idempotency identity.
-Pass: supported human SAVE uses deterministic authorized project mapping + GitHub App + concurrency/idempotency/unknown-write handling; no TEST_ONLY policy.
-Current result: IN PROGRESS — local Production v1 write implementation PASS and controlled owner-confirmed live SAVE PASS via GitHub App + deterministic registry mapping. Independent verification confirmed commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca`, exact persisted file `records/T016-LIVE-20261003181842.md`, GitHub App bot authorship, and one matching HISTORY SUCCESS row. Canonical branch save/PR/merge and final protected production deployment from merged `main` remain pending; T-017 is not promoted.
+T-017 | CURRENT — PRIVATE CONTINUITY + RETRIEVAL
+Source: AP-011, D-027, D-031; frozen ZASSPILL v1.0
+Do: Implement controlled/private continuity + retrieval using the frozen ZASSPILL v1 contract, including retrieval result contracts, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, stale-result reconciliation, and scoped private continuity references.
+Depends on: T-015 PASS; T-016 PASS where persistence is required — satisfied.
+Boundary: private continuity authority remains the dedicated ASC Private Continuity Store; GitHub remains canonical for project artifacts; ASC DB/Sheets remains derived/index state; native ZASSPILL continuity semantics are not forced into the eight-field ASC Write Contract.
+Pass: same private project/thread continues across supported AI providers using controlled continuity/retrieval without long manual handover packets.
+Current result: NOT STARTED — promoted after T-016 PASS on 2026-10-04.
 
 ## Completed
+
+T-016 | PASS — PRODUCTION WRITE PATH
+Source: AP-010, D-016, D-031
+Do: Replace the proof-only TEST_ONLY write policy with the Production v1 GitHub write boundary: authorized project registry, deterministic Record ID → repository/branch/path mapping, GitHub App authentication, semantic idempotency, optimistic concurrency, and unknown-write reconciliation.
+Pass evidence:
+- PR #13 merged the canonical T-016 implementation to main at `cfbc379408080ee22b4eaf47835455829858b949`.
+- all 24 repository `test-*.mjs` tests PASS from merged `main`; generated Apps Script runtime freshness check and `git diff --check` PASS.
+- GitHub App `aisync-production-writer-dzuddiyn` is installed on exactly `dzuddiyn/AISYNC`; server-side installation ID and production project registry are configured.
+- controlled owner-confirmed live SAVE `ASC-T016-20261003181842` wrote deterministic target `records/T016-LIVE-20261003181842.md` through GitHub App commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca`; independent GitHub read-back matched exact content and HISTORY row 7 matched request/commit/resource with `SUCCESS`, `VERIFIED_WRITE`, `write_performed=true`, `verified=true`.
+- protected production Apps Script deployment was updated from merged `main` to version 17, `T016-production-write-canonical`.
+- final owner-confirmed verification `ASC-T016-FINAL-20261003185851` on protected production returned `NO_CHANGE`, `write_performed=false`, `verified=true`; independent HISTORY row 8 re-read matched exactly, and canonical `main` remained `cfbc379408080ee22b4eaf47835455829858b949`, proving no duplicate commit.
+- success flow returned to the main ASC UI.
+Boundary preserved: arbitrary caller-supplied repository/branch/path remains forbidden; GitHub App credentials remain server-side; private continuity authority remains separate; transport replay identity remains separate from semantic idempotency.
+Current result: PASS — T-016 pass criteria are satisfied; execution advances to T-017.
 
 T-015 | PASS — CANONICAL PROJECT / THREAD / INDEX STATE
 Source: AP-009, D-014, D-027, D-031, D-032, D-033, D-034; frozen upstream ZASSPILL v1.0 Phase 3–6 contracts
@@ -328,11 +342,6 @@ Verification:
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
-
-T-017 | QUEUED — PRIVATE CONTINUITY + RETRIEVAL
-Source: AP-011, D-027, D-031; frozen ZASSPILL v1.0
-Depends on: T-015 PASS; T-016 where persistence is required.
-Pass: same private project/thread continues across supported AI providers using controlled continuity/retrieval without long manual handover packets.
 
 T-018 | QUEUED — INTEGRATED HUMAN UX
 Source: AP-012, D-020, D-021, D-031

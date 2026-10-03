@@ -88,17 +88,18 @@ Pass / stop condition: ASC can identify the current project/thread revision and 
 Result: PASS — live private continuity mechanics and factual stale-index detection are verified; protected Apps Script deployment version 10 carries the merged implementation.
 Feeds design: YES
 
-AP-010 | CURRENT
+AP-010 | PASS
 Action: Replace TEST_ONLY write policy with the production GitHub write boundary: authorized project registry, deterministic Record ID → repo/branch/path mapping, GitHub App auth, idempotency, optimistic concurrency, and unknown-write reconciliation.
 Dependencies: AP-009 — satisfied.
 Pass / stop condition: an allowed human user can SAVE a supported production project without TEST_ONLY rules or arbitrary destination paths.
-Current result: IN PROGRESS — local registry/App-auth/concurrency/idempotency/unknown-write handling PASS; controlled live GitHub App SAVE PASS with independent GitHub + HISTORY verification. Canonical save/merge and final protected production deployment remain pending.
+Result: PASS — canonical Production v1 GitHub write path is merged and deployed; live GitHub App SAVE and final protected-production NO_CHANGE verification both passed with independent GitHub/HISTORY evidence.
 Feeds design: YES
 
-AP-011 | QUEUED
+AP-011 | CURRENT
 Action: Implement controlled/private continuity + retrieval using the frozen ZASSPILL v1 contract, including retrieval result contracts, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, stale-result reconciliation, and scoped private continuity references.
-Dependencies: AP-009, AP-010 where persistence is required.
+Dependencies: AP-009, AP-010 where persistence is required — satisfied.
 Pass / stop condition: an ordinary user can continue the same project/thread across supported AI providers without a long manual handover packet and without publicizing private project continuity.
+Current result: NOT STARTED — promoted after AP-010 / T-016 PASS.
 Feeds design: YES
 
 AP-012 | QUEUED
@@ -415,3 +416,8 @@ Independent GitHub read-back confirmed exact file content and that the commit ch
 GitHub App bootstrap is also independently proven: app slug `aisync-production-writer-dzuddiyn`, exact repository installation `dzuddiyn/AISYNC`, installation ID present, production registry configured, and GitHub App configuration valid. Temporary setup/recovery deployment was removed after proof; Apps Script @HEAD was cleaned back to the non-temporary T-016 implementation.
 
 Local proof after cleanup: all 24 repository `test-*.mjs` tests PASS; runtime freshness check PASS; `git diff --check` PASS; changed-file credential-pattern scan PASS. T-016 remains IN PROGRESS until its branch is canonically saved/merged and the protected production deployment is updated from merged `main`.
+
+
+PF-060 | T-016 CLOSED / T-017 PROMOTED
+
+Finding: T-016 is PASS. Canonical Production v1 source merged through PR #13 at `cfbc379408080ee22b4eaf47835455829858b949` and protected Apps Script production was deployed from merged `main` as version 17 (`T016-production-write-canonical`). Controlled live owner SAVE `ASC-T016-20261003181842` produced GitHub App commit `6da32a0a36c74abc2640d55f6195b56217e0e2ca` at deterministic target `records/T016-LIVE-20261003181842.md`, with exact GitHub read-back and matching HISTORY row 7. Final protected-production verification `ASC-T016-FINAL-20261003185851` returned `NO_CHANGE`, `write_performed=false`, `verified=true`; HISTORY row 8 matched, canonical main stayed at the PR #13 merge commit, and the success flow returned to the main ASC UI. All 24 repository tests pass from merged main. AP-010 is complete; AP-011 / T-017 is promoted.
