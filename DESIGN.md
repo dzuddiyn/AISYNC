@@ -176,14 +176,36 @@ Project list shows:
 - project progress bar
 - latest update
 
-Project detail shows:
-1. Project progress bar
-2. Progress summary
-3. Next Action Plan summary
-4. Next stage summary
-5. Action Plan table
-6. ZASS table
-7. History
+Project detail uses progressive disclosure:
+
+```text
+[ Workspace ] [ Review ] [ History ]
+
+Workspace
+├── Project Pulse
+├── Continue naturally → ASC Front Door
+└── one factual contextual card when supported
+
+Review
+├── commit-linked ZASS CI
+├── progress / next-action / next-stage evidence
+├── Action Plan
+└── ZASS / project records
+
+History
+└── factual audit trail
+```
+
+Workspace is the default project surface. Internal IDs, lineage JSON, full Action Plan rows, record tables, CI detail, and History stay out of the default view and remain available on demand.
+
+Contextual cards are projections only:
+- Current Task comes from explicit open/current Action Plan status;
+- Ready to Lock requires explicit ready/proposed decision state;
+- Design Forming requires explicit DESIGN stage plus factual progress/summary;
+- Delivered requires explicit delivered/complete lifecycle state;
+- STALE project index state suppresses current-action claims and instead shows a refresh warning.
+
+The dashboard does not infer method semantics or add a write path.
 
 ### 6. Apps Script Web App
 
