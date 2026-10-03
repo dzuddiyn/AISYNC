@@ -7,7 +7,7 @@ const SOURCE = fs.readFileSync(new URL('./DashboardRead.gs', import.meta.url), '
 const SHEET_ID = '11pWE0E-jEZhigVAYGcsfVXW0TODRcNMgOZHFfUQIHKw';
 
 const H = {
-  PROJECTS: ['project_id', 'project_name', 'ui_entry', 'source_method', 'lifecycle_stage', 'progress_percent', 'progress_summary', 'next_action_plan', 'next_stage', 'latest_update', 'github_repo', 'source_artifact', 'source_commit', 'updated_at', 'authority'],
+  PROJECTS: ['project_id', 'project_name', 'ui_entry', 'source_method', 'lifecycle_stage', 'progress_percent', 'progress_summary', 'next_action_plan', 'next_stage', 'latest_update', 'github_repo', 'source_ref', 'source_artifact', 'source_commit', 'updated_at', 'authority'],
   RECORDS: ['project_id', 'record_type', 'record_id', 'status', 'summary', 'lineage_json', 'source_artifact', 'source_commit', 'canonical_url', 'updated_at', 'authority'],
   ACTION_PLAN: ['project_id', 'ap_id', 'status', 'action', 'dependencies', 'pass_condition', 'source_lineage', 'source_artifact', 'source_commit', 'updated_at'],
   HISTORY: ['request_id', 'project_id', 'operation', 'destination', 'status', 'affected_resource', 'commit_or_record_id', 'source_commit', 'timestamp', 'failure_reason', 'receipt_json']
@@ -17,7 +17,7 @@ const row = (tab, obj) => H[tab].map((h) => (h in obj ? obj[h] : ''));
 function baseTabs() {
   return {
     PROJECTS: [H.PROJECTS,
-      row('PROJECTS', { project_id: 'AISYNC', project_name: 'AISYNC', ui_entry: 'DESIGN', source_method: 'ZASSIMPLE', lifecycle_stage: 'DO IT', progress_percent: '', progress_summary: 'Current T-004 front door', next_action_plan: 'AP-003', next_stage: 'T-004', latest_update: '2026-10-02 T-004 preview', github_repo: 'dzuddiyn/AISYNC', source_artifact: 'TASKS.md', source_commit: 'abc123', updated_at: '2026-10-02', authority: 'OPERATIONAL_INDEX' }),
+      row('PROJECTS', { project_id: 'AISYNC', project_name: 'AISYNC', ui_entry: 'DESIGN', source_method: 'ZASSIMPLE', lifecycle_stage: 'DO IT', progress_percent: '', progress_summary: 'Current T-004 front door', next_action_plan: 'AP-003', next_stage: 'T-004', latest_update: '2026-10-02 T-004 preview', github_repo: 'dzuddiyn/AISYNC', source_ref: 'main', source_artifact: 'TASKS.md', source_commit: 'abc123', updated_at: '2026-10-02', authority: 'OPERATIONAL_INDEX' }),
       row('PROJECTS', { project_id: 'AISYNC-2', project_name: 'Lookalike', ui_entry: 'DECIDE', progress_percent: '40', latest_update: '  spaced  value  ' }),
       row('PROJECTS', { project_id: 'ODD', project_name: 'Odd', ui_entry: 'BUILD', progress_percent: 'about half' }),
       H.PROJECTS.map(() => ''),
@@ -72,6 +72,11 @@ function world(tabs = baseTabs(), { throwOnOpen = false } = {}) {
   }, forbidden);
   const ctx = {
     SpreadsheetApp: trap('SpreadsheetApp', {}, forbidden),
+    ascAttachProjectIndexFreshness_(project) {
+      project.index_metadata.freshness = 'UNVERIFIED';
+      project.index_metadata.freshness_evidence = { status: 'UNVERIFIED', reason: 'TEST_STUB' };
+      return project;
+    },
     console
   };
   ctx.SpreadsheetApp = new Proxy({}, {
@@ -105,6 +110,7 @@ assert.doesNotMatch(SOURCE, /\.(setValue|setValues|appendRow|insertRow|deleteRow
   // stale index values are passed through exactly, not refreshed or derived
   assert.equal(aisync.latest_update, '2026-10-02 T-004 preview');
   assert.equal(aisync.next_stage, 'T-004');
+  assert.equal(aisync.index_metadata.source_ref, 'main');
   assert.equal(aisync.index_metadata.source_commit, 'abc123');
   assert.equal(aisync.index_metadata.freshness, 'UNVERIFIED');
   // semantic strings preserved exactly (no trim)
