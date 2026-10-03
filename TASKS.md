@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** PRODUCTION v1 DELIVERY TRACK — T-014 PASS / T-015 CURRENT
+**Status:** PRODUCTION v1 DELIVERY TRACK — T-015 PASS / T-016 CURRENT
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Design:** v1.0.12 CONFIRMED
@@ -10,15 +10,27 @@
 
 ## Current task
 
-T-015 | CURRENT — CANONICAL PROJECT / THREAD / INDEX STATE
-Source: AP-009, D-014, D-027, D-031, D-032, D-033, D-034; frozen upstream ZASSPILL v1.0 Phase 3–6 contracts
-Do: Implement the smallest Production v1 state slice: stable project/thread identity, revision + semantic event lineage, optimistic-concurrency inputs, bootstrap/duplicate protection, tombstone/delete behavior, and factual GitHub → ASC DB/index freshness.
-Depends on: T-012 PASS, T-014 PASS, frozen upstream ZASSPILL v1.0 contract, and owner-locked D-032/D-033/D-034 production continuity boundaries — satisfied.
-Boundary: ASC owns persistence/transport/index mechanics; ZASSPILL owns semantic contract meaning. Private Current Thread Records/events/tombstones belong to the ASC Private Continuity Store, not GitHub project repos or the derived ASC DB index. Native ZASSPILL continuity writes remain separate from the eight-field ASC Write Contract, and transport request IDs remain separate from semantic idempotency IDs.
-Pass: a project/thread can be read at an explicit authoritative revision; stale/duplicate/conflicting/bootstrap/delete states are distinguishable; ASC DB freshness is factual rather than manually stale; automated tests prove no silent semantic inference.
-Current result: IN PROGRESS — local T-015 mechanics PASS (private continuity state engine, private Drive JSON store binding, exact GitHub source-head/freshness comparison, 22-test repository suite). Live Apps Script deployment/private-store proof and owner-visible factual dashboard freshness remain pending; T-016 is not promoted.
+T-016 | CURRENT — PRODUCTION WRITE PATH
+Source: AP-010, D-016, D-031
+Do: Replace the proof-only TEST_ONLY write policy with the Production v1 GitHub write boundary: authorized project registry, deterministic Record ID → repository/branch/path mapping, GitHub App authentication, semantic idempotency, optimistic concurrency, and unknown-write reconciliation.
+Depends on: T-015 PASS — satisfied.
+Boundary: production writes must be authorized and deterministic; arbitrary destination paths remain forbidden. GitHub stays canonical for project artifacts, private continuity remains in the ASC Private Continuity Store, and transport replay identity remains separate from semantic idempotency identity.
+Pass: supported human SAVE uses deterministic authorized project mapping + GitHub App + concurrency/idempotency/unknown-write handling; no TEST_ONLY policy.
+Current result: NOT STARTED — promoted after T-015 PASS on 2026-10-03.
 
 ## Completed
+
+T-015 | PASS — CANONICAL PROJECT / THREAD / INDEX STATE
+Source: AP-009, D-014, D-027, D-031, D-032, D-033, D-034; frozen upstream ZASSPILL v1.0 Phase 3–6 contracts
+Do: Implement the smallest Production v1 state slice: stable project/thread identity, revision + semantic event lineage, optimistic-concurrency inputs, bootstrap/duplicate protection, tombstone/delete behavior, and factual GitHub → ASC DB/index freshness.
+Pass evidence:
+- PR #10 merged the canonical state implementation to main at `120d2d7042d9adfbacf3f4edea8943deb79c29b7`; PR #11 merged the live Drive-write/freshness hotfix to main at `7a4c8777c0f79a8e34d29dff8972d0f906e1d3f8`.
+- all 22 repository `test-*.mjs` tests PASS after the merged hotfix; `git diff --check` PASS.
+- protected live continuity proof created a stable `th_<ULID>` thread, read revision 1, applied revision 2, returned `ALREADY_APPLIED` for the duplicate semantic request, returned `REVISION_CONFLICT` for the stale write, preserved event revisions `[1,2]`, deleted successfully, and then returned `THREAD_TOMBSTONED`.
+- independent Drive read-back verified the authoritative private state JSON, the expected tombstone, and private/non-shared proof/store files.
+- factual freshness proof returned `STALE / CANONICAL_HEAD_DIFFERS_FROM_INDEXED_COMMIT` for `source_ref=main` because indexed commit `2e0c773faaa2597a5df72fa77fea42d911bb0412` differed from canonical main `120d2d7042d9adfbacf3f4edea8943deb79c29b7` at proof time; ASC did not silently repair or infer project semantics.
+- Apps Script version 10, `T-015 canonical continuity state verified hotfix`, is deployed on the protected production deployment; the owner-only web endpoint resolves through the Google sign-in gate as expected.
+Current result: PASS — T-015 pass criteria are satisfied; execution advances to T-016.
 
 T-014 | PASS — PRODUCTION BASELINE & DEFINITION OF DONE
 Source: D-031, owner `PROCEED & LOCK` on 2026-10-03
@@ -316,11 +328,6 @@ Verification:
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
 ## Queue
-
-T-016 | QUEUED — PRODUCTION WRITE PATH
-Source: AP-010, D-016, D-031
-Depends on: T-015 PASS.
-Pass: supported human SAVE uses deterministic authorized project mapping + GitHub App + concurrency/idempotency/unknown-write handling; no TEST_ONLY policy.
 
 T-017 | QUEUED — PRIVATE CONTINUITY + RETRIEVAL
 Source: AP-011, D-027, D-031; frozen ZASSPILL v1.0

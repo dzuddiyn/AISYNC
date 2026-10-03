@@ -304,11 +304,15 @@ Next: T-012C renders the factual commit-linked result in project detail and perf
 
 Owner-visible proof: PASS — the protected dashboard displayed `dzuddiyn/AISYNC@2e0c773faaa2597a5df72fa77fea42d911bb0412` with `Status: NOT_FOUND`, `Workflow / job: ZASS CI / zass-check`, and explicit text that no matching CI result for the exact commit is not a PASS result. T-012 is complete.
 
-## T-015 private continuity / factual index state — LOCAL PASS; live deployment pending
+## T-015 private continuity / factual index state — LIVE PASS / DEPLOYED
 
-- `continuity/private-continuity-state.mjs` adds runtime-neutral stable thread identity, authoritative revision reads, matching semantic-event lineage, semantic-request idempotency, optimistic concurrency, explicit bootstrap outcomes, delete/tombstone protection, and a derived thread index without inspecting method-owned semantic fields.
-- `PrivateContinuityDriveStore.gs` selects a dedicated private Google Drive JSON file as the Production v1 closed-beta backing store. Script Properties hold only the folder/file locators; the Drive JSON file is the continuity authority. `LockService` serializes read-modify-write transactions and changed writes are read back before success is returned.
-- `ContinuityState.gs` binds the shared state engine to the private Drive store with server-private helper functions only; no browser-callable continuity mutation surface is added in T-015.
-- `continuity/github-source-head.mjs` + `ProjectFreshness.gs` read the GitHub repository default branch/head and compare exact `github_repo + source_ref + source_commit` evidence. Dashboard project views can report `CURRENT`, `STALE`, `SOURCE_MISMATCH`, or `UNVERIFIED` without deriving lifecycle/progress semantics.
-- The live ASC DB PROJECTS tab has been backward-compatibly extended with `source_ref`; AISYNC currently records `main`. Existing stale semantic/index values were intentionally not manually repaired.
-- Pending before T-015 PASS: canonical Git save, Apps Script deployment, real private Drive continuity-store proof, and owner-visible factual dashboard freshness proof.
+- `continuity/private-continuity-state.mjs` provides runtime-neutral stable thread identity, authoritative revision reads, matching semantic-event lineage, semantic-request idempotency, optimistic concurrency, explicit bootstrap outcomes, delete/tombstone protection, and a derived thread index without inspecting method-owned semantic fields.
+- `PrivateContinuityDriveStore.gs` uses a dedicated private Google Drive JSON file as the Production v1 closed-beta continuity authority. Changed writes use create → verify → Script Property pointer-swap rather than in-place `setContent`; the prior file is retired only after the verified pointer switch.
+- `ContinuityState.gs` keeps continuity mutation helpers server-private; T-015 does not add a browser-callable private continuity mutation surface.
+- `ProjectFreshness.gs` performs authenticated server-side GitHub reads using `GITHUB_TOKEN` from Script Properties and compares exact `github_repo + source_ref + source_commit` evidence. The token is never returned in freshness evidence.
+- Live continuity proof PASS: create/read revision 1, mutation revision 2, duplicate `ALREADY_APPLIED`, stale `REVISION_CONFLICT`, event revisions `[1,2]`, delete `DELETED`, post-delete `THREAD_TOMBSTONED`; independent Drive read-back verified the authoritative tombstone and private/non-shared store/proof files.
+- Live freshness proof PASS: AISYNC index `source_ref=main` at commit `2e0c773faaa2597a5df72fa77fea42d911bb0412` was correctly reported `STALE / CANONICAL_HEAD_DIFFERS_FROM_INDEXED_COMMIT` against canonical main `120d2d7042d9adfbacf3f4edea8943deb79c29b7` at proof time. No silent index repair or semantic inference occurred.
+- Canonical hotfix PR #11 merged at `7a4c8777c0f79a8e34d29dff8972d0f906e1d3f8`.
+- Protected Apps Script production deployment is version 10: `T-015 canonical continuity state verified hotfix`.
+- All 22 repository `test-*.mjs` tests PASS after the merged hotfix.
+- T-015 is PASS. T-016 Production Write Path is the next/current task.
