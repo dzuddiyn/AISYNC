@@ -2,9 +2,10 @@
 // T-009B/C — dashboard client. Pure render functions return HTML strings; values are
 // escaped and shown exactly as provided by the read layer. No inference or calculation.
 
-const DASHBOARD_ENTRIES = ['DECIDE', 'DESIGN'];
+const DASHBOARD_ENTRIES = ['DUMP', 'DECIDE', 'DESIGN'];
+const ASC_FRONT_DOOR_URL = 'https://dzuddiyn.github.io/AISYNC/asc/';
 const NOT_PROVIDED = 'Not provided';
-let dashboardState = { entry: 'DECIDE', list: null };
+let dashboardState = { entry: 'DUMP', list: null };
 
 function escapeHtml(value) {
   return String(value === undefined || value === null ? '' : value)
@@ -107,17 +108,26 @@ function renderProjectItem(project) {
     '</button>';
 }
 
+function renderRouteIntro(active) {
+  if (active !== 'DUMP') return '';
+  return '<section class="card route-intro">' +
+    '<strong>DUMP → ZASSPILL</strong>' +
+    '<p class="muted">Start with natural conversation. ASC routes the handoff; ZASSPILL owns the method semantics.</p>' +
+    '<p><a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open ASC Front Door</a></p>' +
+    '</section>';
+}
+
 function renderProjectList(result, entry) {
   if (!result || result.ok !== true) return renderError(result);
-  const active = DASHBOARD_ENTRIES.indexOf(entry) >= 0 ? entry : 'DECIDE';
+  const active = DASHBOARD_ENTRIES.indexOf(entry) >= 0 ? entry : 'DUMP';
   const projects = (result.groups && result.groups[active]) || [];
-  let html = renderEntryTabs(active);
+  let html = renderEntryTabs(active) + renderRouteIntro(active);
   html += projects.length
     ? projects.map(renderProjectItem).join('')
     : '<p class="muted">No ' + active + ' projects in ASC DB.</p>';
   const unrecognized = result.unrecognized_ui_entry || [];
   if (unrecognized.length) {
-    html += '<p class="muted">' + unrecognized.length + ' project row(s) have a ui_entry other than DECIDE/DESIGN and are not grouped.</p>';
+    html += '<p class="muted">' + unrecognized.length + ' project row(s) have a ui_entry other than DUMP/DECIDE/DESIGN and are not grouped.</p>';
   }
   return html;
 }
