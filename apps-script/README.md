@@ -549,4 +549,11 @@ Verification:
 - Workspace remains free of Gate 5 audit sections;
 - no write path, validator logic, schema change, or authority mutation is added.
 
-Production deployment + owner-visible proof remain required before Gate 5 closure.
+Production deployment evidence:
+- protected production deployment now points to **Apps Script version 27**, `Gate5-review-history-projection`;
+- v27 was constructed from immutable Gate 4 production v26 plus exactly `Dashboard.html` and `DashboardClient.html`;
+- independent post-deploy pull verified both files match AISYNC Gate 5 merge `56f3430f6e0718d21e0b8f63e59dfabd325731d3`;
+- every other production file in v27 matches production v26;
+- development HEAD was restored after the versioned release.
+
+Remaining Gate 5 closure evidence: owner-visible production verification of Review/History completeness and Workspace non-regression.
