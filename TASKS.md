@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** PRODUCTION v1 DELIVERY TRACK — T-017 PASS / T-018 CURRENT
+**Status:** PRODUCTION v1 DELIVERY TRACK — T-018 PASS / T-019 CURRENT
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Design:** v1.0.12 CONFIRMED
@@ -10,15 +10,29 @@
 
 ## Current task
 
-T-018 | CURRENT — INTEGRATED HUMAN UX
-Source: AP-012, D-020, D-021, D-031
-Do: Integrate the production human journey into one coherent UI: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → receipt/HISTORY → CI → reopen/transfer.
-Depends on: T-015 through T-017 — satisfied.
-Boundary: preserve existing authority and method boundaries; ordinary users should not need raw contracts, raw GitHub paths, or developer intervention.
-Pass: login → project/thread → route/provider → handoff → SAVE → receipt/HISTORY → CI → reopen/transfer works as one ordinary-user journey without raw internal mechanics.
-Current result: IN PROGRESS — T-018A handoff + first-thread bootstrap and T-018B provider-return SAVE bridge are canonical/live. PR #35 merged at `48ff55442c16c9c6070bdc64e5c58401ceb25064`; protected Apps Script production is v30 (`T018B-provider-return-save`). A fresh v30 Gemini DESIGN handoff `ho_01M42TNZ3WXJFWFS39EWY581SY` on thread `th_01M42FTAP1KSHHP9FMJ2M2QTWB` source revision 1 returned the required bounded `ASC_METHOD_RESULT`; PREVIEW RETURN was independently proven non-mutating, PREPARE ASC SAVE recorded the exact handoff result while leaving GitHub/HISTORY untouched, and the protected Front Door replay/security preview remained UNSAVED until owner `CONFIRM & SYNC`. Production SAVE then completed with request `ASC-T018B-01M42V6M2CX4ZJAN602WD97194`, outcome `VERIFIED_WRITE`, commit `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3`, exact artifact `records/METHOD-RESULT-01M42TNZ3WXJFWFS39EWY581SY.md`, HISTORY `SUCCESS`, `write_performed=true`, `verified=true`. Independent reads confirmed commit, artifact contents and HISTORY. GitHub Pages build/deployment run `37184900100` for that commit completed `success`; there is no `ZASS CI / zass-check` run for the SAVE artifact commit, so Pages success is not mislabeled as ZASS CI PASS. The operational PROJECTS index remains STALE and still points to old source commit `2e0c773faaa2597a5df72fa77fea42d911bb0412`. The live private thread also remains revision 1 with its pre-SAVE current checkpoint, exposing the final reopen/transfer gap. T-018C is LOCAL PASS on canonical base `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3`: Workspace surfaces verified saved results after reload; owner explicitly chooses `ADVANCE THREAD FROM SAVED RESULT`; server requires the exact recorded handoff result plus verified GitHub SAVE receipt, fails closed on stale revision, applies `confirmed_outcome → continuity.current` and `still_open → continuity.open` while preserving other semantic fields, records method-result/handoff/save-commit lineage, increments revision once, supports idempotent retry, and never creates another GitHub/Sheets write. Multiple pending saved results are shown explicitly and ASC does not choose one automatically. Fresh-clone proof passes all 28 repository `test-*.mjs` files with `git diff --check = 0`. T-018 remains CURRENT: save/merge/deploy T-018C, prove live revision 1→2 continuity advance, then transfer the updated revision/current to a second AI provider.
+T-019 | CURRENT — PRODUCTION RELIABILITY & OPERATIONS
+Source: AP-013, D-029, D-031
+Do: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
+Depends on: T-015 through T-018 — satisfied.
+Boundary: reliability work must preserve the existing GitHub canonical authority, owner-private continuity authority, server-side credential boundary, and truthful failure/reporting semantics.
+Pass: backup/restore, migration, degraded/offline, replay/idempotency lifecycle, telemetry, secret rotation, deployment and rollback are proven and documented.
+Current result: CURRENT — T-018 / AP-012 is complete and Production v1 execution advances to reliability/operations. No T-019 implementation claim is made yet.
 
 ## Completed
+
+T-018 | PASS — INTEGRATED HUMAN UX
+Source: AP-012, D-020, D-021, D-031
+Do: Integrate the production human journey into one coherent UI: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → receipt/HISTORY → CI → reopen/transfer.
+Pass evidence:
+- T-018A first private-thread bootstrap + protected project/thread/provider/route handoff merged through PR #34 and deployed; owner-visible production proof created real AISYNC thread `th_01M42FTAP1KSHHP9FMJ2M2QTWB` without synthetic semantic state.
+- T-018B provider-return bridge merged through PR #35 and deployed as protected Apps Script v30; the initial Gemini false-local-SAVE defect was reproduced, then the fixed flow required bounded `ASC_METHOD_RESULT`, non-mutating PREVIEW RETURN, PREPARE ASC SAVE, protected Front Door replay/security preview, and explicit owner `CONFIRM & SYNC`.
+- factual SAVE request `ASC-T018B-01M42V6M2CX4ZJAN602WD97194` completed `VERIFIED_WRITE` at commit `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3`; exact artifact `records/METHOD-RESULT-01M42TNZ3WXJFWFS39EWY581SY.md` and HISTORY `SUCCESS / write_performed=true / verified=true` were independently re-read.
+- commit-linked CI/status behavior remained truthful: GitHub Pages build for the SAVE commit succeeded, while no `ZASS CI / zass-check` run existed for that method-result artifact commit; ASC did not mislabel absence as PASS, and the PROJECTS operational index remained explicitly STALE.
+- T-018C saved-result continuity advance merged through PR #36 at `211edc112052c21b28b6f2d7e3b5930c62a74f06` and deployed as protected Apps Script v31. Owner action `ADVANCE THREAD FROM SAVED RESULT` independently proved private continuity revision `1 → 2`, `confirmed_outcome → continuity.current`, `still_open → continuity.open=[]`, and UPDATE event lineage containing method-result ID, handoff ID, and SAVE commit, with no new GitHub/HISTORY write.
+- final cross-provider handoff to ChatGPT created `ho_01M42Y3NBG6814SHNF374YWTZZ` with scoped reference `cr_01M42Y3RGRPMJKXXT79J223RRD`; independent private-store read confirmed `source_revision: 2` and the advanced saved checkpoint.
+- receiving ChatGPT independently echoed exactly: `thread_id: th_01M42FTAP1KSHHP9FMJ2M2QTWB`, `source_revision: 2`, `current: ZASSIMPLE method gateway version 0.3.0 verified and integrated human journey continuation confirmed.`, `open: []`.
+Boundary preserved: provider-held personal memory/profile was not imported; providers never received GitHub credentials or write authority; private continuity remained owner-only; GitHub persistence remained owner-confirmed; stale/absent CI/index state was reported factually.
+Current result: PASS — AP-012 is complete. The ordinary-user production journey is proven end to end through cross-provider reopen/transfer, and execution advances to T-019 / AP-013.
 
 T-017 | PASS — PRIVATE CONTINUITY + RETRIEVAL
 Source: AP-011, D-027, D-031; frozen ZASSPILL v1.0
@@ -358,11 +372,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-019 | QUEUED — PRODUCTION RELIABILITY & OPERATIONS
-Source: AP-013, D-029, D-031
-Depends on: T-015 through T-018.
-Pass: backup/restore, migration, degraded/offline, replay/idempotency lifecycle, telemetry, secret rotation, deployment and rollback are proven and documented.
-
 T-020 | QUEUED — HUMAN CLOSED BETA
 Source: AP-014, D-031
 Depends on: T-015 through T-019.
@@ -375,14 +384,14 @@ Pass: release commit/deployment, known limitations, operator runbook, rollback p
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001 through T-017 and T-013A/B. T-012 completed the technical proof baseline; T-014 locked Production v1 delivery criteria; T-015, T-016, and T-017 are PASS; T-018 is current.
+Implementation evidence exists for T-001 through T-018 and T-013A/B. T-012 completed the technical proof baseline; T-014 locked Production v1 delivery criteria; T-015 through T-018 are PASS; T-019 is current.
 
 Closure checks:
 - Built: YES — ASC v0.1 core/fallback path, method gateway slices, and commit-linked ZASS CI consumer through T-012 are implemented
 - Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY; T-012 added deployed/live-read/owner-visible commit-linked ZASS CI proof
 - Matches design: YES — including D-029 security/replay and D-030 successful-return refinement
 - Recorded: YES — canonical GitHub tracking/evidence updated
-- Current: T-018 — integrated human UX for the Production v1 ordinary-user journey
+- Current: T-019 — Production v1 reliability & operations
 
 
 T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  
