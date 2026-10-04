@@ -293,13 +293,21 @@ const project = (o) => ({
   assert.match(review, /data-project-view="REVIEW" aria-pressed="true"/);
   assert.match(review, /Commit-linked ZASS CI/);
   assert.match(review, /Status: <strong>SUCCESS<\/strong>/);
+  assert.match(review, /Review overview/);
+  assert.match(review, /Decisions/);
+  assert.match(review, /Design \/ architecture/);
+  assert.match(review, /Selection state/);
   assert.match(review, /Action Plan/);
-  assert.match(review, /ZASS \/ project records/);
+  assert.match(review, /Lineage \/ sources/);
+  assert.match(review, /Commit \/ version trail/);
+  assert.match(review, /Raw project records/);
   assert.match(review, /AP-003/);
   assert.match(review, /D-015/);
+  assert.match(review, /No design\/architecture records indexed/);
+  assert.match(review, /No selection state indexed/);
   assert.match(review, /<a href="https:\/\/github.com\/dzuddiyn\/AISYNC"/);
   assert.doesNotMatch(review, /href="javascript:/);
-  assert.doesNotMatch(review, /TEST_ONLY_T008B/);
+  assert.doesNotMatch(review, /<h2>History<\/h2>|Adapter write was not verified as persisted/);
   assert.doesNotMatch(review, /Z001|Z101|project valid|validation PASS/i);
 
   const notFoundHtml = sb.renderProjectDetail(ciDetail, {
@@ -328,8 +336,11 @@ const project = (o) => ({
   assert.match(history, /data-project-view="HISTORY" aria-pressed="true"/);
   assert.match(history, /<h2>History<\/h2>/);
   assert.match(history, /TEST_ONLY_T008B_LIVE_20261003_0415/);
-  assert.match(history, /<td>SUCCESS<\/td>/);
-  assert.match(history, /<td>FAILED<\/td>/);
+  assert.match(history, /<span class="badge">SUCCESS<\/span>/);
+  assert.match(history, /<span class="badge">FAILED<\/span>/);
+  assert.match(history, /Verified: <strong>true<\/strong>/);
+  assert.match(history, /Raw receipt JSON/);
+  assert.match(history, /Failure: Adapter write was not verified as persisted/);
   assert.doesNotMatch(history, /Action Plan/);
   assert.doesNotMatch(history, /Commit-linked ZASS CI/);
 
@@ -351,7 +362,11 @@ const project = (o) => ({
     action_plan: [],
     history: []
   }, null, 'REVIEW');
+  assert.match(emptyReview, /No decisions indexed for this project\./);
+  assert.match(emptyReview, /No design\/architecture records indexed\./);
+  assert.match(emptyReview, /No selection state indexed\./);
   assert.match(emptyReview, /No ACTION_PLAN rows for this project\./);
+  assert.match(emptyReview, /No lineage\/source metadata indexed for this project\./);
   assert.match(emptyReview, /No RECORDS rows for this project\./);
 
   const emptyHistory = sb.renderProjectDetail({
@@ -366,6 +381,150 @@ const project = (o) => ({
   assert.match(sb.renderProjectDetail(undefined), /FAILED/);
   assert.match(sb.renderProjectDetail({ ok: false, error: { code: 'PROJECT_NOT_FOUND', message: 'No PROJECTS row has this exact project_id.' } }), /PROJECT_NOT_FOUND/);
   assert.match(sb.renderTable(['a'], undefined, 'Empty.'), /Empty\./);
+}
+
+
+// Gate 5 Review / History projection: categorized evidence, readable lineage, commit trail, compact receipts.
+{
+  const c1 = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+  const c2 = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+  const c3 = 'cccccccccccccccccccccccccccccccccccccccc';
+
+  const gate5 = {
+    ok: true,
+    project: project({
+      github_repo: 'dzuddiyn/AISYNC',
+      index_metadata: {
+        source_artifact: 'ZASSIM-AISYNC.md',
+        source_commit: c1,
+        updated_at: '2026-10-04T01:00:00Z',
+        authority: 'OPERATIONAL_INDEX',
+        freshness: 'CURRENT'
+      }
+    }),
+    records: [
+      {
+        project_id: 'AISYNC', record_type: 'decision', record_id: 'D-100', status: 'LOCKED',
+        summary: 'Use one authoritative write path.', lineage_json: '["D-001","D-002"]',
+        source_artifact: 'ZASSIM-AISYNC.md', source_commit: c1,
+        canonical_url: 'https://github.com/dzuddiyn/AISYNC/blob/main/ZASSIM-AISYNC.md',
+        updated_at: '2026-10-04T01:00:00Z'
+      },
+      {
+        project_id: 'AISYNC', record_type: 'architecture', record_id: 'A-001', status: 'CONFIRMED',
+        summary: 'Protected server-side adapter.', lineage_json: '["D-100"]',
+        source_artifact: 'DESIGN.md', source_commit: c2,
+        canonical_url: 'https://github.com/dzuddiyn/AISYNC/blob/main/DESIGN.md',
+        updated_at: '2026-10-04T01:01:00Z'
+      },
+      {
+        project_id: 'AISYNC', record_type: 'selection_matrix', record_id: 'SEL-001', status: 'SAVED',
+        summary: 'Provider selection matrix.', lineage_json: '["D-100","A-001"]',
+        source_artifact: 'SELECTION.md', source_commit: c2,
+        canonical_url: 'https://github.com/dzuddiyn/AISYNC/blob/main/SELECTION.md',
+        updated_at: '2026-10-04T01:02:00Z'
+      },
+      {
+        project_id: 'AISYNC', record_type: 'note', record_id: 'R-BAD', status: 'OPEN',
+        summary: 'Malformed lineage proof.', lineage_json: 'not-json',
+        source_artifact: 'NOTES.md', source_commit: 'not-a-sha',
+        canonical_url: 'javascript:alert(1)', updated_at: '2026-10-04T01:03:00Z'
+      }
+    ],
+    action_plan: [{
+      project_id: 'AISYNC', ap_id: 'AP-100', status: 'OPEN',
+      action: 'Verify review surface.', dependencies: 'None',
+      pass_condition: 'Owner can inspect categories.', source_lineage: 'D-100,A-001',
+      source_artifact: 'ACTION_PLAN.md', source_commit: c2, updated_at: '2026-10-04T01:04:00Z'
+    }],
+    history: [
+      {
+        request_id: 'REQ-G5-SUCCESS', operation: 'SAVE', destination: 'GitHub', status: 'SUCCESS',
+        affected_resource: 'dzuddiyn/AISYNC/records/proof.md', commit_or_record_id: c3, source_commit: c2,
+        timestamp: '2026-10-04T01:05:00Z', failure_reason: '',
+        receipt_json: JSON.stringify({
+          status: 'SUCCESS', adapter_outcome: 'VERIFIED_WRITE', verified: true,
+          write_performed: true, commit_or_record_id: c3
+        })
+      },
+      {
+        request_id: 'REQ-G5-FAIL', operation: 'SAVE', destination: 'GitHub', status: 'FAILED',
+        affected_resource: 'dzuddiyn/AISYNC/records/fail.md', commit_or_record_id: '', source_commit: '',
+        timestamp: '2026-10-04T01:06:00Z', failure_reason: 'WRITE_CONFLICT',
+        receipt_json: JSON.stringify({
+          status: 'FAILED', adapter_outcome: 'WRITE_CONFLICT', verified: false,
+          write_performed: false, commit_or_record_id: null
+        })
+      }
+    ]
+  };
+
+  const ci = {
+    ok: true,
+    repository: 'dzuddiyn/AISYNC',
+    commit_sha: c1,
+    workflow_name: 'ZASS CI',
+    job_name: 'zass-check',
+    run_id: 123,
+    status: 'SUCCESS',
+    conclusion: 'success',
+    run_url: 'https://github.com/dzuddiyn/AISYNC/actions/runs/123',
+    fetched_at: '2026-10-04T01:07:00Z'
+  };
+
+  const workspace = sb.renderProjectDetail(gate5, ci, 'WORKSPACE');
+  assert.doesNotMatch(workspace, /Decisions|Design \/ architecture|Selection state|Lineage \/ sources|Commit \/ version trail|REQ-G5-SUCCESS/);
+
+  const review = sb.renderProjectDetail(gate5, ci, 'REVIEW');
+  assert.match(review, /Review overview/);
+  assert.match(review, /Decisions/);
+  assert.match(review, /D-100/);
+  assert.match(review, /Design \/ architecture/);
+  assert.match(review, /A-001/);
+  assert.match(review, /Selection state/);
+  assert.match(review, /SEL-001/);
+  assert.match(review, /Lineage \/ sources/);
+  assert.match(review, /D-001/);
+  assert.match(review, /D-100,A-001/);
+  assert.match(review, /Unreadable lineage — show raw/);
+  assert.match(review, /not-json/);
+  assert.match(review, /Commit \/ version trail/);
+  assert.match(review, new RegExp('https:\\/\\/github\\.com\\/dzuddiyn\\/AISYNC\\/commit\\/' + c1));
+  assert.match(review, new RegExp('https:\\/\\/github\\.com\\/dzuddiyn\\/AISYNC\\/commit\\/' + c2));
+  assert.match(review, new RegExp('https:\\/\\/github\\.com\\/dzuddiyn\\/AISYNC\\/commit\\/' + c3));
+  assert.match(review, /Project index/);
+  assert.match(review, /History result REQ-G5-SUCCESS/);
+  assert.match(review, /Raw project records/);
+  assert.doesNotMatch(review, /href="javascript:/);
+  assert.doesNotMatch(review, /Outcome: VERIFIED_WRITE|Failure: WRITE_CONFLICT/);
+
+  const trail = sb.collectCommitTrail(gate5);
+  assert.equal(trail.filter((row) => row.commit === c1).length, 1, 'duplicate commit is deduplicated');
+  assert.match(trail.find((row) => row.commit === c1).provenance.join(' '), /Project index/);
+  assert.match(trail.find((row) => row.commit === c1).provenance.join(' '), /Record D-100/);
+
+  const history = sb.renderProjectDetail(gate5, ci, 'HISTORY');
+  assert.match(history, /REQ-G5-SUCCESS/);
+  assert.match(history, /Outcome: VERIFIED_WRITE/);
+  assert.match(history, /Verified: <strong>true<\/strong>/);
+  assert.match(history, /Write performed: yes/);
+  assert.match(history, new RegExp(c3));
+  assert.match(history, /Raw receipt JSON/);
+  assert.match(history, /REQ-G5-FAIL/);
+  assert.match(history, /Outcome: WRITE_CONFLICT/);
+  assert.match(history, /Verified: <strong>false<\/strong>/);
+  assert.match(history, /Failure: WRITE_CONFLICT/);
+  assert.doesNotMatch(history, /Decisions|Action Plan|Commit-linked ZASS CI/);
+
+  const absent = sb.renderProjectDetail({
+    ...gate5,
+    records: [],
+    action_plan: [],
+    history: []
+  }, ci, 'REVIEW');
+  assert.match(absent, /No decisions indexed for this project/);
+  assert.match(absent, /No design\/architecture records indexed/);
+  assert.match(absent, /No selection state indexed/);
 }
 
 
