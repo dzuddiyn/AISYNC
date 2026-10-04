@@ -136,6 +136,8 @@ const project = (o) => ({
   assert.match(workspace, /Current stage/);
   assert.match(workspace, /Next stage/);
   assert.match(workspace, /Index freshness/);
+  assert.match(workspace, /Save \/ sync health/);
+  assert.match(workspace, /Latest SAVE row is not sufficient to prove a verified SAVED state/);
   assert.match(workspace, /Continue naturally/);
   assert.match(workspace, /Open ASC Front Door/);
   assert.match(workspace, /🚀 Current Task/);
@@ -152,8 +154,76 @@ const project = (o) => ({
     ...detail,
     project: project({ index_metadata: { ...meta, freshness: 'STALE' } })
   });
+  assert.match(stale, /Save \/ sync health/);
+  assert.match(stale, /<strong>STALE<\/strong>/);
+  assert.match(stale, /Project index is behind the canonical source/);
   assert.match(stale, /Project state needs refresh/);
   assert.doesNotMatch(stale, /🚀 Current Task/);
+
+
+
+  const savedHealth = sb.projectSaveSyncHealth(
+    project({ index_metadata: currentMeta }),
+    [{
+      operation: 'SAVE',
+      status: 'SUCCESS',
+      commit_or_record_id: 'commit-1',
+      receipt_json: JSON.stringify({
+        status: 'SUCCESS',
+        verified: true,
+        adapter_outcome: 'VERIFIED_WRITE',
+        commit_or_record_id: 'commit-1'
+      })
+    }]
+  );
+  assert.equal(savedHealth.state, 'SAVED');
+  assert.match(savedHealth.detail, /VERIFIED_WRITE/);
+  assert.match(savedHealth.detail, /commit-1/);
+
+  const noChangeHealth = sb.projectSaveSyncHealth(
+    project({ index_metadata: currentMeta }),
+    [{
+      operation: 'SAVE',
+      status: 'SUCCESS',
+      commit_or_record_id: '',
+      receipt_json: JSON.stringify({
+        status: 'SUCCESS',
+        verified: true,
+        adapter_outcome: 'NO_CHANGE',
+        commit_or_record_id: null
+      })
+    }]
+  );
+  assert.equal(noChangeHealth.state, 'SAVED');
+  assert.match(noChangeHealth.detail, /no new commit required/);
+
+  const failedHealth = sb.projectSaveSyncHealth(
+    project({ index_metadata: currentMeta }),
+    [{ operation: 'SAVE', status: 'FAILED', failure_reason: 'GitHub write conflict.', receipt_json: '' }]
+  );
+  assert.equal(failedHealth.state, 'FAILED');
+  assert.match(failedHealth.detail, /GitHub write conflict/);
+
+  const unverifiedHealth = sb.projectSaveSyncHealth(
+    project({ index_metadata: currentMeta }),
+    [{
+      operation: 'SAVE',
+      status: 'SUCCESS',
+      receipt_json: JSON.stringify({ status: 'SUCCESS', verified: false, adapter_outcome: 'WRITE_UNVERIFIED' })
+    }]
+  );
+  assert.equal(unverifiedHealth.state, 'Not provided');
+  assert.match(unverifiedHealth.detail, /not sufficient to prove/);
+
+  const staleBeatsOldSuccess = sb.projectSaveSyncHealth(
+    project({ index_metadata: { ...meta, freshness: 'STALE' } }),
+    [{
+      operation: 'SAVE',
+      status: 'SUCCESS',
+      receipt_json: JSON.stringify({ status: 'SUCCESS', verified: true, adapter_outcome: 'VERIFIED_WRITE', commit_or_record_id: 'old-commit' })
+    }]
+  );
+  assert.equal(staleBeatsOldSuccess.state, 'STALE');
 
   const ready = sb.renderProjectDetail({
     ...detail,
