@@ -394,4 +394,15 @@ Production deployment evidence:
 - every other production file in v23 matches production v21;
 - the current development HEAD containing T-017 was restored after release and remains separate from production v23.
 
-Remaining Gate 3 closure evidence: owner-visible production verification of Workspace default, Project Pulse, progressive disclosure, Review, and History.
+Gate 3 owner-visible production verification: **PASS**.
+
+Observed on protected production Apps Script v23:
+- project opens on **Workspace** by default;
+- **Project Pulse** shows current stage, next stage, factual progress state, index freshness, and latest update;
+- index freshness is visibly **STALE** and Workspace correctly shows **Project state needs refresh** instead of presenting a stale task/decision as current;
+- **Continue naturally** and the ASC Front Door action are visible without implying persistence;
+- **Review** exposes commit-linked ZASS CI, progress/current-state evidence, Action Plan, and ZASS/project records on demand;
+- **History** exposes the factual audit trail separately;
+- the default Workspace no longer exposes the previous full technical wall.
+
+The Review surface also displayed a factual `READ_ERROR / GITHUB_READ_FAILED` for commit-linked CI tied to the stale indexed commit. This is correct truthful-error behavior and is not a Gate 3 failure.
