@@ -193,3 +193,75 @@ Proof infrastructure cleanup was also verified:
 - temporary operator wrappers are not live on production.
 
 T-019A is therefore LIVE PASS. This does not close T-019 as a whole.
+
+
+## T-019B — Replay / idempotency lifecycle
+
+Status: **LOCAL PASS / canonical SAVE + deploy + live proof pending**
+
+### Transport replay marker lifecycle
+
+Transport replay authority remains Apps Script Script Properties under the existing script lock. Replay keys remain hashed:
+
+`asc.replay.v1.<sha256(request_id)>`
+
+A confirmed sync now passes the already-verified envelope expiry into the replay claim. New markers contain:
+
+- `state: CLAIMED`
+- `claimed_at`
+- verified `expires_at`
+- `purge_after = expires_at + 24 hours`
+
+The extra 24-hour retention is operational duplicate/retry evidence. It does not extend envelope validity.
+
+Before every new replay claim, the replay store performs lifecycle cleanup under the same script lock:
+
+1. enumerate replay properties;
+2. validate every replay marker shape/timing;
+3. retain current markers until `purge_after`;
+4. delete markers whose retention has elapsed;
+5. re-read each deleted property and require it to be absent;
+6. only then inspect/persist the new request claim.
+
+Any uncertainty in property listing, marker parsing, deletion, or delete verification returns `REPLAY_STORE_UNAVAILABLE` and stops before GitHub/HISTORY I/O.
+
+### Legacy T-010 markers
+
+Legacy markers contain only `state` + `claimed_at`.
+
+Because the locked v0.1 transport contract allows envelope lifetime of at most 30 minutes, a legacy marker is not purgeable until:
+
+`claimed_at + 30 minutes + 24 hours`
+
+This preserves the old maximum replay-security window plus the same operational retention period.
+
+### Cleanup cannot reopen replay
+
+Purging a marker does not make its old envelope usable again. Envelope expiry/security validation runs before replay claim. Regression proves that after an old marker is purged by a later valid claim, replaying the old envelope returns `REQUEST_EXPIRED` with zero GitHub/HISTORY I/O.
+
+### Transport identity vs semantic idempotency
+
+The D-034 boundary remains unchanged:
+
+- same transport request ID → `REPLAY_REJECTED`, zero extra destination/HISTORY work;
+- new transport request ID + identical GitHub semantic content → normal adapter path → `NO_CHANGE`, no second PUT/commit;
+- private ZASSPILL semantic `req_<ULID>` idempotency remains a separate continuity concern.
+
+Transport replay cleanup never substitutes for semantic idempotency and never deletes semantic continuity request/event lineage.
+
+### Local evidence
+
+Focused flow + Apps Script binding regressions prove:
+
+- confirmed flow passes verified envelope expiry into replay authority;
+- new marker retention metadata is exact;
+- active current markers survive cleanup;
+- expired current markers purge only after expiry + 24 hours;
+- expired legacy markers purge only after claimed_at + 30 minutes + 24 hours;
+- lifecycle corruption/delete uncertainty fails closed;
+- successful same-request replay produces no duplicate GitHub/HISTORY work;
+- a new transport request with identical semantic content produces `NO_CHANGE` with no second PUT;
+- purged marker does not resurrect an expired envelope;
+- generated `AscRuntime.gs` matches the mechanical runtime build.
+
+Live production marker cleanup/duplicate-write proof remains pending deployment.

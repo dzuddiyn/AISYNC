@@ -92,3 +92,10 @@ Therefore a semantic retry may use a new transport envelope while preserving the
 ```text
 node transport/test-envelope-security.mjs
 ```
+
+
+### T-019B replay-marker lifecycle
+
+The server replay marker is retained through the already-verified envelope expiry plus 24 hours, then becomes eligible for atomic cleanup under the replay lock. Legacy T-010 markers without `expires_at` use the locked 30-minute maximum envelope lifetime plus the same 24-hour retention before cleanup. Cleanup uncertainty fails closed. Removing an expired marker does not reopen the old transport request because envelope security/expiry validation executes before replay claim.
+
+This lifecycle does not change D-034: transport `request_id` remains replay/security identity; semantic idempotency remains separate.
