@@ -10,7 +10,7 @@ const handoffId = 'ho_01ARZ3NDEKTSV4RRFFQ69G5FB6';
 const referenceId = 'cr_01ARZ3NDEKTSV4RRFFQ69G5FB8';
 
 function makeContext(overrides = {}) {
-  const calls = { handoff: [], reference: [], bootstrap: [], createThread: [], resultRecord: [], saveContracts: [] };
+  const calls = { handoff: [], reference: [], bootstrap: [], createThread: [], resultRecord: [], saveContracts: [], continuityAdvance: [] };
   const context = {
     calls,
     Utilities: {
@@ -20,7 +20,11 @@ function makeContext(overrides = {}) {
     ascIsOwner_: () => true,
     getDashboardProject: (projectId) => ({
       ok: true,
-      project: { project_id: projectId, source_method: 'ZASSPILL' }
+      project: { project_id: projectId, source_method: 'ZASSPILL' },
+      history: []
+    }),
+    ascPrivateContinuityStore_: () => ({
+      read: () => ({ schema_version: '0.1', projects: {} })
     }),
     ascZasspillListThreads_: (projectId) => ({
       operation: 'LIST_THREADS',
@@ -395,3 +399,274 @@ function validMethodResultText(overrides = {}) {
 console.log('T-018B provider return -> protected ASC SAVE bridge: PASS');
 console.log('provider prose cannot masquerade as persistence: PASS');
 console.log('preview is non-mutating; secure SAVE still requires CONFIRM & SYNC: PASS');
+
+function t018cResultEnvelope() {
+  return {
+    handoff_id: handoffId,
+    thread_id: threadId,
+    source_revision: 3,
+    producing_method: 'ZASSELECTION',
+    result_status: 'CONFIRMED_RESULT',
+    confirmed_outcome: 'Option B selected for the next calibration step.',
+    still_open: ['verify field timing'],
+    artifact_refs: []
+  };
+}
+
+function t018cReceiptRow() {
+  const recordId = 'METHOD-RESULT-' + handoffId.slice(3);
+  const resource = 'dzuddiyn/AISYNC/records/' + recordId + '.md';
+  return {
+    request_id: 'ASC-T018C-01ARZ3NDEKTSV4RRFFQ69G5FD1',
+    project_id: 'AISYNC',
+    operation: 'SAVE',
+    destination: 'GitHub',
+    status: 'SUCCESS',
+    affected_resource: resource,
+    commit_or_record_id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    source_commit: '',
+    timestamp: '2026-10-04T07:08:44.048Z',
+    failure_reason: '',
+    receipt_json: JSON.stringify({
+      status: 'SUCCESS',
+      affected_resource: resource,
+      commit_or_record_id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      adapter_outcome: 'VERIFIED_WRITE',
+      write_performed: true,
+      verified: true
+    })
+  };
+}
+
+function t018cStoreState() {
+  return {
+    schema_version: '0.1',
+    projects: {
+      AISYNC: {
+        project_id: 'AISYNC',
+        threads: {
+          [threadId]: {
+            project_id: 'AISYNC',
+            thread_id: threadId,
+            revision: 3,
+            semantic_record: {
+              title: 'Valve calibration proof',
+              continuity: {
+                current: 'Valve calibration checkpoint is row 18 with target marker 42.',
+                matters: ['preserve exact checkpoint and marker'],
+                open: ['continue from this checkpoint']
+              }
+            }
+          }
+        },
+        handoffs: {
+          [handoffId]: {
+            handoff_id: handoffId,
+            thread_id: threadId,
+            source_revision: 3,
+            target_method: 'ZASSELECTION',
+            result: t018cResultEnvelope(),
+            result_recorded_at: '2026-10-04T07:00:00.000Z'
+          }
+        }
+      }
+    }
+  };
+}
+{
+  const ctx = makeContext({
+    getDashboardProject: (projectId) => ({
+      ok: true,
+      project: { project_id: projectId, source_method: 'ZASSPILL' },
+      history: [t018cReceiptRow()]
+    }),
+    ascPrivateContinuityStore_: () => ({ read: () => t018cStoreState() })
+  });
+  const result = ctx.getDashboardProjectContinuity('AISYNC');
+  assert.equal(result.ok, true);
+  assert.equal(result.pending_saved_results.length, 1);
+  assert.equal(result.pending_saved_results[0].handoff_id, handoffId);
+  assert.equal(result.pending_saved_results[0].source_revision, 3);
+  assert.equal(result.pending_saved_results[0].record_id, 'METHOD-RESULT-' + handoffId.slice(3));
+  assert.equal(result.pending_saved_results[0].confirmed_outcome, 'Option B selected for the next calibration step.');
+}
+
+{
+  const ctx = makeContext({
+    getDashboardProject: (projectId) => ({
+      ok: true,
+      project: { project_id: projectId, source_method: 'ZASSPILL' },
+      history: [t018cReceiptRow()]
+    }),
+    ascZasspillCrossMethodService_: () => ({
+      getHandoff: () => ({
+        status: 'HANDOFF_FOUND',
+        project_id: 'AISYNC',
+        handoff: {
+          handoff_id: handoffId,
+          thread_id: threadId,
+          source_revision: 3,
+          target_method: 'ZASSELECTION',
+          result: t018cResultEnvelope()
+        }
+      })
+    }),
+    ascApplyPrivateContinuityMutation_: (input) => {
+      ctx.calls.continuityAdvance.push(input);
+      return {
+        status: 'APPLIED',
+        project_id: input.projectId,
+        request_id: input.requestId,
+        thread_id: input.threadId,
+        revision: 4,
+        event_id: 'ev_01ARZ3NDEKTSV4RRFFQ69G5FC9',
+        operation: input.operation
+      };
+    }
+  });
+  const result = ctx.advanceDashboardSavedMethodResult({
+    project_id: 'AISYNC',
+    handoff_id: handoffId
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.status, 'ADVANCED');
+  assert.equal(result.revision, 4);
+  assert.equal(result.current, 'Option B selected for the next calibration step.');
+  assert.equal(ctx.calls.continuityAdvance.length, 1);
+  const mutation = ctx.calls.continuityAdvance[0];
+  assert.equal(mutation.requestId, 'req_' + handoffId.slice(3));
+  assert.equal(mutation.expectedRevision, 3);
+  assert.equal(mutation.operation, 'UPDATE');
+  assert.equal(mutation.changes.method_result, 'METHOD-RESULT-' + handoffId.slice(3));
+  assert.equal(mutation.changes.handoff_id, handoffId);
+  assert.equal(mutation.changes.save_commit, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+  assert.equal(mutation.nextSemanticRecord.continuity.current, 'Option B selected for the next calibration step.');
+  assert.deepEqual(JSON.parse(JSON.stringify(mutation.nextSemanticRecord.continuity.matters)), ['preserve exact checkpoint and marker']);
+  assert.deepEqual(JSON.parse(JSON.stringify(mutation.nextSemanticRecord.continuity.open)), ['verify field timing']);
+  assert.deepEqual(JSON.parse(JSON.stringify(mutation.changes.open)), ['verify field timing']);
+}
+{
+  const ctx = makeContext({
+    getDashboardProject: (projectId) => ({
+      ok: true,
+      project: { project_id: projectId, source_method: 'ZASSPILL' },
+      history: []
+    }),
+    ascZasspillCrossMethodService_: () => ({
+      getHandoff: () => ({
+        status: 'HANDOFF_FOUND',
+        project_id: 'AISYNC',
+        handoff: {
+          handoff_id: handoffId,
+          thread_id: threadId,
+          source_revision: 3,
+          target_method: 'ZASSELECTION',
+          result: t018cResultEnvelope()
+        }
+      })
+    }),
+    ascApplyPrivateContinuityMutation_: (input) => {
+      ctx.calls.continuityAdvance.push(input);
+      return { status: 'APPLIED', revision: 4 };
+    }
+  });
+  const denied = ctx.advanceDashboardSavedMethodResult({ project_id: 'AISYNC', handoff_id: handoffId });
+  assert.equal(denied.ok, false);
+  assert.equal(denied.error.code, 'VERIFIED_SAVE_REQUIRED');
+  assert.equal(ctx.calls.continuityAdvance.length, 0);
+}
+
+{
+  const ctx = makeContext({
+    getDashboardProject: (projectId) => ({
+      ok: true,
+      project: { project_id: projectId, source_method: 'ZASSPILL' },
+      history: [t018cReceiptRow()]
+    }),
+    ascZasspillCrossMethodService_: () => ({
+      getHandoff: () => ({
+        status: 'HANDOFF_FOUND',
+        project_id: 'AISYNC',
+        handoff: {
+          handoff_id: handoffId,
+          thread_id: threadId,
+          source_revision: 3,
+          target_method: 'ZASSELECTION',
+          result: t018cResultEnvelope()
+        }
+      })
+    }),
+    ascZasspillGetById_: () => ({
+      operation: 'GET_BY_ID',
+      status: 'FOUND',
+      project_id: 'AISYNC',
+      thread_id: threadId,
+      revision: 4,
+      record: {
+        semantic_record: {
+          title: 'Valve calibration proof',
+          continuity: { current: 'Different newer checkpoint.' }
+        }
+      }
+    }),
+    ascReadPrivateContinuityEvents_: () => []
+  });
+  const stale = ctx.advanceDashboardSavedMethodResult({ project_id: 'AISYNC', handoff_id: handoffId });
+  assert.equal(stale.ok, false);
+  assert.equal(stale.error.code, 'REVISION_CONFLICT');
+}
+
+{
+  const ctx = makeContext({
+    getDashboardProject: (projectId) => ({
+      ok: true,
+      project: { project_id: projectId, source_method: 'ZASSPILL' },
+      history: [t018cReceiptRow()]
+    }),
+    ascZasspillCrossMethodService_: () => ({
+      getHandoff: () => ({
+        status: 'HANDOFF_FOUND',
+        project_id: 'AISYNC',
+        handoff: {
+          handoff_id: handoffId,
+          thread_id: threadId,
+          source_revision: 3,
+          target_method: 'ZASSELECTION',
+          result: t018cResultEnvelope()
+        }
+      })
+    }),
+    ascZasspillGetById_: () => ({
+      operation: 'GET_BY_ID',
+      status: 'FOUND',
+      project_id: 'AISYNC',
+      thread_id: threadId,
+      revision: 4,
+      record: {
+        semantic_record: {
+          title: 'Valve calibration proof',
+          continuity: { current: 'Option B selected for the next calibration step.' }
+        }
+      }
+    }),
+    ascReadPrivateContinuityEvents_: () => [{
+      event_id: 'ev_01ARZ3NDEKTSV4RRFFQ69G5FC9',
+      thread_id: threadId,
+      revision: 4,
+      operation: 'UPDATE',
+      change: {
+        current: 'Option B selected for the next calibration step.',
+        method_result: 'METHOD-RESULT-' + handoffId.slice(3),
+        handoff_id: handoffId,
+        save_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+      }
+    }]
+  });
+  const again = ctx.advanceDashboardSavedMethodResult({ project_id: 'AISYNC', handoff_id: handoffId });
+  assert.equal(again.ok, true);
+  assert.equal(again.status, 'ALREADY_ADVANCED');
+  assert.equal(again.revision, 4);
+}
+
+console.log('T-018C saved result -> private continuity advance: PASS');
+console.log('verified SAVE required; stale revision fails closed; retry idempotent: PASS');

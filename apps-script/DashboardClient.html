@@ -22,7 +22,8 @@ let dashboardState = {
   threadCreateResult: null,
   providerReturnText: '',
   methodReturnPreview: null,
-  methodReturnSave: null
+  methodReturnSave: null,
+  continuityAdvanceResult: null
 };
 
 function escapeHtml(value) {
@@ -337,6 +338,49 @@ function renderProviderReturn(returnText, preview, saveResult) {
   '</div>';
 }
 
+function renderPendingSavedResult(continuityResult, advanceResult) {
+  const pending = continuityResult && continuityResult.ok === true &&
+    Array.isArray(continuityResult.pending_saved_results)
+    ? continuityResult.pending_saved_results
+    : [];
+  if (advanceResult && advanceResult.ok === true) {
+    return '<section class="card saved-result-advance">' +
+      '<strong>Saved result applied to private continuity</strong>' +
+      '<p>Thread advanced to revision ' + escapeHtml(advanceResult.revision) + '.</p>' +
+      '<div><span class="pulse-label">Current</span>' + escapeHtml(advanceResult.current) + '</div>' +
+      '<p class="muted">The next handoff will use this newer thread revision.</p>' +
+    '</section>';
+  }
+
+  if (advanceResult && advanceResult.ok === false) {
+    return '<section class="card saved-result-advance">' +
+      '<strong>Saved result not applied</strong>' +
+      '<p class="error">' + escapeHtml(advanceResult.error && advanceResult.error.code || 'UNKNOWN') +
+      ' — ' + escapeHtml(advanceResult.error && advanceResult.error.message || 'Continuity advance failed.') + '</p>' +
+    '</section>';
+  }
+
+  if (!pending.length) return '';
+
+  return '<section class="card saved-result-advance">' +
+    '<strong>Saved result ready to continue</strong>' +
+    (pending.length > 1
+      ? '<p class="muted">More than one verified saved result is waiting. Choose the exact result to apply; ASC will not choose for you.</p>'
+      : '') +
+    pending.map(function (item) {
+      return '<article class="saved-result-item">' +
+        '<p>The GitHub SAVE is verified, but private continuity is still at source revision ' +
+          escapeHtml(item.source_revision) + '.</p>' +
+        '<div><span class="pulse-label">Confirmed outcome</span>' + escapeHtml(item.confirmed_outcome) + '</div>' +
+        '<div><span class="pulse-label">Saved artifact</span>' + escapeHtml(item.record_id) + '</div>' +
+        '<button type="button" data-handoff-action="advance-saved-result" data-handoff-id="' +
+          escapeHtml(item.handoff_id) + '">ADVANCE THREAD FROM SAVED RESULT</button>' +
+      '</article>';
+    }).join('') +
+    '<p class="muted">This updates only the owner-private thread checkpoint. It does not create another GitHub/Sheets write.</p>' +
+  '</section>';
+}
+
 function renderProjectContinuation(project, continuityResult, handoffForm, handoffResult, threadCreateResult) {
   const form = handoffForm || { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' };
   const threads = continuityResult && continuityResult.ok === true && Array.isArray(continuityResult.threads)
@@ -486,6 +530,7 @@ function renderProjectWorkspace(result) {
   const p = result.project;
   return renderProjectPulse(p, result.history) +
     renderProjectContinuation(p, dashboardState.continuityResult, dashboardState.handoffForm, dashboardState.handoffResult, dashboardState.threadCreateResult) +
+    renderPendingSavedResult(dashboardState.continuityResult, dashboardState.continuityAdvanceResult) +
     renderContextualCard(result);
 }
 
@@ -785,6 +830,7 @@ function showList() {
   dashboardState.providerReturnText = '';
   dashboardState.methodReturnPreview = null;
   dashboardState.methodReturnSave = null;
+  dashboardState.continuityAdvanceResult = null;
   dashboardState.handoffForm = { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' };
   dashboardState.projectView = 'WORKSPACE';
   dashboardRoot().innerHTML = renderProjectList(dashboardState.list, dashboardState.entry);
@@ -969,6 +1015,37 @@ function openProjectMethodReturnSave() {
   setProjectHandoffStatus('ASC SAVE opened. Review the protected preview, then CONFIRM & SYNC.', false);
 }
 
+function advanceSavedMethodResult(handoffId) {
+  const project = dashboardState.projectResult && dashboardState.projectResult.project;
+  if (!project || typeof handoffId !== 'string' || !handoffId) return;
+  dashboardState.continuityAdvanceResult = null;
+  setProjectHandoffStatus('Verifying SAVED receipt and advancing the private thread…', false);
+  google.script.run
+    .withSuccessHandler(function (result) {
+      dashboardState.continuityAdvanceResult = result;
+      if (result && result.ok === true) {
+        dashboardState.handoffResult = null;
+        dashboardState.providerReturnText = '';
+        dashboardState.methodReturnPreview = null;
+        dashboardState.methodReturnSave = null;
+        loadProjectContinuity(project.project_id);
+        return;
+      }
+      showProject();
+    })
+    .withFailureHandler(function () {
+      dashboardState.continuityAdvanceResult = {
+        ok: false,
+        error: { code: 'SERVER_CALL_FAILED', message: 'Saved result could not advance private continuity.' }
+      };
+      showProject();
+    })
+    .advanceDashboardSavedMethodResult({
+      project_id: project.project_id,
+      handoff_id: handoffId
+    });
+}
+
 function captureProjectHandoffField(target) {
   if (!target || !target.id) return false;
   if (target.id === 'project-thread') dashboardState.handoffForm.threadId = target.value;
@@ -1003,6 +1080,7 @@ function openProject(projectId) {
       dashboardState.providerReturnText = '';
       dashboardState.methodReturnPreview = null;
       dashboardState.methodReturnSave = null;
+      dashboardState.continuityAdvanceResult = null;
       dashboardState.projectView = 'WORKSPACE';
       const initialRoute = DASHBOARD_ENTRIES.indexOf(String(result.project && result.project.ui_entry || '').toUpperCase()) >= 0
         ? String(result.project.ui_entry).toUpperCase()
@@ -1083,6 +1161,7 @@ function handleDashboardClick(event) {
   if (target.dataset.handoffAction === 'preview-return') { previewProjectMethodReturn(); return; }
   if (target.dataset.handoffAction === 'prepare-save') { prepareProjectMethodReturnSave(); return; }
   if (target.dataset.handoffAction === 'open-save') { openProjectMethodReturnSave(); return; }
+  if (target.dataset.handoffAction === 'advance-saved-result') { advanceSavedMethodResult(target.dataset.handoffId || ''); return; }
   if (target.dataset.back) { showList(); }
 }
 
