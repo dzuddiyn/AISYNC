@@ -514,3 +514,39 @@ Observed on protected production:
 - the D-030 user-activated return control is the guaranteed post-SAVE path; timer-driven auto-return is not required.
 
 Gate 4 owner-visible acceptance: **PASS**.
+
+
+## ZASS SYSTEM Gate 5 Review / History projection patch — 2026-10-04
+
+Scope: complete the read-only audit/review projection without changing ASC DB schema or re-expanding Workspace.
+
+Review now provides:
+- Review overview + explicit index freshness caveat;
+- commit-linked ZASS CI;
+- Decisions projection from explicit decision records;
+- Design / architecture projection from explicit design/architecture record types;
+- Selection state projection from explicit selection/matrix record types;
+- Action Plan;
+- readable lineage/source projection, with malformed lineage preserved as raw/unreadable rather than repaired;
+- deduplicated Commit / version trail from explicit project/record/action/history commit IDs, with GitHub commit links only for valid SHA-like identifiers;
+- raw project records retained behind a details control.
+
+History now provides:
+- factual audit events separately from Review;
+- compact receipt summary (adapter outcome, verified, write performed, commit/record);
+- visible failures;
+- raw receipt JSON behind details.
+
+Absence behavior is factual:
+- no design/architecture records → neutral absence message;
+- no selection state → neutral absence message;
+- no synthetic records are added merely to populate Review.
+
+Verification:
+- all **27** repository `test-*.mjs` files PASS;
+- `git diff --check` PASS;
+- positive fixtures prove decision/design/selection/lineage/commit/history rendering;
+- Workspace remains free of Gate 5 audit sections;
+- no write path, validator logic, schema change, or authority mutation is added.
+
+Production deployment + owner-visible proof remain required before Gate 5 closure.

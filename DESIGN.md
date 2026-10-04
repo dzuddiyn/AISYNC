@@ -188,13 +188,20 @@ Workspace
 └── one factual contextual card when supported
 
 Review
+├── Review overview / freshness
 ├── commit-linked ZASS CI
-├── progress / next-action / next-stage evidence
+├── Decisions
+├── Design / architecture
+├── Selection state
 ├── Action Plan
-└── ZASS / project records
+├── Lineage / sources
+├── Commit / version trail
+└── raw project records (secondary)
 
 History
-└── factual audit trail
+├── factual audit events
+├── compact receipt truth
+└── raw receipt JSON (secondary)
 ```
 
 Workspace is the default project surface. Internal IDs, lineage JSON, full Action Plan rows, record tables, CI detail, and History stay out of the default view and remain available on demand.
