@@ -92,6 +92,17 @@ function ascFailed_(stage, code, message, requestId) {
   };
 }
 
+function ascOutcomeUnknown_(stage, code, message, requestId) {
+  return {
+    state: 'OUTCOME_UNKNOWN',
+    stage: stage,
+    redirect: null,
+    writePerformed: null,
+    requestId: requestId || null,
+    error: { code: code, message: message }
+  };
+}
+
 function ascResultKey_(requestId) {
   return ASC_RESULT_CACHE_PREFIX_ + Utilities.base64EncodeWebSafe(String(requestId));
 }
@@ -376,8 +387,12 @@ function confirmAndSync(request) {
     settled = result;
     ascStoreResult_(requestId, result);
   }, function () {
-    settled = ascFailed_('SYNC', 'FLOW_EXCEPTION', 'Sync flow failed unexpectedly. Check HISTORY; nothing is reported as saved.', requestId);
-    settled.writePerformed = null; // unknown — not claimed either way
+    settled = ascOutcomeUnknown_(
+      'SYNC',
+      'FLOW_EXCEPTION',
+      'Sync flow failed unexpectedly after CONFIRM & SYNC may have started. Reconcile the result before retrying.',
+      requestId
+    );
     ascStoreResult_(requestId, settled);
   });
 
@@ -392,23 +407,29 @@ function getConfirmSyncResult(requestId) {
   try {
     cached = CacheService.getUserCache().get(ascResultKey_(requestId));
   } catch (error) {
-    const unknown = ascFailed_('RESULT', 'SYNC_RESULT_UNREADABLE',
-      'Sync result could not be read. Check HISTORY; nothing is reported as saved.', requestId);
-    unknown.writePerformed = null; // unknown — not claimed either way
-    return unknown;
+    return ascOutcomeUnknown_(
+      'RESULT',
+      'SYNC_RESULT_UNREADABLE',
+      'Sync result could not be read. Reconcile against HISTORY and the authoritative destination before retrying.',
+      requestId
+    );
   }
   if (!cached) {
-    const unknown = ascFailed_('RESULT', 'SYNC_RESULT_UNAVAILABLE',
-      'Sync result is not available. Check HISTORY; nothing is reported as saved.', requestId);
-    unknown.writePerformed = null;
-    return unknown;
+    return ascOutcomeUnknown_(
+      'RESULT',
+      'SYNC_RESULT_UNAVAILABLE',
+      'Sync result is not available. Reconcile against HISTORY and the authoritative destination before retrying.',
+      requestId
+    );
   }
   try {
     return JSON.parse(cached);
   } catch (error) {
-    const unknown = ascFailed_('RESULT', 'SYNC_RESULT_UNREADABLE',
-      'Sync result could not be read. Check HISTORY; nothing is reported as saved.', requestId);
-    unknown.writePerformed = null;
-    return unknown;
+    return ascOutcomeUnknown_(
+      'RESULT',
+      'SYNC_RESULT_UNREADABLE',
+      'Sync result could not be read. Reconcile against HISTORY and the authoritative destination before retrying.',
+      requestId
+    );
   }
 }

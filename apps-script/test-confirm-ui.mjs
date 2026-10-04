@@ -13,7 +13,7 @@ class FakeStorage {
 
 function fakeDocument() {
   const els = {};
-  for (const id of ['status', 'save-state', 'receipt', 'receipt-summary', 'receipt-json', 'confirm-sync', 'main-ui-link']) {
+  for (const id of ['status', 'save-state', 'receipt', 'receipt-summary', 'receipt-json', 'confirm-sync', 'retry-preview', 'check-sync-result', 'main-ui-link']) {
     els[id] = { id, textContent: '', className: '', hidden: true, disabled: false, href: '' };
   }
   return { els, getElementById: (id) => els[id] || null };
@@ -97,24 +97,43 @@ for (const result of nonRedirecting) {
   assert.equal(doc.els['main-ui-link'].href, 'https://sites.google.com/view/aisync-asc');
 }
 
-// Failure paths: visibly FAILED, receipt shown when present, pending request kept, no navigation.
+// Known failure paths stay FAILED; pending request is preserved and no navigation occurs.
 for (const result of [
-  { state: 'FAILED', stage: 'WRITE', redirect: null, error: { code: 'WRITE_NOT_VERIFIED', message: 'Adapter write was not verified as persisted.' }, receipt: { status: 'FAILED', verified: false, commit_or_record_id: 'commit-sha-1' } },
-  { state: 'FAILED', stage: 'HISTORY', redirect: 'https://sites.google.com/view/aisync-asc', error: { code: 'HISTORY_NOT_PERSISTED', message: 'x' }, receipt: verifiedReceipt, historyOutcome: 'HISTORY_WRITE_FAILED' },
+  { state: 'FAILED', stage: 'WRITE', redirect: null, writePerformed: false, error: { code: 'WRITE_NOT_VERIFIED', message: 'Adapter write was not verified as persisted.' }, receipt: { status: 'FAILED', verified: false, write_performed: false, adapter_outcome: 'WRITE_ERROR', commit_or_record_id: null } },
   { state: 'FAILED', stage: 'CONFIG', redirect: null, writePerformed: false, error: { code: 'SYNC_RUNTIME_NOT_BOUND', message: 'Nothing was saved.' } },
   null
 ]) {
   const doc = fakeDocument();
   const storage = new FakeStorage();
   storage.setItem('asc.pending.fragment.v0.1', '#asc=abc');
-  const navigations = [];
-  const outcome = sandbox.renderSyncResult(result, { document: doc, storage, navigate: (u) => navigations.push(u) });
+  const outcome = sandbox.renderSyncResult(result, { document: doc, storage });
   assert.equal(outcome, 'STAYED');
-  assert.equal(navigations.length, 0);
   assert.equal(storage.getItem('asc.pending.fragment.v0.1'), '#asc=abc');
   assert.equal(doc.els['save-state'].textContent, 'FAILED');
   assert.match(doc.els.status.textContent, /^FAILED/);
   assert.match(doc.els.status.className, /error/);
+}
+
+// Verified destination persistence with missing HISTORY is DEGRADED, never FAILED and never safe to repeat.
+{
+  const doc = fakeDocument();
+  const storage = new FakeStorage();
+  storage.setItem('asc.pending.fragment.v0.1', '#asc=abc');
+  const degraded = {
+    state: 'FAILED',
+    stage: 'HISTORY',
+    redirect: null,
+    writePerformed: true,
+    error: { code: 'HISTORY_NOT_PERSISTED', message: 'Verified write receipt exists but HISTORY was not persisted.' },
+    receipt: verifiedReceipt,
+    historyOutcome: 'HISTORY_WRITE_FAILED'
+  };
+  const outcome = sandbox.renderSyncResult(degraded, { document: doc, storage });
+  assert.equal(outcome, 'STAYED');
+  assert.equal(doc.els['save-state'].textContent, 'DEGRADED');
+  assert.match(doc.els.status.textContent, /^DEGRADED/);
+  assert.match(doc.els.status.textContent, /Do not repeat the write/);
+  assert.equal(doc.els['confirm-sync'].disabled, true);
 }
 
 // Verified sync without a main UI URL: factual success message, no redirect, not labelled FAILED.
@@ -132,13 +151,26 @@ for (const result of [
 }
 
 
-// Gate 4 factual state classifier never labels unverified/incomplete results SAVED.
+// T-019C factual state classifier never labels degraded/unknown outcomes SAVED.
 assert.equal(sandbox.classifySaveState({ state: 'AWAITING_CONFIRMATION' }), 'UNSAVED');
 assert.equal(sandbox.classifySaveState({ state: 'RESULT_PENDING' }), 'SYNCING');
 assert.equal(sandbox.classifySaveState(synced), 'SAVED');
 assert.equal(sandbox.classifySaveState({ ...synced, receipt: { ...verifiedReceipt, verified: false } }), 'FAILED');
-assert.equal(sandbox.classifySaveState({ ...synced, historyOutcome: 'HISTORY_WRITE_FAILED' }), 'FAILED');
-assert.equal(sandbox.classifySaveState({ state: 'FAILED', error: { code: 'WRITE_ERROR' } }), 'FAILED');
+assert.equal(sandbox.classifySaveState({ ...synced, historyOutcome: 'HISTORY_WRITE_FAILED' }), 'DEGRADED');
+assert.equal(sandbox.classifySaveState({ state: 'FAILED', writePerformed: false, error: { code: 'WRITE_ERROR' } }), 'FAILED');
+assert.equal(sandbox.classifySaveState({ state: 'FAILED', writePerformed: null, error: { code: 'SYNC_RESULT_UNAVAILABLE' } }), 'OUTCOME UNKNOWN');
+assert.equal(sandbox.classifySaveState({
+  state: 'FAILED',
+  writePerformed: null,
+  receipt: { status: 'FAILED', verified: false, write_performed: null, adapter_outcome: 'WRITE_OUTCOME_UNKNOWN' },
+  error: { code: 'WRITE_NOT_VERIFIED' }
+}), 'OUTCOME UNKNOWN');
+assert.equal(sandbox.classifySaveState({
+  state: 'FAILED',
+  writePerformed: true,
+  receipt: { status: 'FAILED', verified: false, write_performed: true, adapter_outcome: 'WRITE_UNVERIFIED' },
+  error: { code: 'WRITE_NOT_VERIFIED' }
+}), 'DEGRADED');
 
 // NO_CHANGE and reconciled verified persistence are factual SAVED outcomes without invented commit SHA.
 {
@@ -178,23 +210,38 @@ assert.equal(sandbox.classifySaveState({ state: 'FAILED', error: { code: 'WRITE_
 assert.doesNotMatch(clientCode, /api\.github\.com|UrlFetchApp|SpreadsheetApp|GITHUB_TOKEN/);
 assert.equal(typeof sandbox.writeToGitHub, 'undefined');
 
-// RESULT_PENDING triggers exactly one factual result fetch; other replies render directly.
+// RESULT_PENDING triggers a factual result read only; transport loss becomes OUTCOME UNKNOWN.
 {
   const rendered = [];
   const calls = [];
   const run = {
     withSuccessHandler(fn) { this.ok = fn; return this; },
     withFailureHandler(fn) { this.fail = fn; return this; },
-    getConfirmSyncResult(id) { calls.push(id); this.ok({ state: 'FAILED', error: { code: 'SYNC_RESULT_UNAVAILABLE', message: 'x' } }); }
+    getConfirmSyncResult(id) {
+      calls.push(id);
+      this.ok({ state: 'FAILED', writePerformed: null, requestId: id, error: { code: 'SYNC_RESULT_UNAVAILABLE', message: 'x' } });
+    }
   };
   const r1 = sandbox.handleConfirmResponse({ state: 'RESULT_PENDING', requestId: 'req-1', redirect: null }, { run, render: (x) => rendered.push(x) });
   assert.equal(r1, 'FETCHING_RESULT');
   assert.deepStrictEqual(calls, ['req-1']);
-  assert.equal(rendered[0].state, 'FAILED');
+  assert.equal(sandbox.classifySaveState(rendered[0]), 'OUTCOME UNKNOWN');
   assert.equal(sandbox.canRedirectAfterSync(rendered[0]), false);
-  const r2 = sandbox.handleConfirmResponse({ state: 'FAILED', error: { code: 'X' } }, { run, render: (x) => rendered.push(x) });
+
+  const runLost = {
+    withSuccessHandler(fn) { this.ok = fn; return this; },
+    withFailureHandler(fn) { this.fail = fn; return this; },
+    getConfirmSyncResult(id) { calls.push(id); this.fail(new Error('offline')); }
+  };
+  const before = rendered.length;
+  sandbox.handleConfirmResponse({ state: 'RESULT_PENDING', requestId: 'req-lost', redirect: null }, { run: runLost, render: (x) => rendered.push(x) });
+  assert.equal(rendered.length, before + 1);
+  assert.equal(rendered.at(-1).state, 'OUTCOME_UNKNOWN');
+  assert.equal(rendered.at(-1).writePerformed, null);
+  assert.equal(rendered.at(-1).requestId, 'req-lost');
+
+  const r2 = sandbox.handleConfirmResponse({ state: 'FAILED', writePerformed: false, error: { code: 'X' } }, { run, render: (x) => rendered.push(x) });
   assert.equal(r2, 'RENDERED');
-  assert.equal(calls.length, 1);
 }
 
 // T-010: CONFIRM & SYNC enabled only after server-side security validation of this exact request.
@@ -214,34 +261,95 @@ assert.equal(typeof sandbox.writeToGitHub, 'undefined');
     assert.equal(sandbox.describeServerPreview(bad, env).enabled, false, JSON.stringify(bad));
   }
   assert.match(sandbox.describeServerPreview({ securityValid: false, error: { code: 'REQUEST_EXPIRED', message: 'ASC request has expired.' } }, env).note, /^REJECTED \(REQUEST_EXPIRED\)/);
-  assert.match(sandbox.describeServerPreview(null, env).note, /SERVER_PREVIEW_UNAVAILABLE/);
+  const unavailableView = sandbox.describeServerPreview(null, env);
+  assert.equal(unavailableView.state, 'DEGRADED');
+  assert.equal(unavailableView.retryable, true);
+  assert.match(unavailableView.note, /SERVER_PREVIEW_UNAVAILABLE/);
 
   const doc = fakeDocument();
   for (const id of ['confirm-controls', 'confirm-note']) doc.els[id] = { id, textContent: '', className: '', hidden: true, disabled: false };
   sandbox.document = doc;
   doc.els['confirm-sync'].disabled = true;
+
+  const degradedPreview = sandbox.showConfirmControls(env, '#asc=abc', null);
+  assert.equal(degradedPreview.state, 'DEGRADED');
+  assert.equal(doc.els['save-state'].textContent, 'DEGRADED');
+  assert.equal(doc.els['confirm-sync'].disabled, true);
+  assert.equal(doc.els['retry-preview'].hidden, false);
+  assert.equal(typeof doc.els['retry-preview'].onclick, 'function');
+
   const rejected = sandbox.showConfirmControls(env, '#asc=abc', { securityValid: false, error: { code: 'INTEGRITY_MISMATCH', message: 'Envelope content does not match its SHA-256 digest.' } });
   assert.equal(rejected.enabled, false);
   assert.equal(doc.els['confirm-sync'].disabled, true, 'bad request never write-enabled');
   assert.equal(doc.els['save-state'].textContent, 'FAILED');
   assert.match(doc.els.status.textContent, /^REJECTED \(INTEGRITY_MISMATCH\)/);
   assert.match(doc.els.status.className, /error/);
+  assert.equal(doc.els['retry-preview'].hidden, true);
+
   sandbox.showConfirmControls(env, '#asc=abc', ok);
   assert.equal(doc.els['save-state'].textContent, 'UNSAVED');
   assert.equal(doc.els['confirm-sync'].disabled, false);
 
   // After a confirmed attempt the request_id is consumed: button stays disabled, except pre-claim retryable failures.
   const storage = new FakeStorage();
-  sandbox.renderSyncResult({ state: 'FAILED', error: { code: 'REPLAY_REJECTED', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  sandbox.renderSyncResult({ state: 'FAILED', writePerformed: false, error: { code: 'REPLAY_REJECTED', message: 'x' } }, { document: doc, storage });
   assert.equal(doc.els['confirm-sync'].disabled, true);
-  sandbox.renderSyncResult({ state: 'FAILED', stage: 'WRITE', error: { code: 'WRITE_NOT_VERIFIED', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  sandbox.renderSyncResult({ state: 'FAILED', stage: 'WRITE', writePerformed: false, error: { code: 'WRITE_NOT_VERIFIED', message: 'x' } }, { document: doc, storage });
   assert.equal(doc.els['confirm-sync'].disabled, true);
-  sandbox.renderSyncResult({ state: 'FAILED', error: { code: 'REPLAY_STORE_UNAVAILABLE', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  sandbox.renderSyncResult({ state: 'FAILED', writePerformed: false, error: { code: 'REPLAY_STORE_UNAVAILABLE', message: 'x' } }, { document: doc, storage });
   assert.equal(doc.els['confirm-sync'].disabled, true, 'uncertain replay state must require a new request_id');
-  sandbox.renderSyncResult({ state: 'FAILED', error: { code: 'RESULT_CACHE_UNAVAILABLE', message: 'x' } }, { document: doc, storage, navigate: () => {} });
+  sandbox.renderSyncResult({ state: 'FAILED', writePerformed: false, error: { code: 'RESULT_CACHE_UNAVAILABLE', message: 'x' } }, { document: doc, storage });
   assert.equal(doc.els['confirm-sync'].disabled, false, 'cache clear failure occurs before replay claim and is safe to retry');
 
-  // Without the Apps Script runtime the server preview is unavailable → disabled.
+  // Post-confirm result loss is OUTCOME UNKNOWN: CONFIRM remains disabled and CHECK RESULT is exposed.
+  sandbox.renderSyncResult({
+    state: 'FAILED',
+    requestId: 'req-1',
+    writePerformed: null,
+    error: { code: 'SYNC_RESULT_UNAVAILABLE', message: 'x' }
+  }, { document: doc, storage });
+  assert.equal(doc.els['save-state'].textContent, 'OUTCOME UNKNOWN');
+  assert.equal(doc.els['confirm-sync'].disabled, true);
+  assert.equal(doc.els['check-sync-result'].hidden, false);
+  assert.equal(typeof doc.els['check-sync-result'].onclick, 'function');
+
+  // CHECK RESULT performs only a result lookup and can recover to a factual final state.
+  const lookupCalls = [];
+  const lookupRun = {
+    withSuccessHandler(fn) { this.ok = fn; return this; },
+    withFailureHandler(fn) { this.fail = fn; return this; },
+    getConfirmSyncResult(id) { lookupCalls.push(id); this.ok(synced); }
+  };
+  const checkOutcome = sandbox.checkPendingSyncResult({
+    run: lookupRun,
+    render: (result) => { doc.els['save-state'].textContent = sandbox.classifySaveState(result); },
+    document: doc
+  });
+  assert.equal(checkOutcome, 'CHECKING');
+  assert.deepStrictEqual(lookupCalls, ['req-1']);
+  assert.equal(doc.els['save-state'].textContent, 'SAVED');
+
+  // Transport loss after CONFIRM was sent is never retried blindly.
+  const confirmCalls = [];
+  const runAfterConfirmLoss = {
+    withSuccessHandler(fn) { this.ok = fn; return this; },
+    withFailureHandler(fn) { this.fail = fn; return this; },
+    confirmAndSync(payload) {
+      confirmCalls.push(payload);
+      this.fail(new Error('temporary network failure'));
+    }
+  };
+  sandbox.google = { script: { run: runAfterConfirmLoss } };
+  sandbox.showConfirmControls(env, '#asc=abc', ok);
+  sandbox.requestConfirmAndSync();
+  assert.equal(confirmCalls.length, 1);
+  assert.equal(doc.els['save-state'].textContent, 'OUTCOME UNKNOWN');
+  assert.equal(doc.els['confirm-sync'].disabled, true);
+  assert.equal(doc.els['check-sync-result'].hidden, false);
+  assert.match(doc.els.status.textContent, /Do not confirm again/);
+  delete sandbox.google;
+
+  // Without the Apps Script runtime the server preview is unavailable → DEGRADED, never write-enabled.
   let got;
   sandbox.loadServerPreview('#asc=abc', (r) => { got = r; });
   assert.equal(got.securityValid, false);

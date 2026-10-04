@@ -455,8 +455,9 @@ for (const [label, contract, opts] of [
   assert.equal(w.github.calls.length, 0);
 
   const unknown = w.context.getConfirmSyncResult('never-submitted');
-  assert.equal(unknown.state, 'FAILED');
+  assert.equal(unknown.state, 'OUTCOME_UNKNOWN');
   assert.equal(unknown.error.code, 'SYNC_RESULT_UNAVAILABLE');
+  assert.equal(unknown.writePerformed, null);
 }
 
 // 10. fetchImpl refuses any non-GitHub-API origin (token cannot be sent elsewhere).
@@ -498,10 +499,10 @@ for (const [label, contract, opts] of [
   assert.equal(w.github.calls.length, callsBefore, 'replay rejection: zero GitHub calls');
   assert.equal(w.rows.length, rowsBefore, 'replay rejection: zero HISTORY rows');
 
-  // 12b. result cannot be cached → unknown FAILED, never the first SUCCESS.
+  // 12b. result cannot be cached → OUTCOME_UNKNOWN, never the first SUCCESS.
   w.cacheFaults.put = true;
   const lost = await run(w, envelope, confirmation);
-  assert.equal(lost.final.state, 'FAILED');
+  assert.equal(lost.final.state, 'OUTCOME_UNKNOWN');
   assert.equal(lost.final.error.code, 'SYNC_RESULT_UNAVAILABLE');
   assert.equal(lost.final.writePerformed, null);
 
@@ -516,10 +517,11 @@ for (const [label, contract, opts] of [
   w3.cacheFaults.remove = false;
   assert.equal((await run(w3, freshEnv, confirmFor('TEST_ONLY_T008B_CACHE'))).final.state, 'SYNCED');
 
-  // 12d. cache read failure → factual FAILED/unknown, does not throw.
+  // 12d. cache read failure → OUTCOME_UNKNOWN, does not throw or invent failure/success.
   w3.cacheFaults.get = true;
   let lookup;
   assert.doesNotThrow(() => { lookup = w3.context.getConfirmSyncResult('TEST_ONLY_T008B_CACHE'); });
+  assert.equal(lookup.state, 'OUTCOME_UNKNOWN');
   assert.equal(lookup.error.code, 'SYNC_RESULT_UNREADABLE');
   assert.equal(lookup.writePerformed, null);
 }
