@@ -21,7 +21,7 @@ AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DO IT** — DESIGN is confirmed, T-016 Production Write Path is PASS, and T-017 private continuity + retrieval is the current AISYNC delivery task. ZASS SYSTEM Gate 2 three-route UI integration is a bounded compatibility patch and does not replace T-017.
+Current stage: **DO IT** — DESIGN is confirmed, T-016 Production Write Path is PASS, and T-017 private continuity + retrieval remains the current AISYNC delivery task. ZASS SYSTEM Gates 2–3 are production-integrated compatibility/product-surface work; Gate 4 factual SAVE/sync UX reuses T-016 and does not replace T-017.
 
 The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, design/technical architecture, executable tasks, verification, and delivery.
 

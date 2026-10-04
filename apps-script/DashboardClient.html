@@ -190,7 +190,67 @@ function renderProjectViewTabs(active) {
   }).join('') + '</div>';
 }
 
-function renderProjectPulse(project) {
+function parseReceiptJson(value) {
+  if (typeof value !== 'string' || value.trim() === '') return null;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function latestSaveHistory(history) {
+  const rows = Array.isArray(history) ? history : [];
+  for (let i = rows.length - 1; i >= 0; i -= 1) {
+    if (normalizeStateToken(rows[i].operation) === 'SAVE') return rows[i];
+  }
+  return null;
+}
+
+function projectSaveSyncHealth(project, history) {
+  const freshness = projectFreshness(project);
+  if (freshness === 'STALE') {
+    return {
+      state: 'STALE',
+      detail: 'Project index is behind the canonical source.'
+    };
+  }
+
+  const row = latestSaveHistory(history);
+  if (!row) {
+    return { state: 'Not provided', detail: 'No qualifying SAVE receipt is indexed.' };
+  }
+
+  if (normalizeStateToken(row.status) === 'FAILED') {
+    return {
+      state: 'FAILED',
+      detail: row.failure_reason || 'Latest indexed SAVE failed.'
+    };
+  }
+
+  const receipt = parseReceiptJson(row.receipt_json);
+  if (
+    normalizeStateToken(row.status) === 'SUCCESS' &&
+    receipt &&
+    receipt.status === 'SUCCESS' &&
+    receipt.verified === true
+  ) {
+    let detail = receipt.adapter_outcome || 'Verified SAVE receipt';
+    if (receipt.commit_or_record_id) detail += ' · ' + receipt.commit_or_record_id;
+    else if (receipt.adapter_outcome === 'NO_CHANGE') detail += ' · no new commit required';
+    else if (receipt.adapter_outcome === 'VERIFIED_WRITE_RECONCILED') detail += ' · no attributable commit SHA';
+    return { state: 'SAVED', detail: detail };
+  }
+
+  return {
+    state: 'Not provided',
+    detail: 'Latest SAVE row is not sufficient to prove a verified SAVED state.'
+  };
+}
+
+function renderProjectPulse(project, history) {
+  const saveHealth = projectSaveSyncHealth(project, history);
   return '<section class="card pulse">' +
     '<h2>Project Pulse</h2>' +
     '<div class="pulse-grid">' +
@@ -198,6 +258,8 @@ function renderProjectPulse(project) {
       '<div><span class="pulse-label">Next stage</span><strong>' + textOrNotProvided(project.next_stage) + '</strong></div>' +
       '<div><span class="pulse-label">Progress</span>' + renderProgress(project.progress) + '</div>' +
       '<div><span class="pulse-label">Index freshness</span><strong>' + escapeHtml(projectFreshness(project)) + '</strong></div>' +
+      '<div><span class="pulse-label">Save / sync health</span><strong>' + escapeHtml(saveHealth.state) + '</strong>' +
+        '<div class="muted">' + escapeHtml(saveHealth.detail) + '</div></div>' +
     '</div>' +
     '<div class="pulse-latest"><span class="pulse-label">Latest update</span>' + textOrNotProvided(project.latest_update) + '</div>' +
   '</section>';
@@ -291,7 +353,7 @@ function renderContextualCard(result) {
 
 function renderProjectWorkspace(result) {
   const p = result.project;
-  return renderProjectPulse(p) +
+  return renderProjectPulse(p, result.history) +
     renderConversationContinuation(p) +
     renderContextualCard(result);
 }

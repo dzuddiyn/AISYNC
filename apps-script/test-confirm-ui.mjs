@@ -13,7 +13,7 @@ class FakeStorage {
 
 function fakeDocument() {
   const els = {};
-  for (const id of ['status', 'receipt', 'receipt-json', 'confirm-sync', 'main-ui-link']) {
+  for (const id of ['status', 'save-state', 'receipt', 'receipt-summary', 'receipt-json', 'confirm-sync', 'main-ui-link']) {
     els[id] = { id, textContent: '', className: '', hidden: true, disabled: false, href: '' };
   }
   return { els, getElementById: (id) => els[id] || null };
@@ -24,8 +24,15 @@ vm.createContext(sandbox);
 vm.runInContext(clientCode, sandbox);
 
 const verifiedReceipt = {
-  status: 'SUCCESS', verified: true, write_performed: true,
-  adapter_outcome: 'VERIFIED_WRITE', commit_or_record_id: 'commit-sha-1'
+  status: 'SUCCESS',
+  verified: true,
+  write_performed: true,
+  adapter_outcome: 'VERIFIED_WRITE',
+  affected_resource: 'dzuddiyn/AISYNC/records/R-1.md',
+  commit_or_record_id: 'commit-sha-1',
+  request_id: 'req-1',
+  timestamp: '2026-10-04T00:00:00Z',
+  failure_reason: null
 };
 const synced = {
   state: 'SYNCED', redirect: 'https://sites.google.com/view/aisync-asc',
@@ -61,19 +68,33 @@ for (const result of nonRedirecting) {
   assert.equal(sandbox.canRedirectAfterSync(result), false, JSON.stringify(result));
 }
 
-// Success path: renders receipt, clears pending request, navigates once.
+// Success path: SAVED is rendered factually before a delayed return to main UI.
 {
   const doc = fakeDocument();
   const storage = new FakeStorage();
   storage.setItem('asc.pending.fragment.v0.1', '#asc=abc');
   const navigations = [];
-  const outcome = sandbox.renderSyncResult(synced, { document: doc, storage, navigate: (u) => navigations.push(u) });
-  assert.equal(outcome, 'REDIRECTED');
-  assert.deepStrictEqual(navigations, ['https://sites.google.com/view/aisync-asc']);
+  const scheduled = [];
+  const outcome = sandbox.renderSyncResult(synced, {
+    document: doc,
+    storage,
+    navigate: (u) => navigations.push(u),
+    schedule: (fn, ms) => scheduled.push({ fn, ms })
+  });
+  assert.equal(outcome, 'REDIRECT_SCHEDULED');
+  assert.equal(navigations.length, 0, 'navigation is delayed so SAVED is visible');
+  assert.equal(scheduled.length, 1);
+  assert.equal(scheduled[0].ms, 3000);
   assert.equal(storage.getItem('asc.pending.fragment.v0.1'), null);
   assert.equal(doc.els.receipt.hidden, false);
+  assert.equal(doc.els['save-state'].textContent, 'SAVED');
   assert.match(doc.els['receipt-json'].textContent, /commit-sha-1/);
-  assert.match(doc.els.status.textContent, /^SUCCESS/);
+  assert.match(doc.els['receipt-summary'].textContent, /State: SAVED/);
+  assert.match(doc.els['receipt-summary'].textContent, /Outcome: VERIFIED_WRITE/);
+  assert.match(doc.els['receipt-summary'].textContent, /Commit \/ record: commit-sha-1/);
+  assert.match(doc.els.status.textContent, /^SAVED/);
+  scheduled[0].fn();
+  assert.deepStrictEqual(navigations, ['https://sites.google.com/view/aisync-asc']);
 }
 
 // Failure paths: visibly FAILED, receipt shown when present, pending request kept, no navigation.
@@ -91,6 +112,7 @@ for (const result of [
   assert.equal(outcome, 'STAYED');
   assert.equal(navigations.length, 0);
   assert.equal(storage.getItem('asc.pending.fragment.v0.1'), '#asc=abc');
+  assert.equal(doc.els['save-state'].textContent, 'FAILED');
   assert.match(doc.els.status.textContent, /^FAILED/);
   assert.match(doc.els.status.className, /error/);
 }
@@ -105,7 +127,51 @@ for (const result of [
   );
   assert.equal(outcome, 'STAYED');
   assert.equal(navigations.length, 0);
-  assert.match(doc.els.status.textContent, /^SUCCESS/);
+  assert.equal(doc.els['save-state'].textContent, 'SAVED');
+  assert.match(doc.els.status.textContent, /^SAVED/);
+}
+
+
+// Gate 4 factual state classifier never labels unverified/incomplete results SAVED.
+assert.equal(sandbox.classifySaveState({ state: 'AWAITING_CONFIRMATION' }), 'UNSAVED');
+assert.equal(sandbox.classifySaveState({ state: 'RESULT_PENDING' }), 'SYNCING');
+assert.equal(sandbox.classifySaveState(synced), 'SAVED');
+assert.equal(sandbox.classifySaveState({ ...synced, receipt: { ...verifiedReceipt, verified: false } }), 'FAILED');
+assert.equal(sandbox.classifySaveState({ ...synced, historyOutcome: 'HISTORY_WRITE_FAILED' }), 'FAILED');
+assert.equal(sandbox.classifySaveState({ state: 'FAILED', error: { code: 'WRITE_ERROR' } }), 'FAILED');
+
+// NO_CHANGE and reconciled verified persistence are factual SAVED outcomes without invented commit SHA.
+{
+  const noChange = {
+    ...synced,
+    receipt: {
+      ...verifiedReceipt,
+      adapter_outcome: 'NO_CHANGE',
+      write_performed: false,
+      commit_or_record_id: null
+    }
+  };
+  assert.equal(sandbox.classifySaveState(noChange), 'SAVED');
+  assert.match(sandbox.describeReceipt(noChange), /No new commit/);
+
+  const reconciled = {
+    ...synced,
+    receipt: {
+      ...verifiedReceipt,
+      adapter_outcome: 'VERIFIED_WRITE_RECONCILED',
+      write_performed: null,
+      commit_or_record_id: null
+    }
+  };
+  assert.equal(sandbox.classifySaveState(reconciled), 'SAVED');
+  assert.match(sandbox.describeReceipt(reconciled), /No attributable commit SHA/);
+}
+
+// RESULT_PENDING description remains SYNCING and never SAVED.
+{
+  const view = sandbox.describeSyncResult({ state: 'RESULT_PENDING', requestId: 'req-1' });
+  assert.equal(view.state, 'SYNCING');
+  assert.match(view.message, /^SYNCING/);
 }
 
 // Client never writes directly: no client-side GitHub/Sheets/token calls.
@@ -157,9 +223,11 @@ assert.equal(typeof sandbox.writeToGitHub, 'undefined');
   const rejected = sandbox.showConfirmControls(env, '#asc=abc', { securityValid: false, error: { code: 'INTEGRITY_MISMATCH', message: 'Envelope content does not match its SHA-256 digest.' } });
   assert.equal(rejected.enabled, false);
   assert.equal(doc.els['confirm-sync'].disabled, true, 'bad request never write-enabled');
+  assert.equal(doc.els['save-state'].textContent, 'FAILED');
   assert.match(doc.els.status.textContent, /^REJECTED \(INTEGRITY_MISMATCH\)/);
   assert.match(doc.els.status.className, /error/);
   sandbox.showConfirmControls(env, '#asc=abc', ok);
+  assert.equal(doc.els['save-state'].textContent, 'UNSAVED');
   assert.equal(doc.els['confirm-sync'].disabled, false);
 
   // After a confirmed attempt the request_id is consumed: button stays disabled, except pre-claim retryable failures.
