@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** PRODUCTION v1 DELIVERY TRACK — T-016 PASS / T-017 CURRENT
+**Status:** PRODUCTION v1 DELIVERY TRACK — T-017 PASS / T-018 CURRENT
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Design:** v1.0.12 CONFIRMED
@@ -10,15 +10,30 @@
 
 ## Current task
 
-T-017 | CURRENT — PRIVATE CONTINUITY + RETRIEVAL
-Source: AP-011, D-027, D-031; frozen ZASSPILL v1.0
-Do: Implement controlled/private continuity + retrieval using the frozen ZASSPILL v1 contract, including retrieval result contracts, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, stale-result reconciliation, and scoped private continuity references.
-Depends on: T-015 PASS; T-016 PASS where persistence is required — satisfied.
-Boundary: private continuity authority remains the dedicated ASC Private Continuity Store; GitHub remains canonical for project artifacts; ASC DB/Sheets remains derived/index state; native ZASSPILL continuity semantics are not forced into the eight-field ASC Write Contract.
-Pass: same private project/thread continues across supported AI providers using controlled continuity/retrieval without long manual handover packets.
-Current result: IN PROGRESS — local retrieval/Portable Packet v2/reconciliation/cross-method/scoped-reference implementation PASS; real private Drive synthetic proof PASS with cleanup verified. The first Gemini receiver field run exposed stale Method Gateway/version and bootstrap field ambiguity; those fixes are prepared. The subsequent full `METHODS` reconciliation exposed a real Google Sheets >50k-cell blocker plus version auto-coercion. Local storage hardening now PASS: large method content uses transparent `gzip+base64:` physical storage with a fail-closed size cap, snapshot rows are forced to text, no truncation is allowed, the logical three-row/nine-column registry and exact-commit batch rule are unchanged, and all 27 repository test files pass on current `main` `9b820214975848491c4731b4f1acdc5b2263db08`. Live `METHODS` remains intentionally partial until the bounded patch passes owner SAVE/merge/deploy, then one full three-method reconcile and external Gemini re-proof must pass before T-017 can close.
+T-018 | CURRENT — INTEGRATED HUMAN UX
+Source: AP-012, D-020, D-021, D-031
+Do: Integrate the production human journey into one coherent UI: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → receipt/HISTORY → CI → reopen/transfer.
+Depends on: T-015 through T-017 — satisfied.
+Boundary: preserve existing authority and method boundaries; ordinary users should not need raw contracts, raw GitHub paths, or developer intervention.
+Pass: login → project/thread → route/provider → handoff → SAVE → receipt/HISTORY → CI → reopen/transfer works as one ordinary-user journey without raw internal mechanics.
+Current result: PROMOTED — T-017 is PASS; T-018 implementation has not started in this closure.
 
 ## Completed
+
+T-017 | PASS — PRIVATE CONTINUITY + RETRIEVAL
+Source: AP-011, D-027, D-031; frozen ZASSPILL v1.0
+Do: Implement controlled/private continuity + retrieval using the frozen ZASSPILL v1 contract, including retrieval result contracts, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, stale-result reconciliation, and scoped private continuity references.
+Pass evidence:
+- local retrieval, Portable Packet v2, reconciliation, cross-method handoff/result, stale-result handling, and scoped-reference contracts PASS; real private Drive synthetic proof PASS with cleanup verified.
+- refreshed receiver-facing ZASSPILL Method Gateway v1.0.0 and explicit `thread_id` / numeric `source_revision` / `continuity_reference` bootstrap separation merged through PR #17 at `197276b422a8c128097b545e08cc9215ad4996c3`.
+- `METHODS` >50k storage hardening merged through PR #23 at `f9e63c013b63bcfd228123f08e986c175fb50a0b`: no truncation, `gzip+base64:` physical storage only above the plain-text threshold, fail-closed encoded-size cap, transparent decode, and text-formatted snapshot rows.
+- live Apps Script decode compatibility defect was found by verification, fixed with explicit gzip blob content type, regression-covered, and merged through PR #24 at `2f461e1da059c3dfdb037dc2881956aa5752218f`; fresh-clone full repository proof passed all 27 `test-*.mjs` files with `git diff --check = 0`.
+- full live three-method reconciliation PASS at exact ZASS `main` commit `26b174e4dbc6570452b372712e9bf49abc86c4ef`: ZASSPILL v1.0.0 / 62,797 chars stored as 26,468-char gzip+base64, ZASSIMPLE v0.3.0 / 18,748 chars plain, ZASSELECTION v0.2.2 / 16,025 chars plain; all three rows share the same source commit and version cells remain text.
+- Public Method deployment v5 returned exact decoded Markdown for all three methods; ZASSPILL returned 62,797 chars and did not expose the compressed storage representation.
+- final external Google Antigravity receiver re-proof from an empty workspace fetched the exact GitHub Pages ZASSPILL gateway and returned `T017_RECEIVER_PASS`, `method_version: 1.0.0`, the exact synthetic `thread_id`, numeric `source_revision: 3`, distinct `continuity_reference`, and exact continuity sentence `Valve calibration checkpoint is row 18 with target marker 42.`
+- temporary Antigravity `read_url(dzuddiyn.github.io)` permission and temporary Gemini CLI settings used only for the proof were removed after evidence capture; provider-held personal memory/profile was not part of the transferred continuity packet.
+Boundary preserved: private continuity authority remains the dedicated ASC Private Continuity Store; GitHub remains canonical for project artifacts/method authority; ASC DB/Sheets remains derived/index state; method semantics remain in ZASS* rather than transport storage.
+Current result: PASS — T-017 pass criteria are satisfied; AP-011 is complete and execution advances to T-018 / AP-012.
 
 T-016 | PASS — PRODUCTION WRITE PATH
 Source: AP-010, D-016, D-031
@@ -343,11 +358,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-018 | QUEUED — INTEGRATED HUMAN UX
-Source: AP-012, D-020, D-021, D-031
-Depends on: T-015 through T-017.
-Pass: login → project/thread → route/provider → handoff → SAVE → receipt/HISTORY → CI → reopen/transfer works as one ordinary-user journey without raw internal mechanics.
-
 T-019 | QUEUED — PRODUCTION RELIABILITY & OPERATIONS
 Source: AP-013, D-029, D-031
 Depends on: T-015 through T-018.
@@ -365,14 +375,14 @@ Pass: release commit/deployment, known limitations, operator runbook, rollback p
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001 through T-014 and T-013A/B. T-012 completed the technical proof baseline; T-014 locked Production v1 delivery criteria and T-015 is current.
+Implementation evidence exists for T-001 through T-017 and T-013A/B. T-012 completed the technical proof baseline; T-014 locked Production v1 delivery criteria; T-015, T-016, and T-017 are PASS; T-018 is current.
 
 Closure checks:
 - Built: YES — ASC v0.1 core/fallback path, method gateway slices, and commit-linked ZASS CI consumer through T-012 are implemented
 - Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY; T-012 added deployed/live-read/owner-visible commit-linked ZASS CI proof
 - Matches design: YES — including D-029 security/replay and D-030 successful-return refinement
 - Recorded: YES — canonical GitHub tracking/evidence updated
-- Current: T-015 — canonical project/thread/index state for Production v1
+- Current: T-018 — integrated human UX for the Production v1 ordinary-user journey
 
 
 T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  

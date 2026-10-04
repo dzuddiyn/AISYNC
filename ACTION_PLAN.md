@@ -95,17 +95,18 @@ Pass / stop condition: an allowed human user can SAVE a supported production pro
 Result: PASS — canonical Production v1 GitHub write path is merged and deployed; live GitHub App SAVE and final protected-production NO_CHANGE verification both passed with independent GitHub/HISTORY evidence.
 Feeds design: YES
 
-AP-011 | CURRENT
+AP-011 | PASS
 Action: Implement controlled/private continuity + retrieval using the frozen ZASSPILL v1 contract, including retrieval result contracts, Packet ↔ ASC reconciliation, Portable Packet v2, cross-method handoff/result envelopes, stale-result reconciliation, and scoped private continuity references.
 Dependencies: AP-009, AP-010 where persistence is required — satisfied.
 Pass / stop condition: an ordinary user can continue the same project/thread across supported AI providers without a long manual handover packet and without publicizing private project continuity.
-Current result: IN PROGRESS — local continuity/retrieval contract and private Drive live proof PASS. Gemini field evidence revealed stale public ZASSPILL gateway metadata/content and ambiguous revision/reference labeling; both are locally corrected, with receiver re-proof pending publication of the canonical gateway refresh.
+Result: PASS — local continuity/retrieval contract and private Drive live proof pass; the stale gateway/bootstrap defects were canonically repaired; full three-method exact-commit METHODS reconciliation and decoded public read verification pass; final Google Antigravity receiver re-proof fetched the exact GitHub Pages ZASSPILL gateway at v1.0.0 and preserved the exact thread, numeric source revision, distinct continuity reference, and transferred current-state sentence without provider-memory enrichment.
 Feeds design: YES
 
-AP-012 | QUEUED
+AP-012 | CURRENT
 Action: Integrate the production human journey into one coherent UI: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → receipt/HISTORY → CI → reopen/transfer.
 Dependencies: AP-009 through AP-011.
 Pass / stop condition: the normal journey is usable without raw contracts, raw GitHub paths, or developer intervention.
+Current result: PROMOTED — AP-011 / T-017 is PASS; AP-012 / T-018 becomes the active execution slice.
 Feeds design: YES
 
 AP-013 | QUEUED
@@ -446,3 +447,12 @@ This is treated as implementation/storage hardening under PF-014/D-028, not a ne
 Evidence: the real 62,797-character ZASSPILL v1.0.0 payload was already round-trip proven by the temporary owner-only Apps Script reconciliation at about 26.4k stored characters; the canonicalized local regression test passes; a fresh clone of current `main` plus the patch passes all 27 repository `test-*.mjs` files with `git diff --check = 0`.
 
 T-017 remains IN PROGRESS. Next gate after explicit owner SAVE: commit/push the bounded patch, review/merge PR, deploy the canonical sync/read implementation, run one full three-method exact-HEAD reconciliation, independently verify all three live `METHODS` rows share the same canonical source commit with correct versions/content, then rerun the external Gemini continuation proof. T-017 closes only if that field re-proof passes.
+
+
+PF-063 | T-017 CLOSED / T-018 PROMOTED
+
+Finding: T-017 is PASS. Canonical gateway/bootstrap remediation was merged through PR #17 (`197276b422a8c128097b545e08cc9215ad4996c3`). The Google Sheets >50k method-snapshot blocker was canonically hardened through PR #23 (`f9e63c013b63bcfd228123f08e986c175fb50a0b`) without truncation and without changing the logical METHODS contract or GitHub method authority. Live verification then exposed an Apps Script gzip decode compatibility defect; the explicit gzip blob content-type fix and stronger regression coverage merged through PR #24 (`2f461e1da059c3dfdb037dc2881956aa5752218f`).
+
+The live METHODS registry was fully reconciled in one three-method batch against exact ZASS `main` commit `26b174e4dbc6570452b372712e9bf49abc86c4ef`: ZASSPILL v1.0.0 / 62,797 chars stored as 26,468-char `gzip+base64:`, ZASSIMPLE v0.3.0 / 18,748 chars plain, and ZASSELECTION v0.2.2 / 16,025 chars plain. All three rows share the same source commit, version cells remain text, and Public Method deployment v5 transparently returns the original Markdown rather than physical storage encoding.
+
+Final external receiver re-proof used Google Antigravity CLI from an empty workspace with only a scoped temporary `read_url(dzuddiyn.github.io)` permission. It fetched the exact receiver-facing GitHub Pages ZASSPILL gateway and returned `T017_RECEIVER_PASS`, `method_version: 1.0.0`, exact `thread_id: th_01ARZ3NDEKTSV4RRFFQ69G5FAV`, numeric `source_revision: 3`, distinct `continuity_reference: cr_01ARZ3NDEKTSV4RRFFQ69G5FB8`, and exact continuity sentence `Valve calibration checkpoint is row 18 with target marker 42.` The temporary read-url permission and temporary Gemini CLI settings were removed after proof; no provider-held personal memory/profile was transferred. AP-011 is complete and AP-012 / T-018 is promoted.
