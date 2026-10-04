@@ -235,7 +235,7 @@ export async function confirmAndSyncRequest({
   // consumed even if the destination attempt later fails; a retry needs a new request_id.
   let claim;
   try {
-    claim = await claimReplay(read.requestId);
+    claim = await claimReplay(read.requestId, gate.security.expiresAt);
   } catch (error) {
     claim = null;
   }

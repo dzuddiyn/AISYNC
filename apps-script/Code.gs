@@ -30,6 +30,8 @@ const ASC_RESULT_CACHE_SECONDS_ = 600;
 // result delivery only. Key = prefix + SHA-256(request_id): bounded and collision-safe.
 const ASC_REPLAY_PROPERTY_PREFIX_ = 'asc.replay.v1.';
 const ASC_REPLAY_LOCK_TIMEOUT_MS_ = 10000;
+const ASC_REPLAY_RETENTION_MS_ = 24 * 60 * 60 * 1000;
+const ASC_REPLAY_LEGACY_MAX_LIFETIME_MS_ = 30 * 60 * 1000;
 
 // Server clock (ISO). Single clock for expiry checks and receipt timestamps.
 function ascNow_() {
@@ -125,9 +127,95 @@ function ascReplayKey_(requestId) {
   return ASC_REPLAY_PROPERTY_PREFIX_ + ascSha256Hex_(String(requestId));
 }
 
-// Atomic one-time claim: lock → inspect → reject if claimed → persist claim → release.
-// Any uncertainty (no lock, property read/write error, unverifiable write) fails closed.
-function ascClaimReplay_(requestId) {
+function ascReplayIsoMs_(value) {
+  if (typeof value !== 'string' || value.length === 0) return null;
+  const ms = Date.parse(value);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+function ascReplayPurgeAfter_(expiresAt) {
+  const expiresMs = ascReplayIsoMs_(expiresAt);
+  if (expiresMs === null) throw new Error('REPLAY_MARKER_INVALID_EXPIRY');
+  return new Date(expiresMs + ASC_REPLAY_RETENTION_MS_).toISOString();
+}
+
+// Marker v0.2 retains a transport claim for 24h after the already-verified envelope expiry.
+// Legacy T-010 markers had only claimed_at; because all v0.1 envelopes are <=30 minutes,
+// they become safely purgeable after claimed_at + 30m + the same 24h retention window.
+function ascReplayMarkerPurgeAtMs_(raw) {
+  let marker;
+  try {
+    marker = JSON.parse(raw);
+  } catch (error) {
+    throw new Error('REPLAY_MARKER_MALFORMED');
+  }
+  if (!marker || typeof marker !== 'object' || Array.isArray(marker) || marker.state !== 'CLAIMED') {
+    throw new Error('REPLAY_MARKER_INVALID');
+  }
+
+  const keys = Object.keys(marker).sort();
+  const legacyKeys = ['claimed_at', 'state'];
+  const currentKeys = ['claimed_at', 'expires_at', 'purge_after', 'state'];
+  const sameKeys = function (expected) {
+    return keys.length === expected.length && keys.every(function (key, index) {
+      return key === expected[index];
+    });
+  };
+
+  const claimedMs = ascReplayIsoMs_(marker.claimed_at);
+  if (claimedMs === null) throw new Error('REPLAY_MARKER_INVALID_CLAIMED_AT');
+
+  if (sameKeys(legacyKeys)) {
+    return claimedMs + ASC_REPLAY_LEGACY_MAX_LIFETIME_MS_ + ASC_REPLAY_RETENTION_MS_;
+  }
+  if (!sameKeys(currentKeys)) {
+    throw new Error('REPLAY_MARKER_INVALID_SHAPE');
+  }
+
+  const expiresMs = ascReplayIsoMs_(marker.expires_at);
+  const purgeMs = ascReplayIsoMs_(marker.purge_after);
+  if (expiresMs === null || purgeMs === null || claimedMs > expiresMs) {
+    throw new Error('REPLAY_MARKER_INVALID_TIMING');
+  }
+  if (marker.purge_after !== new Date(expiresMs + ASC_REPLAY_RETENTION_MS_).toISOString()) {
+    throw new Error('REPLAY_MARKER_INVALID_RETENTION');
+  }
+  return purgeMs;
+}
+
+function ascCleanupReplayMarkers_(props, nowIso) {
+  const nowMs = ascReplayIsoMs_(nowIso);
+  if (nowMs === null || !props || typeof props.getProperties !== 'function' ||
+      typeof props.deleteProperty !== 'function') {
+    throw new Error('REPLAY_LIFECYCLE_UNAVAILABLE');
+  }
+
+  const all = props.getProperties();
+  if (!all || typeof all !== 'object' || Array.isArray(all)) {
+    throw new Error('REPLAY_LIFECYCLE_UNAVAILABLE');
+  }
+
+  let purged = 0;
+  let retained = 0;
+  Object.keys(all).forEach(function (key) {
+    if (key.indexOf(ASC_REPLAY_PROPERTY_PREFIX_) !== 0) return;
+    const purgeAtMs = ascReplayMarkerPurgeAtMs_(all[key]);
+    if (purgeAtMs > nowMs) {
+      retained += 1;
+      return;
+    }
+    props.deleteProperty(key);
+    if (props.getProperty(key) !== null) {
+      throw new Error('REPLAY_LIFECYCLE_DELETE_UNVERIFIED');
+    }
+    purged += 1;
+  });
+  return { purged: purged, retained: retained };
+}
+
+// Atomic one-time claim: lock → lifecycle cleanup → inspect → reject if claimed → persist claim.
+// Any uncertainty (lock/property/lifecycle/read/write verification) fails closed before destination I/O.
+function ascClaimReplay_(requestId, expiresAt) {
   let lock;
   try {
     lock = LockService.getScriptLock();
@@ -143,13 +231,29 @@ function ascClaimReplay_(requestId) {
   if (!locked) {
     return { claimed: false, code: 'REPLAY_STORE_UNAVAILABLE' };
   }
+
   try {
+    const claimedAt = ascNow_();
+    const claimedMs = ascReplayIsoMs_(claimedAt);
+    const expiresMs = ascReplayIsoMs_(expiresAt);
+    if (claimedMs === null || expiresMs === null || expiresMs <= claimedMs) {
+      return { claimed: false, code: 'REPLAY_STORE_UNAVAILABLE' };
+    }
+
     const props = PropertiesService.getScriptProperties();
+    ascCleanupReplayMarkers_(props, claimedAt);
+
     const key = ascReplayKey_(requestId);
     if (props.getProperty(key) !== null) {
       return { claimed: false, code: 'REPLAY_REJECTED' };
     }
-    const marker = JSON.stringify({ state: 'CLAIMED', claimed_at: ascNow_() });
+
+    const marker = JSON.stringify({
+      state: 'CLAIMED',
+      claimed_at: claimedAt,
+      expires_at: expiresAt,
+      purge_after: ascReplayPurgeAfter_(expiresAt)
+    });
     props.setProperty(key, marker);
     if (props.getProperty(key) !== marker) {
       return { claimed: false, code: 'REPLAY_STORE_UNAVAILABLE' };

@@ -100,7 +100,7 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
   const github = { file: null, calls: [], commitCounter: 0, putMode, getMode: 'ok' };
   const authCalls = [];
   const cacheFaults = { remove: false, put: false, get: false };
-  const propFaults = { get: false, set: false, dropWrite: false, onGet: null };
+  const propFaults = { get: false, getAll: false, set: false, delete: false, dropDelete: false, dropWrite: false, onGet: null };
   const lockState = { held: false, unavailable: false, acquisitions: 0 };
   const store = { ...props };
   const rows = [];
@@ -176,6 +176,15 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
         setProperty: (k, v) => {
           if (propFaults.set) throw new Error('props set');
           if (!propFaults.dropWrite) store[k] = String(v);
+          return this;
+        },
+        getProperties: () => {
+          if (propFaults.getAll) throw new Error('props get all');
+          return { ...store };
+        },
+        deleteProperty: (k) => {
+          if (propFaults.delete) throw new Error('props delete');
+          if (!propFaults.dropDelete) delete store[k];
           return this;
         }
       })
@@ -326,13 +335,24 @@ for (const confirmation of [undefined, {}, { confirmed: true, action: 'CONFIRM_A
   assert.equal(JSON.parse(w.rows[0][10]).verified, true);
   assertNoTokenLeak(w, immediate, final);
 
-  // 3b. Same request again → NO_CHANGE verified SUCCESS, no second PUT.
+  // 3b. Same semantic content under a new transport request → NO_CHANGE, no second PUT.
   const again = await run(w, envelopeWith(contract, 'TEST_ONLY_T008B_LOCAL_002'), confirmFor('TEST_ONLY_T008B_LOCAL_002'));
   assert.equal(again.final.state, 'SYNCED');
   assert.equal(again.final.receipt.adapter_outcome, 'NO_CHANGE');
   assert.equal(w.github.calls.filter((c) => c.options.method === 'put').length, 1);
 
-  // 3c. Changed content → UPDATE with current SHA.
+  // 3c. Same transport request replay → rejected before GitHub/HISTORY; no duplicate write/receipt.
+  const callsBeforeReplay = w.github.calls.length;
+  const rowsBeforeReplay = w.rows.length;
+  const replay = await run(w, envelopeWith(contract), confirmFor());
+  assert.equal(replay.final.state, 'FAILED');
+  assert.equal(replay.final.stage, 'REPLAY');
+  assert.equal(replay.final.error.code, 'REPLAY_REJECTED');
+  assert.equal(w.github.calls.length, callsBeforeReplay);
+  assert.equal(w.rows.length, rowsBeforeReplay);
+  assert.equal(w.github.calls.filter((c) => c.options.method === 'put').length, 1);
+
+  // 3d. Changed content → UPDATE with current SHA.
   const upd = await run(w, envelopeWith(contractWith({ 'Content/change': '# updated\n' }), 'TEST_ONLY_T008B_LOCAL_003'), confirmFor('TEST_ONLY_T008B_LOCAL_003'));
   assert.equal(upd.final.state, 'SYNCED');
   assert.equal(upd.final.receipt.commit_or_record_id, 'commitsha2');
@@ -599,7 +619,11 @@ for (const activeUser of ['someone@example.test', '']) {
   const key = w.replayKeys()[0];
   assert.match(key, /^asc\.replay\.v1\.[0-9a-f]{64}$/, 'bounded, hashed property key');
   assert.equal(key.includes('TEST_ONLY_T010_REPLAY'), false);
-  assert.deepStrictEqual(Object.keys(JSON.parse(w.store[key])).sort(), ['claimed_at', 'state']);
+  const marker = JSON.parse(w.store[key]);
+  assert.deepStrictEqual(Object.keys(marker).sort(), ['claimed_at', 'expires_at', 'purge_after', 'state']);
+  assert.equal(marker.claimed_at, NOW);
+  assert.equal(marker.expires_at, env.expires_at);
+  assert.equal(marker.purge_after, '2026-10-04T03:20:00.000Z');
   w.github.putMode = 'ok';
   const callsBefore = w.github.calls.length;
   const rowsBefore = w.rows.length;
@@ -618,21 +642,108 @@ for (const activeUser of ['someone@example.test', '']) {
 {
   const w = createWorld({ props: fullProps });
   let concurrent = null;
-  w.propFaults.onGet = () => { concurrent = w.context.ascClaimReplay_('TEST_ONLY_T010_RACE'); };
-  const winner = w.context.ascClaimReplay_('TEST_ONLY_T010_RACE');
+  w.propFaults.onGet = () => { concurrent = w.context.ascClaimReplay_('TEST_ONLY_T010_RACE', '2026-10-03T03:20:00Z'); };
+  const winner = w.context.ascClaimReplay_('TEST_ONLY_T010_RACE', '2026-10-03T03:20:00Z');
   assert.deepStrictEqual(JSON.parse(JSON.stringify(winner)), { claimed: true });
   assert.equal(concurrent.claimed, false, 'concurrent claimant blocked by lock');
   assert.equal(concurrent.code, 'REPLAY_STORE_UNAVAILABLE');
-  assert.equal(w.context.ascClaimReplay_('TEST_ONLY_T010_RACE').code, 'REPLAY_REJECTED');
+  assert.equal(w.context.ascClaimReplay_('TEST_ONLY_T010_RACE', '2026-10-03T03:20:00Z').code, 'REPLAY_REJECTED');
   assert.equal(w.replayKeys().length, 1, 'exactly one claim persisted');
   assert.equal(w.lockState.held, false);
 }
 
-// 19. Lock / property failures fail closed: REPLAY_STORE_UNAVAILABLE, zero destination I/O.
-for (const fault of ['lockBusy', 'lockService', 'propGet', 'propSet', 'dropWrite']) {
+// 19. T-019B lifecycle: active claims survive retention; expired current + legacy claims are purged.
+{
+  const w = createWorld({ props: fullProps });
+  const active = w.context.ascClaimReplay_('T019B_ACTIVE', '2026-10-03T03:20:00Z');
+  assert.equal(active.claimed, true);
+  const activeKey = w.context.ascReplayKey_('T019B_ACTIVE');
+
+  const legacyExpiredKey = w.context.ascReplayKey_('T019B_LEGACY_EXPIRED');
+  const legacyActiveKey = w.context.ascReplayKey_('T019B_LEGACY_ACTIVE');
+  w.store[legacyExpiredKey] = JSON.stringify({
+    state: 'CLAIMED',
+    claimed_at: '2026-10-02T00:00:00.000Z'
+  });
+  w.store[legacyActiveKey] = JSON.stringify({
+    state: 'CLAIMED',
+    claimed_at: '2026-10-03T02:50:00.000Z'
+  });
+
+  const second = w.context.ascClaimReplay_('T019B_SECOND', '2026-10-03T03:25:00Z');
+  assert.equal(second.claimed, true);
+  assert.equal(activeKey in w.store, true, 'unexpired current marker retained');
+  assert.equal(legacyExpiredKey in w.store, false, 'legacy marker beyond 30m + 24h retention purged');
+  assert.equal(legacyActiveKey in w.store, true, 'legacy marker inside retention retained');
+
+  w.clock.now = '2026-10-04T03:21:00.000Z';
+  const afterRetention = w.context.ascClaimReplay_('T019B_AFTER_RETENTION', '2026-10-04T03:40:00Z');
+  assert.equal(afterRetention.claimed, true);
+  assert.equal(activeKey in w.store, false, 'current marker purged only after envelope expiry + 24h');
+  assert.equal(w.context.ascReplayKey_('T019B_SECOND') in w.store, true, 'later marker still inside retention');
+}
+
+// 20. T-019B cleanup never resurrects an old envelope: expiry gate still rejects it before I/O.
+{
+  const w = createWorld({ props: fullProps });
+  const oldId = 'T019B_EXPIRED_REPLAY';
+  const oldEnvelope = envelopeWith(contractWith(), oldId);
+  const first = await run(w, oldEnvelope, confirmFor(oldId));
+  assert.equal(first.final.state, 'SYNCED');
+  const oldKey = w.context.ascReplayKey_(oldId);
+  assert.equal(oldKey in w.store, true);
+
+  w.clock.now = '2026-10-04T03:21:00.000Z';
+  const freshId = 'T019B_CLEANER';
+  const freshEnvelope = envelopeWith(contractWith(), freshId, {
+    issuedAt: '2026-10-04T03:10:00Z',
+    expiresAt: '2026-10-04T03:35:00Z'
+  });
+  const fresh = await run(w, freshEnvelope, confirmFor(freshId));
+  assert.equal(fresh.final.state, 'SYNCED');
+  assert.equal(fresh.final.receipt.adapter_outcome, 'NO_CHANGE');
+  assert.equal(oldKey in w.store, false, 'expired retained marker cleaned by a later valid claim');
+
+  const callsBefore = w.github.calls.length;
+  const rowsBefore = w.rows.length;
+  const expiredReplay = await run(w, oldEnvelope, confirmFor(oldId));
+  assert.equal(expiredReplay.final.state, 'FAILED');
+  assert.equal(expiredReplay.final.stage, 'SECURITY');
+  assert.equal(expiredReplay.final.error.code, 'REQUEST_EXPIRED');
+  assert.equal(w.github.calls.length, callsBefore);
+  assert.equal(w.rows.length, rowsBefore);
+}
+
+// 21. T-019B lifecycle corruption/delete uncertainty fails closed before a new replay claim.
+for (const mode of ['malformed', 'deleteThrow', 'deleteUnverified']) {
+  const w = createWorld({ props: fullProps });
+  const staleKey = w.context.ascReplayKey_('T019B_STALE_' + mode);
+  w.store[staleKey] = mode === 'malformed'
+    ? '{not-json'
+    : JSON.stringify({
+        state: 'CLAIMED',
+        claimed_at: '2026-10-01T00:00:00.000Z',
+        expires_at: '2026-10-01T00:20:00.000Z',
+        purge_after: '2026-10-02T00:20:00.000Z'
+      });
+  if (mode === 'deleteThrow') w.propFaults.delete = true;
+  if (mode === 'deleteUnverified') w.propFaults.dropDelete = true;
+
+  const before = w.replayKeys().slice();
+  const result = w.context.ascClaimReplay_('T019B_NEW_' + mode, '2026-10-03T03:20:00Z');
+  assert.equal(result.claimed, false, mode);
+  assert.equal(result.code, 'REPLAY_STORE_UNAVAILABLE', mode);
+  assert.equal(w.context.ascReplayKey_('T019B_NEW_' + mode) in w.store, false, mode + ': new claim not persisted');
+  assert.deepStrictEqual(w.replayKeys(), before, mode + ': existing evidence preserved on lifecycle uncertainty');
+  assert.equal(w.lockState.held, false, mode + ': lock released');
+}
+
+// 21. Lock / property failures fail closed: REPLAY_STORE_UNAVAILABLE, zero destination I/O.
+for (const fault of ['lockBusy', 'lockService', 'propGetAll', 'propGet', 'propSet', 'dropWrite']) {
   const w = createWorld({ props: fullProps });
   if (fault === 'lockBusy') w.lockState.held = true;
   if (fault === 'lockService') w.lockState.unavailable = true;
+  if (fault === 'propGetAll') w.propFaults.getAll = true;
   if (fault === 'propGet') w.propFaults.get = true;
   if (fault === 'propSet') w.propFaults.set = true;
   if (fault === 'dropWrite') w.propFaults.dropWrite = true;

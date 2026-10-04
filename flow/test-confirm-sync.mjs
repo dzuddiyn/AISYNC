@@ -40,13 +40,16 @@ function envelopeFor(c, requestId = 'TEST_ONLY_T008A_001', times = {}) {
 
 function replayStore({ mode = 'ok' } = {}) {
   const claimed = new Set();
+  const expiries = new Map();
   return {
     claimed,
-    claimReplay: async (requestId) => {
+    expiries,
+    claimReplay: async (requestId, expiresAt) => {
       if (mode === 'throw') throw new Error('store down');
       if (mode === 'unknown') return { claimed: false };
       if (claimed.has(requestId)) return { claimed: false, code: 'REPLAY_REJECTED' };
       claimed.add(requestId);
+      expiries.set(requestId, expiresAt);
       return { claimed: true };
     }
   };
@@ -334,6 +337,7 @@ for (const mainUiUrl of [undefined, '', 'javascript:alert(1)', 'http://insecure.
   assert.equal(first.state, 'FAILED');
   assert.equal(first.stage, 'WRITE');
   assert.equal(replay.claimed.has('TEST_ONLY_T008A_001'), true);
+  assert.equal(replay.expiries.get('TEST_ONLY_T008A_001'), '2026-10-03T03:20:00Z', 'replay store receives verified envelope expiry');
   const callsBefore = github.calls.read + github.calls.write;
   const rowsBefore = history.rows.length;
   const second = await confirmAndSyncRequest(deps({ replay, github: fakeGitHub(), history }).args);
