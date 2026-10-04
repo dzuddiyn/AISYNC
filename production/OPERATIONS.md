@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LOCAL PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -277,3 +277,82 @@ The proof ran through a temporary owner-only deployment built from immutable v35
 Canonical evidence: [`proofs/t019b-replay-idempotency-live.md`](../proofs/t019b-replay-idempotency-live.md).
 
 T-019B is therefore **LIVE PASS**. This does not close T-019 as a whole.
+
+
+## T-019C — Degraded / offline behavior
+
+Status: **LOCAL PASS / protected deploy + live outage proof pending**
+
+### Contract
+
+T-019C does not add an offline writer. It defines truthful behavior when the existing ASC surfaces lose connectivity, service availability, or a trustworthy response.
+
+The state model is:
+
+- `UNSAVED` — request exists locally; persistence has not started.
+- `SYNCING` — a confirmed attempt is resolving; never imply SAVED.
+- `SAVED` — destination persistence is verified and HISTORY is persisted.
+- `FAILED` — a factual non-success that is safe to report as failure.
+- `DEGRADED` — some persistence/audit evidence exists but end-to-end integrity is incomplete; blind retry is forbidden.
+- `OUTCOME UNKNOWN` — CONFIRM may have started but ASC cannot prove whether persistence happened.
+
+### Pre-confirm outage
+
+If protected server preview is unavailable:
+
+1. keep the pending `#asc=` fragment in browser session storage;
+2. show `DEGRADED / SERVER_PREVIEW_UNAVAILABLE`;
+3. keep CONFIRM disabled;
+4. expose **RETRY SERVER CHECK**;
+5. retry only security/owner/config preview; do not start persistence.
+
+`RESULT_CACHE_UNAVAILABLE` remains a separate safe same-transport retry because the server proves the cache clear failed before replay claim and before sync began.
+
+### Post-confirm response loss
+
+Once CONFIRM & SYNC has been sent, connection loss is not treated as ordinary failure.
+
+Browser transport loss, flow exception, missing/unreadable result cache, or adapter `WRITE_OUTCOME_UNKNOWN` is surfaced as `OUTCOME UNKNOWN` with `writePerformed=null`.
+
+Required operator behavior:
+
+1. disable duplicate CONFIRM for that transport request;
+2. expose **CHECK RESULT**;
+3. CHECK RESULT calls only `getConfirmSyncResult(request_id)`;
+4. if a factual final result appears, render it;
+5. if outcome remains unknown, reconcile against HISTORY and the authoritative destination before creating a new transport attempt.
+
+D-034 remains authoritative: a later transport attempt may use a new ASC envelope request ID while preserving any upstream semantic idempotency identity required by ZASSPILL.
+
+### Degraded persisted states
+
+- `WRITE_UNVERIFIED` is DEGRADED: a write was attempted/accepted but persisted state could not be fully verified.
+- verified destination persistence + HISTORY failure is DEGRADED: do not repeat the write because destination persistence is already factual; repair/reconcile the audit path instead.
+- `WRITE_OUTCOME_UNKNOWN` is OUTCOME UNKNOWN, not FAILED.
+- no degraded/unknown state is allowed to redirect or claim SAVED.
+
+### Front Door offline-safe boundary
+
+The existing Public Front Door already:
+
+- stores draft, provider, and route override in browser session storage;
+- prepares the receiver bootstrap client-side;
+- supports visible manual copy when clipboard integration fails;
+- opens the provider without any ASC persistence write.
+
+This local fallback can preserve work during an ASC service interruption, but it does not create an ASC revision, semantic event, receipt, or SAVED state. Frozen upstream ZASSPILL `LOCAL_CHANGES` and reconciliation semantics remain the semantic authority for genuinely offline continuity edits.
+
+### Local evidence
+
+Focused regressions prove:
+
+- server-preview outage → DEGRADED, pending request preserved, CONFIRM disabled, retry-preview exposed;
+- post-confirm network loss → OUTCOME UNKNOWN, one CONFIRM call only, duplicate CONFIRM disabled;
+- CHECK RESULT performs result lookup only and can recover to factual SAVED/FAILED state;
+- missing/unreadable result cache → canonical server `OUTCOME_UNKNOWN` + `writePerformed=null`;
+- verified destination write + HISTORY failure → DEGRADED and no retry;
+- `WRITE_UNVERIFIED` → DEGRADED;
+- `WRITE_OUTCOME_UNKNOWN` → OUTCOME UNKNOWN;
+- Front Door draft/handoff fallback remains local and exposes no persistence writer.
+
+No live outage injection has been performed yet. T-019C remains LOCAL PASS until protected deployment and live response-loss/outage proof complete.

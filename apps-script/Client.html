@@ -103,8 +103,18 @@ function getAppsScriptLocation(callback) {
 
 const ASC_CONFIRM_ACTION = 'CONFIRM_AND_SYNC';
 const ASC_MAIN_UI_PREFIX = 'https://sites.google.com/';
-// Pre-claim failures where the same request_id was never consumed.
+// Pre-claim failures where the same transport request_id was never consumed.
 const ASC_RETRYABLE_CODES = ['RESULT_CACHE_UNAVAILABLE'];
+// Post-confirm conditions where persistence may have happened but the client cannot prove the outcome.
+const ASC_UNKNOWN_CODES = [
+  'SERVER_CALL_FAILED',
+  'RESULT_CALL_FAILED',
+  'SYNC_RESULT_UNAVAILABLE',
+  'SYNC_RESULT_UNREADABLE',
+  'FLOW_EXCEPTION'
+];
+const ASC_UNKNOWN_ADAPTER_OUTCOMES = ['WRITE_OUTCOME_UNKNOWN'];
+const ASC_DEGRADED_ADAPTER_OUTCOMES = ['WRITE_UNVERIFIED'];
 let ascPendingState = null;
 
 // Confirmation is created only from an explicit user click and is bound to one request.
@@ -132,10 +142,40 @@ function canRedirectAfterSync(result) {
     !/\s/.test(result.redirect);
 }
 
+function resultErrorCode(result) {
+  return result && result.error && result.error.code ? result.error.code : null;
+}
+
+function receiptAdapterOutcome(result) {
+  return result && result.receipt && result.receipt.adapter_outcome
+    ? result.receipt.adapter_outcome
+    : null;
+}
+
+function isOutcomeUnknown(result) {
+  if (!result || typeof result !== 'object') return false;
+  if (result.state === 'OUTCOME_UNKNOWN') return true;
+  if (ASC_UNKNOWN_CODES.indexOf(resultErrorCode(result)) >= 0) return true;
+  if (ASC_UNKNOWN_ADAPTER_OUTCOMES.indexOf(receiptAdapterOutcome(result)) >= 0) return true;
+  return result.writePerformed === null && result.state !== 'RESULT_PENDING';
+}
+
+function isDegradedPersistedResult(result) {
+  if (!result || typeof result !== 'object' || !result.receipt) return false;
+  const receipt = result.receipt;
+  if (receipt.status === 'SUCCESS' && receipt.verified === true &&
+      result.historyOutcome && result.historyOutcome !== 'HISTORY_PERSISTED') {
+    return true;
+  }
+  return ASC_DEGRADED_ADAPTER_OUTCOMES.indexOf(receipt.adapter_outcome) >= 0;
+}
+
 function classifySaveState(result) {
   if (isFactualSavedResult(result)) return 'SAVED';
   if (result && result.state === 'RESULT_PENDING') return 'SYNCING';
   if (result && result.state === 'AWAITING_CONFIRMATION') return 'UNSAVED';
+  if (isOutcomeUnknown(result)) return 'OUTCOME UNKNOWN';
+  if (isDegradedPersistedResult(result)) return 'DEGRADED';
   return 'FAILED';
 }
 
@@ -153,10 +193,31 @@ function describeSyncResult(result) {
   if (state === 'UNSAVED') {
     return { state, isError: false, message: 'UNSAVED — explicit CONFIRM & SYNC is required before persistence.' };
   }
+  if (state === 'OUTCOME UNKNOWN') {
+    return {
+      state,
+      isError: true,
+      message: 'OUTCOME UNKNOWN — ASC lost a trustworthy result after CONFIRM & SYNC may have started. Do not confirm again. Use CHECK RESULT; if it stays unknown, reconcile against HISTORY and the authoritative destination before creating a new transport attempt.'
+    };
+  }
+  if (state === 'DEGRADED') {
+    if (result && result.receipt && result.receipt.status === 'SUCCESS' && result.receipt.verified === true) {
+      return {
+        state,
+        isError: true,
+        message: 'DEGRADED — destination persistence is verified, but the audit/HISTORY path is incomplete. Do not repeat the write; operator recovery is required.'
+      };
+    }
+    return {
+      state,
+      isError: true,
+      message: 'DEGRADED — a destination write was attempted but end-to-end verification is incomplete. Do not retry blindly; reconcile the authoritative target before another transport attempt.'
+    };
+  }
   if (!result || typeof result !== 'object') {
     return { state: 'FAILED', isError: true, message: 'FAILED — no factual sync result was returned. Nothing is reported as saved.' };
   }
-  const code = result.error && result.error.code ? result.error.code : 'UNKNOWN';
+  const code = resultErrorCode(result) || 'UNKNOWN';
   const reason = result.error && result.error.message ? result.error.message : 'Sync did not complete.';
   return { state: 'FAILED', isError: true, message: 'FAILED (' + code + ') — ' + reason };
 }
@@ -198,13 +259,19 @@ function renderSyncResult(result, deps) {
   const receiptCard = doc.getElementById('receipt');
   const receiptPre = doc.getElementById('receipt-json');
   const receiptSummary = doc.getElementById('receipt-summary');
+  const button = doc.getElementById('confirm-sync');
+  const retryPreviewButton = doc.getElementById('retry-preview');
+  const checkResultButton = doc.getElementById('check-sync-result');
+
+  if (retryPreviewButton) retryPreviewButton.hidden = true;
+  if (checkResultButton) checkResultButton.hidden = true;
+
   if (result && result.receipt) {
     if (receiptPre) receiptPre.textContent = JSON.stringify(result.receipt, null, 2);
     if (receiptSummary) receiptSummary.textContent = describeReceipt(result);
     if (receiptCard) receiptCard.hidden = false;
   }
 
-  const button = doc.getElementById('confirm-sync');
   if (canRedirectAfterSync(result)) {
     if (button) button.disabled = true;
     const storage = (deps && deps.storage) || window.sessionStorage;
@@ -217,34 +284,92 @@ function renderSyncResult(result, deps) {
     return 'RETURN_LINK_READY';
   }
 
-  // Failure or incomplete: keep the pending request visible. T-010: after CONFIRM, any
-  // replay-store uncertainty is fail-closed because the request_id may already be consumed.
-  // Only RESULT_CACHE_UNAVAILABLE is safely retryable here because it occurs before the
-  // confirm/sync flow and before any replay claim.
+  // Keep the pending request visible whenever the flow is incomplete.
+  // Only pre-claim RESULT_CACHE_UNAVAILABLE may repeat CONFIRM on the same transport ID.
+  // Any post-confirm unknown/degraded outcome disables CONFIRM to prevent blind duplicates.
   if (button) {
-    const code = result && result.error && result.error.code;
+    const code = resultErrorCode(result);
     const retryable = ASC_RETRYABLE_CODES.indexOf(code) >= 0;
     button.disabled = !(retryable && ascPendingState && ascPendingState.writeEnabled);
   }
+
+  if (checkResultButton && classifySaveState(result) === 'OUTCOME UNKNOWN' &&
+      ascPendingState && ascPendingState.requestId) {
+    checkResultButton.hidden = false;
+    checkResultButton.disabled = false;
+  }
+
   return 'STAYED';
 }
 
-// The server may settle asynchronously; a RESULT_PENDING reply is followed by one factual
-// result fetch. An unavailable result is shown as FAILED/unknown, never as success.
+function unknownClientResult(code, message, requestId) {
+  return {
+    state: 'OUTCOME_UNKNOWN',
+    stage: 'TRANSPORT',
+    redirect: null,
+    requestId: requestId || (ascPendingState && ascPendingState.requestId) || null,
+    writePerformed: null,
+    error: { code: code, message: message }
+  };
+}
+
+// The server may settle asynchronously; RESULT_PENDING is followed by a factual read.
+// A lost/unreadable result becomes OUTCOME UNKNOWN and is re-checked only through
+// getConfirmSyncResult; CONFIRM is never automatically repeated.
 function handleConfirmResponse(result, deps) {
   const run = (deps && deps.run) || (typeof google !== 'undefined' && google.script && google.script.run);
   const render = (deps && deps.render) || renderSyncResult;
   if (result && result.state === 'RESULT_PENDING' && typeof result.requestId === 'string' && run) {
     run
       .withSuccessHandler(function(final) { render(final); })
-      .withFailureHandler(function(error) {
-        render({ state: 'FAILED', error: { code: 'RESULT_CALL_FAILED', message: 'Sync result could not be fetched. Check HISTORY; nothing is reported as saved.' } });
+      .withFailureHandler(function() {
+        render(unknownClientResult(
+          'RESULT_CALL_FAILED',
+          'The sync result could not be fetched after CONFIRM & SYNC may have started.',
+          result.requestId
+        ));
       })
       .getConfirmSyncResult(result.requestId);
     return 'FETCHING_RESULT';
   }
   render(result);
   return 'RENDERED';
+}
+
+function checkPendingSyncResult(deps) {
+  if (!ascPendingState || !ascPendingState.requestId) return 'NO_REQUEST';
+  const run = (deps && deps.run) || (typeof google !== 'undefined' && google.script && google.script.run);
+  const render = (deps && deps.render) || renderSyncResult;
+  if (!run) {
+    render(unknownClientResult(
+      'RESULT_CALL_FAILED',
+      'ASC is unavailable, so the prior sync result still cannot be checked.',
+      ascPendingState.requestId
+    ));
+    return 'UNAVAILABLE';
+  }
+
+  const doc = (deps && deps.document) || document;
+  const checkButton = doc.getElementById('check-sync-result');
+  if (checkButton) checkButton.disabled = true;
+  setSaveState(
+    'SYNCING',
+    'CHECKING RESULT — reading the prior request result only. No new write is being started.',
+    false,
+    { document: doc }
+  );
+
+  run
+    .withSuccessHandler(function(final) { render(final, deps); })
+    .withFailureHandler(function() {
+      render(unknownClientResult(
+        'RESULT_CALL_FAILED',
+        'ASC is still unable to return a trustworthy result for the prior request.',
+        ascPendingState.requestId
+      ), deps);
+    })
+    .getConfirmSyncResult(ascPendingState.requestId);
+  return 'CHECKING';
 }
 
 function requestConfirmAndSync() {
@@ -257,8 +382,12 @@ function requestConfirmAndSync() {
   setSaveState('SYNCING', 'SYNCING — write is being attempted and verified. Do not treat this as saved yet.', false);
   google.script.run
     .withSuccessHandler(handleConfirmResponse)
-    .withFailureHandler(function(error) {
-      renderSyncResult({ state: 'FAILED', error: { code: 'SERVER_CALL_FAILED', message: String(error && error.message || error) } });
+    .withFailureHandler(function() {
+      renderSyncResult(unknownClientResult(
+        'SERVER_CALL_FAILED',
+        'The connection to ASC was lost after CONFIRM & SYNC was sent. The server may have completed the request.',
+        ascPendingState.requestId
+      ));
     })
     .confirmAndSync({
       fragment: ascPendingState.fragment,
@@ -276,29 +405,84 @@ function describeServerPreview(serverPreview, envelope) {
   if (!valid) {
     const code = serverPreview && serverPreview.error && serverPreview.error.code ? serverPreview.error.code : 'SERVER_PREVIEW_UNAVAILABLE';
     const reason = serverPreview && serverPreview.error && serverPreview.error.message ? serverPreview.error.message : 'Server security check did not pass.';
-    return { enabled: false, isError: true, note: 'REJECTED (' + code + ') — ' + reason + ' CONFIRM & SYNC is disabled; nothing will be saved.' };
+    if (code === 'SERVER_PREVIEW_UNAVAILABLE') {
+      return {
+        enabled: false,
+        retryable: true,
+        isError: true,
+        state: 'DEGRADED',
+        note: 'DEGRADED (SERVER_PREVIEW_UNAVAILABLE) — ' + reason + ' The pending request is preserved locally. No write has started; retry the server check when ASC is reachable.'
+      };
+    }
+    return {
+      enabled: false,
+      retryable: false,
+      isError: true,
+      state: 'FAILED',
+      note: 'REJECTED (' + code + ') — ' + reason + ' CONFIRM & SYNC is disabled; nothing will be saved.'
+    };
   }
   if (serverPreview.writeEnabled !== true) {
-    return { enabled: false, isError: false, note: 'Request is security-valid, but CONFIRM & SYNC is not enabled on this deployment. Preview only — nothing will be saved.' };
+    return {
+      enabled: false,
+      retryable: false,
+      isError: false,
+      state: 'UNSAVED',
+      note: 'Request is security-valid, but CONFIRM & SYNC is not enabled on this deployment. Preview only — nothing will be saved.'
+    };
   }
-  return { enabled: true, isError: false, note: 'Security check passed (expires ' + serverPreview.expiresAt + '). Nothing is saved until you press CONFIRM & SYNC.' };
+  return {
+    enabled: true,
+    retryable: false,
+    isError: false,
+    state: 'UNSAVED',
+    note: 'Security check passed (expires ' + serverPreview.expiresAt + '). Nothing is saved until you press CONFIRM & SYNC.'
+  };
+}
+
+function retryServerPreview() {
+  if (!ascPendingState || !ascPendingState.fragment || !ascPendingState.envelope) return 'NO_REQUEST';
+  const retryButton = document.getElementById('retry-preview');
+  if (retryButton) retryButton.disabled = true;
+  setSaveState(
+    'DEGRADED',
+    'RETRYING SERVER CHECK — validating the preserved request only. No write is being started.',
+    true
+  );
+  loadServerPreview(ascPendingState.fragment, function(serverPreview) {
+    showConfirmControls(ascPendingState.envelope, ascPendingState.fragment, serverPreview);
+  });
+  return 'RETRYING';
 }
 
 function showConfirmControls(envelope, fragment, serverPreview) {
   const view = describeServerPreview(serverPreview, envelope);
   ascPendingState = {
     fragment: fragment,
+    envelope: envelope,
     requestId: envelope.request_id,
     writeEnabled: view.enabled
   };
   const controls = document.getElementById('confirm-controls');
   const button = document.getElementById('confirm-sync');
+  const retryButton = document.getElementById('retry-preview');
+  const checkButton = document.getElementById('check-sync-result');
   const note = document.getElementById('confirm-note');
   controls.hidden = false;
   button.disabled = !view.enabled;
+  if (retryButton) {
+    retryButton.hidden = !view.retryable;
+    retryButton.disabled = false;
+    retryButton.onclick = retryServerPreview;
+  }
+  if (checkButton) {
+    checkButton.hidden = true;
+    checkButton.disabled = false;
+    checkButton.onclick = checkPendingSyncResult;
+  }
   note.textContent = view.note;
   note.className = view.isError ? 'error' : 'muted';
-  setSaveState(view.enabled ? 'UNSAVED' : 'FAILED', view.note, view.isError);
+  setSaveState(view.state, view.note, view.isError);
   button.onclick = requestConfirmAndSync;
   return view;
 }

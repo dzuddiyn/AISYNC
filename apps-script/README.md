@@ -734,3 +734,37 @@ Final live proof:
 CI/index reporting remains factual: the SAVE artifact commit had a successful GitHub Pages build but no `ZASS CI / zass-check` run, and the operational project index remained explicitly STALE. T-018 treats truthful absence/staleness as correct integration behavior; it does not convert those states into a false PASS.
 
 Authority boundaries remain unchanged: GitHub is canonical artifact authority, private continuity remains owner-only, external AI receives only scoped minimum continuity, provider-held memory/profile is not portable authority, providers receive no repository credentials, and canonical persistence still requires owner-confirmed ASC SAVE.
+
+
+## T-019C degraded / offline behavior — LOCAL PASS
+
+T-019C hardens the existing protected CONFIRM & SYNC path without adding an offline writer or changing semantic authority.
+
+Operational states:
+- **UNSAVED** — request is locally preserved and has not entered persistence.
+- **SYNCING** — a confirmed attempt is resolving; never treated as saved.
+- **SAVED** — only verified destination persistence plus persisted HISTORY.
+- **FAILED** — a factual non-success where the system can establish that the requested workflow did not complete.
+- **DEGRADED** — persistence/audit integrity is incomplete but the condition is not safe to simplify to ordinary failure.
+- **OUTCOME UNKNOWN** — CONFIRM may have started but ASC cannot prove whether persistence happened.
+
+Retry boundary:
+- pre-confirm `SERVER_PREVIEW_UNAVAILABLE` preserves the pending fragment, disables CONFIRM, and exposes **RETRY SERVER CHECK**; retry performs security/owner preview only and starts no write;
+- pre-claim `RESULT_CACHE_UNAVAILABLE` remains the only same-transport CONFIRM retry because the server proves sync never started;
+- after CONFIRM is sent, browser/server transport loss, unreadable result cache, missing result cache, flow exception, or adapter `WRITE_OUTCOME_UNKNOWN` is **OUTCOME UNKNOWN**;
+- OUTCOME UNKNOWN disables duplicate CONFIRM and exposes **CHECK RESULT**, which calls only `getConfirmSyncResult(request_id)`;
+- `WRITE_UNVERIFIED` is **DEGRADED** and cannot be blindly retried;
+- verified destination persistence with failed HISTORY is **DEGRADED**: the user is told not to repeat the write because the artifact is already verified while audit persistence is incomplete.
+
+Offline/fallback boundary:
+- the Public Front Door already preserves draft/provider/route state in browser session storage;
+- handoff preparation/copy-open fallback is client-side and its regression performs zero network writes;
+- T-019C does not invent an ASC revision, receipt, event, or SAVED state while offline;
+- ZASSPILL `LOCAL_CHANGES` / reconciliation semantics remain upstream semantic authority and are not reimplemented in ASC.
+
+Focused regressions:
+- `apps-script/test-confirm-ui.mjs` covers DEGRADED preview, OUTCOME UNKNOWN, no blind repeat after post-confirm network loss, CHECK RESULT recovery, HISTORY-degraded state, and safe pre-claim retry.
+- `apps-script/test-apps-script-binding.mjs` proves missing/unreadable cached results return canonical `OUTCOME_UNKNOWN` with `writePerformed=null`.
+- `docs/asc/test-front-door.mjs` re-proves session preservation and local copy/open handoff fallback with no persistence writer.
+
+Protected deployment and live outage/response-loss proof remain pending.
