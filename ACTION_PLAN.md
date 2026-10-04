@@ -113,7 +113,7 @@ AP-013 | CURRENT
 Action: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
 Dependencies: AP-009 through AP-012 — satisfied.
 Pass / stop condition: critical state can be recovered or rolled back truthfully without silent duplication/data loss and without exposing secrets.
-Current result: CURRENT — AP-012 / T-018 is complete; no AP-013 implementation claim is made yet.
+Current result: IN PROGRESS — T-019A critical-state recovery is LOCAL PASS on base `7f8cced5a2672cf4462674d7cd3450c2452e988e`. Private-continuity changed transactions now fail closed unless a private pre-write snapshot is created and read-back verified first; active snapshots are bounded to 20; manual backup/list/restore remain server-private; restore requires the inspected current file ID, rejects unsupported backup/state schema, creates a PRE_RESTORE safety snapshot, writes the selected state into a new verified authoritative file, moves the Script Property pointer only after verification, and re-reads the restored state exactly. Read-only operations do not create versions, and backup failure leaves authority unchanged. Recovery procedure/limitations are documented in `production/OPERATIONS.md`; fresh-clone proof passes all 28 repository tests with `git diff --check = 0`. AP-013 remains CURRENT pending canonical save/deploy/live recovery proof plus replay lifecycle, degraded/offline, telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final runbook evidence.
 Feeds design: YES
 
 AP-014 | QUEUED
@@ -520,3 +520,14 @@ Boundary result: no provider received write credentials, no provider-local save 
 Lifecycle result: T-018 / AP-012 PASS. AISYNC as a whole remains `DO IT`; T-019 / AP-013 becomes CURRENT. T-020 closed beta and T-021 Production v1 release acceptance remain queued before project-level `DELIVERED !!`.
 
 Next gate: owner SAVE of the documentation-only T-018 closure/promote patch.
+
+
+PF-069 | T-019A PRIVATE CONTINUITY BACKUP / RESTORE — LOCAL PASS / LIVE PROOF PENDING
+
+Finding: the existing owner-private Drive store already used copy-on-write verified state files, but prior authorities were only retired to Drive Trash and there was no bounded recoverable backup catalog, explicit restore contract, expected-current guard, or schema-safe recovery procedure. T-019A adds reliability without changing authority: every changed private-continuity transaction must first create a private PRE_WRITE snapshot of the current authoritative state, read it back, validate it, and keep retention within 20 active snapshots. If backup creation/verification/retention fails, the mutation aborts before the authoritative Script Property pointer moves. Read-only transactions create neither snapshot nor new version.
+
+Manual backup/list/restore primitives remain server-private. Restore requires the backup ID plus the exact current authoritative file ID observed during inspection, rejects stale-current races, malformed/unrecognized backups, unsupported backup versions, and unsupported state schema, then creates a PRE_RESTORE safety snapshot, writes the selected backup state into a new verified authoritative file, moves the pointer only through the normal verified write path, and independently re-reads the restored state. The selected backup and safety backup are protected from retention during the restore. A restore never points authority directly at a backup file.
+
+Evidence: unit regression proves pre-write snapshot contains the pre-mutation state, backup failure leaves state/pointer unchanged, manual backup/list, divergent-state restore, PRE_RESTORE safety backup, stale-current rejection, unsupported-schema rejection, and 20-snapshot retention. Continuity integration regression proves eight existing T-015/T-017 state mutations produce eight active backups while exactly one state file remains active authority. Fresh clone of canonical base `7f8cced5a2672cf4462674d7cd3450c2452e988e` with the bounded patch passes all 28 repository `test-*.mjs` files and `git diff --check = 0`.
+
+Boundary/limitation: backups remain in the same owner Drive environment, so this slice is rollback/recovery for state-file corruption, bad mutation, operator error, and schema-incompatible restore attempts; it is not yet account-wide disaster recovery. Live Drive backup/restore proof, replay-marker lifecycle, degraded/offline behavior, telemetry, secret rotation, deployment/rollback and full operator acceptance remain open under T-019 / AP-013.

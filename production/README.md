@@ -127,3 +127,10 @@ HISTORY:    row 7, one matching request
 Independent GitHub read-back matched the exact intended content. The commit changed only the deterministic target file. Independent Sheets read-back matched the receipt/request/commit/resource exactly.
 
 Canonical T-016 source merged through PR #13 at `cfbc379408080ee22b4eaf47835455829858b949` and protected Apps Script production was updated from merged `main` to version 17 (`T016-production-write-canonical`). Final protected-production request `ASC-T016-FINAL-20261003185851` returned `NO_CHANGE`, `write_performed=false`, `verified=true`; independent HISTORY row 8 re-read matched exactly and GitHub `main` remained unchanged, proving deterministic idempotent behavior without a duplicate commit. T-016 is PASS.
+
+
+## T-019 Production reliability / operations
+
+Production reliability work is tracked in [OPERATIONS.md](./OPERATIONS.md).
+
+Current state: **T-019 IN PROGRESS**. T-019A private-continuity backup/restore is LOCAL PASS only; live recovery proof and the remaining replay/degraded/offline/telemetry/secret-rotation/deployment/rollback work are not yet complete.
