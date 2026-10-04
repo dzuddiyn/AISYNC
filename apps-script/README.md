@@ -459,3 +459,43 @@ D-030 already defines the guaranteed v0.1 return path as a user-activated `Retur
 - no timer-driven top-level navigation is promised or required.
 
 The live failure therefore resulted in a bounded UX compatibility fix, not an architecture reopen.
+
+
+## Gate 4 owner-visible SAVED proof + D-030 return fix — 2026-10-04
+
+Owner-visible production proof reached a factual successful receipt:
+
+```text
+State: SAVED
+Outcome: NO_CHANGE
+Resource: dzuddiyn/AISYNC/records/T016-LIVE-20261003181842.md
+New write performed: no
+Verified: true
+Request: ASC-G4-NOCHANGE-20261004013025
+Timestamp: 2026-10-04T01:33:38.236Z
+```
+
+This proves the Gate 4 production UI can render a verified `SAVED` state without inventing a new commit when the authoritative content already matches.
+
+Live UX finding:
+- the attempted 3-second timer-driven top-level return did not navigate the browser;
+- persistence and receipt truth were unaffected;
+- D-030 already defines the user-activated `Return to main ASC UI` control as the guaranteed path.
+
+Bounded fixes:
+1. PR #25 / `75a76bd0f8aba9c8c68dfea3aba4735ba4cb7690`
+   - empty protected page now shows `NO REQUEST`, not `UNSAVED`;
+   - sign-in/no-payload message tells the user to return to the original Public Front Door tab and press CONTINUE.
+2. PR #26 / `9abddcfd8a5abd91f81d041a85b5474b74493b7b`
+   - removes dependence on timer-driven top-level navigation;
+   - factual SAVED receipt remains visible;
+   - the guaranteed user-activated `Return to main ASC UI` control is prominent.
+
+Production:
+- protected production deployment now points to **Apps Script version 26**, `Gate4-D030-return-control-fix`;
+- v26 is production v25 plus exactly `Index.html` and `Client.html`;
+- independent pull verified both files match PR #26 merge;
+- every other production file matches v25;
+- all **27** repository `test-*.mjs` files PASS and `git diff --check` PASS.
+
+The failed auto-return is therefore closed as a bounded UX/platform compatibility finding, not a persistence or architecture failure.
