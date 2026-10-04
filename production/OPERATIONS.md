@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LOCAL PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -383,3 +383,78 @@ A temporary browser harness v40 did not produce deterministic evidence and is no
 Canonical evidence: [`proofs/t019c-degraded-offline-live.md`](../proofs/t019c-degraded-offline-live.md).
 
 T-019C is therefore **LIVE PASS**. This does not close T-019 as a whole.
+
+
+## T-019D — Truthful telemetry
+
+Status: **LOCAL PASS / protected deploy + live proof pending**
+
+### Contract
+
+T-019D adds one owner-only, ephemeral production snapshot through `getProductionTelemetry(project_id)`.
+
+Telemetry is observational evidence, not a second operational database:
+
+- no telemetry row/file is persisted;
+- no GitHub repository write is performed;
+- no ASC DB mutation is performed;
+- no private continuity state is created or changed;
+- no credential value is returned;
+- every probe carries its source and `observed_at`;
+- absence of evidence remains `NOT_OBSERVED`, `UNVERIFIED`, or `UNKNOWN`;
+- stale or failed evidence is never promoted to OK.
+
+### Required probes
+
+The snapshot contains six independent probes:
+
+1. **ASC DB** — current four-tab project read and source metadata.
+2. **Canonical GitHub** — exact canonical-head read evidence already attached by the freshness layer.
+3. **Index freshness** — `CURRENT`, `STALE`, or `UNVERIFIED`; no silent refresh or semantic inference.
+4. **Private continuity** — reads only the already-configured authoritative file pointer, verifies privacy + schema, and reports structural facts only. It never calls the store-creation path.
+5. **GitHub App auth** — confirms production write configuration and performs an auth-only short-lived installation-token probe. The token itself is never returned and no repository write is made.
+6. **Latest SAVE evidence** — latest indexed SAVE/HISTORY row plus verified receipt facts. No SAVE row means `NOT_OBSERVED`, not success.
+
+### Overall evidence state
+
+Overall telemetry is conservative:
+
+- `ERROR` — any required probe failed or is not configured;
+- `DEGRADED` — any required observation is stale, failed, or degraded;
+- `UNKNOWN` — evidence is incomplete / unverified / not observed;
+- `OK` — only when every required probe returned direct acceptable evidence in this snapshot.
+
+The overall state does not infer future availability and is not an SLA claim.
+
+### Operator UI
+
+Telemetry appears only under **Review**. Workspace remains compact/default.
+
+Opening Review loads a fresh snapshot on demand. **REFRESH TELEMETRY** explicitly requests another snapshot. No background polling is introduced.
+
+The UI shows:
+- overall evidence state + reason;
+- source and observation timestamp for each probe;
+- bounded, non-secret operational details;
+- explicit probe errors;
+- the caveat that UNKNOWN / UNVERIFIED / NOT_OBSERVED are never PASS.
+
+### Local evidence
+
+Focused regressions prove:
+- owner-only telemetry;
+- fully observed evidence can reach OK;
+- STALE -> DEGRADED;
+- latest SAVE failure -> DEGRADED;
+- no SAVE -> UNKNOWN;
+- malformed/incomplete receipt -> UNKNOWN;
+- canonical GitHub read failure -> ERROR;
+- missing continuity authority -> ERROR without store creation;
+- GitHub App auth failure -> ERROR;
+- DB failure leaves downstream evidence NOT_OBSERVED instead of fabricating state;
+- secret token material is absent from returned telemetry;
+- telemetry source contains no business-state mutation API;
+- Review renders truthful OK / ERROR / UNKNOWN states and refresh control;
+- Workspace remains unaffected.
+
+T-019D remains LOCAL PASS until protected deployment and live owner telemetry proof complete.

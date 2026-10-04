@@ -15,6 +15,7 @@ let dashboardState = {
   list: null,
   projectResult: null,
   ciResult: null,
+  telemetryResult: null,
   continuityResult: null,
   projectView: 'WORKSPACE',
   handoffForm: { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' },
@@ -774,7 +775,95 @@ function renderHistoryAudit(history) {
   }).join('') + '</div>';
 }
 
-function renderProjectReview(result, ciResult) {
+function telemetryDetailsHtml(probe) {
+  const details = probe && probe.details && typeof probe.details === 'object' ? probe.details : {};
+  const fields = [
+    ['authority', 'Authority'],
+    ['tabs_read', 'Tabs read'],
+    ['repository', 'Repository'],
+    ['ref', 'Ref'],
+    ['commit_sha', 'Canonical commit'],
+    ['indexed_ref', 'Indexed ref'],
+    ['indexed_commit', 'Indexed commit'],
+    ['reason', 'Reason'],
+    ['schema_version', 'Schema'],
+    ['project_count', 'Project count'],
+    ['project_present', 'Project present'],
+    ['token_issued', 'Token issued'],
+    ['token_expires_at', 'Token expires'],
+    ['repository_write_performed', 'Repository write performed'],
+    ['event_timestamp', 'Event timestamp'],
+    ['row_status', 'Indexed SAVE status'],
+    ['adapter_outcome', 'Adapter outcome'],
+    ['verified', 'Verified'],
+    ['write_performed', 'Write performed'],
+    ['failure_reason', 'Failure reason'],
+    ['note', 'Note']
+  ];
+  const rows = fields.map(function (item) {
+    const value = details[item[0]];
+    if (value === undefined || value === null || value === '') return '';
+    const display = Array.isArray(value) ? value.join(', ') : String(value);
+    return '<div><span class="pulse-label">' + escapeHtml(item[1]) + '</span>' +
+      escapeHtml(display) + '</div>';
+  }).join('');
+  return rows ? '<div class="review-current-state">' + rows + '</div>' : '';
+}
+
+function renderProductionTelemetry(result) {
+  if (result === null || result === undefined) {
+    return '<section class="card">' +
+      '<h2>Operator telemetry</h2>' +
+      '<p class="muted">Loading a fresh read-only telemetry snapshot…</p>' +
+    '</section>';
+  }
+
+  if (result.ok !== true) {
+    const code = result.error && result.error.code ? result.error.code : 'TELEMETRY_UNAVAILABLE';
+    const message = result.error && result.error.message ? result.error.message : 'Production telemetry could not be loaded.';
+    return '<section class="card">' +
+      '<h2>Operator telemetry</h2>' +
+      '<p class="error">FAILED (' + escapeHtml(code) + ') — ' + escapeHtml(message) + '</p>' +
+      '<button type="button" data-telemetry-action="refresh">REFRESH TELEMETRY</button>' +
+    '</section>';
+  }
+
+  const probes = result.probes && typeof result.probes === 'object' ? result.probes : {};
+  const order = [
+    ['asc_db', 'ASC DB'],
+    ['canonical_github', 'Canonical GitHub'],
+    ['index_freshness', 'Index freshness'],
+    ['private_continuity', 'Private continuity'],
+    ['github_app_auth', 'GitHub App auth'],
+    ['latest_save', 'Latest SAVE evidence']
+  ];
+  const cards = order.map(function (item) {
+    const probe = probes[item[0]] || {};
+    const error = probe.error
+      ? '<p class="error">(' + escapeHtml(probe.error.code || 'UNKNOWN') + ') ' +
+          escapeHtml(probe.error.message || 'Probe failed.') + '</p>'
+      : '';
+    return '<article class="review-item">' +
+      '<strong>' + escapeHtml(item[1]) + ' · ' + escapeHtml(probe.state || 'NOT_OBSERVED') + '</strong>' +
+      '<div class="muted">Source: ' + escapeHtml(probe.source || 'Not provided') +
+        ' · observed ' + escapeHtml(probe.observed_at || 'Not provided') + '</div>' +
+      error +
+      telemetryDetailsHtml(probe) +
+    '</article>';
+  }).join('');
+
+  return '<section class="card">' +
+    '<h2>Operator telemetry</h2>' +
+    '<p><strong>' + escapeHtml(result.overall && result.overall.state || 'UNKNOWN') + '</strong> — ' +
+      escapeHtml(result.overall && result.overall.reason || 'No overall reason provided.') + '</p>' +
+    '<p class="muted">Snapshot ' + escapeHtml(result.observed_at || 'Not provided') +
+      '. Ephemeral and read-only: it is not stored as telemetry. UNKNOWN / UNVERIFIED / NOT_OBSERVED are never treated as PASS. Secret values are not returned.</p>' +
+    '<div class="review-stack">' + cards + '</div>' +
+    '<div class="handoff-actions"><button type="button" data-telemetry-action="refresh">REFRESH TELEMETRY</button></div>' +
+  '</section>';
+}
+
+function renderProjectReview(result, ciResult, telemetryResult) {
   const p = result.project;
   const records = Array.isArray(result.records) ? result.records : [];
   const decisions = recordsOfTypes(records, ['DECISION']);
@@ -784,6 +873,7 @@ function renderProjectReview(result, ciResult) {
   return '<section class="review-intro">' +
       '<p class="muted">Review is read-only indexed evidence. Workspace remains the default working surface.</p>' +
     '</section>' +
+    renderProductionTelemetry(telemetryResult) +
     renderReviewOverview(p) +
     renderZassCiStatus(p, ciResult) +
     renderRecordCategory('Decisions', decisions, 'No decisions indexed for this project.') +
@@ -801,14 +891,14 @@ function renderProjectHistory(result) {
   return renderSection('History', renderHistoryAudit(result.history));
 }
 
-function renderProjectDetail(result, ciResult, view) {
+function renderProjectDetail(result, ciResult, view, telemetryResult) {
   if (!result || result.ok !== true) {
     return '<button type="button" class="back" data-back="1">← Back</button>' + renderError(result);
   }
   const p = result.project;
   const active = PROJECT_VIEWS.indexOf(view) >= 0 ? view : 'WORKSPACE';
   let body = '';
-  if (active === 'REVIEW') body = renderProjectReview(result, ciResult);
+  if (active === 'REVIEW') body = renderProjectReview(result, ciResult, telemetryResult);
   else if (active === 'HISTORY') body = renderProjectHistory(result);
   else body = renderProjectWorkspace(result);
 
@@ -824,6 +914,7 @@ function dashboardRoot() { return document.getElementById('dashboard'); }
 function showList() {
   dashboardState.projectResult = null;
   dashboardState.ciResult = null;
+  dashboardState.telemetryResult = null;
   dashboardState.continuityResult = null;
   dashboardState.handoffResult = null;
   dashboardState.threadCreateResult = null;
@@ -840,7 +931,8 @@ function showProject() {
   dashboardRoot().innerHTML = renderProjectDetail(
     dashboardState.projectResult,
     dashboardState.ciResult,
-    dashboardState.projectView
+    dashboardState.projectView,
+    dashboardState.telemetryResult
   );
 }
 
@@ -868,6 +960,26 @@ function loadProjectContinuity(projectId) {
       showProject();
     })
     .getDashboardProjectContinuity(projectId);
+}
+
+function loadProjectTelemetry(projectId) {
+  if (!projectId) return;
+  dashboardState.telemetryResult = null;
+  showProject();
+  google.script.run
+    .withSuccessHandler(function (result) {
+      dashboardState.telemetryResult = result;
+      showProject();
+    })
+    .withFailureHandler(function () {
+      dashboardState.telemetryResult = {
+        ok: false,
+        observed_at: null,
+        error: { code: 'SERVER_CALL_FAILED', message: 'Production telemetry could not be loaded.' }
+      };
+      showProject();
+    })
+    .getProductionTelemetry(projectId);
 }
 
 function startProjectThread() {
@@ -1074,6 +1186,7 @@ function openProject(projectId) {
 
       dashboardState.projectResult = result;
       dashboardState.ciResult = null;
+      dashboardState.telemetryResult = null;
       dashboardState.continuityResult = null;
       dashboardState.handoffResult = null;
       dashboardState.threadCreateResult = null;
@@ -1151,6 +1264,15 @@ function handleDashboardClick(event) {
   if (target.dataset.projectView) {
     dashboardState.projectView = target.dataset.projectView;
     showProject();
+    if (dashboardState.projectView === 'REVIEW' && dashboardState.telemetryResult === null) {
+      const project = dashboardState.projectResult && dashboardState.projectResult.project;
+      if (project && project.project_id) loadProjectTelemetry(project.project_id);
+    }
+    return;
+  }
+  if (target.dataset.telemetryAction === 'refresh') {
+    const project = dashboardState.projectResult && dashboardState.projectResult.project;
+    if (project && project.project_id) loadProjectTelemetry(project.project_id);
     return;
   }
   if (target.dataset.handoffAction === 'start-thread') { startProjectThread(); return; }
