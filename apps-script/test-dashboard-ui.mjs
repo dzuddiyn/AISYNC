@@ -137,7 +137,7 @@ const project = (o) => ({
   assert.match(workspace, /Next stage/);
   assert.match(workspace, /Index freshness/);
   assert.match(workspace, /Save \/ sync health/);
-  assert.match(workspace, /Latest SAVE row is not sufficient to prove a verified SAVED state/);
+  assert.match(workspace, /No qualifying SAVE receipt is indexed/);
   assert.match(workspace, /Continue naturally/);
   assert.match(workspace, /Open ASC Front Door/);
   assert.match(workspace, /🚀 Current Task/);
