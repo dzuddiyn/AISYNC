@@ -113,7 +113,7 @@ AP-013 | CURRENT
 Action: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
 Dependencies: AP-009 through AP-012 — satisfied.
 Pass / stop condition: critical state can be recovered or rolled back truthfully without silent duplication/data loss and without exposing secrets.
-Current result: IN PROGRESS — T-019A and T-019B are LIVE PASS. T-019C degraded/offline behavior is LOCAL PASS: pre-confirm service loss is retryable only as a non-writing server preview; post-confirm response/result loss is `OUTCOME_UNKNOWN`, never ordinary FAILED or SAVED; duplicate CONFIRM stays disabled and recovery uses result lookup/reconciliation only; verified write + HISTORY failure and `WRITE_UNVERIFIED` are surfaced as DEGRADED; Public Front Door draft/provider/route preservation plus copy/open handoff remain local fallback without semantic persistence. AP-013 remains CURRENT pending T-019C protected deployment/live proof plus truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final runbook evidence.
+Current result: IN PROGRESS — T-019A, T-019B, and T-019C are LIVE PASS. T-019C canonical source merged through PR #42 at `df6576a9d9655cf1c3b89072aacd40479ca133d8`, protected production is v39, and deterministic live proof `T019C-LIVE-20261004-112655-9312eff5` verified truthful DEGRADED / OUTCOME UNKNOWN behavior, no blind duplicate CONFIRM, lookup-only CHECK RESULT, zero proof HISTORY rows, no GitHub mutation, temporary proof cleanup, and 16/16 development-HEAD restore. AP-013 remains CURRENT pending truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final runbook evidence.
 Feeds design: YES
 
 AP-014 | QUEUED
@@ -552,9 +552,9 @@ Finding: canonical T-019B implementation merged through PR #40 at `e4f37e652847d
 
 The live proof made 2 GitHub reads and 0 GitHub PUTs. Independent GitHub verification afterward confirmed `main` still at `e4f37e652847dc170c0876ab9b246c62cb21c23f`, target blob `5427b6cc4aa0c2a87a9532121e1cb8a4bc0a7e22` unchanged, and exact target content unchanged. Temporary proof deployment was removed, development HEAD restored/verified 16/16, and protected production remained v35. Canonical evidence is recorded in `proofs/t019b-replay-idempotency-live.md`.
 
-Conclusion: T-019B is LIVE PASS. T-019 / AP-013 remains CURRENT. Remaining reliability work is degraded/offline behavior, truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final operator runbook acceptance.
+Conclusion: T-019B is LIVE PASS. T-019 / AP-013 remains CURRENT. At this checkpoint degraded/offline behavior was the next reliability slice; after T-019C closure, remaining work is truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final operator runbook acceptance.
 
-PF-073 | T-019C DEGRADED / OFFLINE BEHAVIOR — LOCAL PASS
+PF-073 | T-019C DEGRADED / OFFLINE BEHAVIOR — LIVE PASS
 
 Finding: the existing write path already failed closed but collapsed several materially different reliability states into ordinary FAILED. T-019C introduces a factual operational distinction without changing persistence authority. Before CONFIRM, protected-preview unavailability is DEGRADED: the pending fragment remains in session storage, CONFIRM stays disabled, and RETRY SERVER CHECK repeats only the non-writing security/owner preview. RESULT_CACHE_UNAVAILABLE remains same-transport retryable only because it is proven pre-claim/pre-write.
 
@@ -562,4 +562,4 @@ After CONFIRM has been sent, browser/server response loss, FLOW_EXCEPTION, missi
 
 The Public Front Door already supplies the bounded offline-safe fallback: draft/provider/route are session-preserved, handoff bootstrap preparation is client-side, visible manual copy remains available when clipboard integration fails, and no persistence writer is exposed. This does not invent ASC revisions/events/receipts; upstream ZASSPILL LOCAL_CHANGES/reconciliation semantics remain authoritative for offline semantic work.
 
-Focused regressions for confirm UI, Apps Script binding, and Public Front Door pass with zero real network/GitHub/Sheets writes. T-019C is LOCAL PASS; protected deployment/live outage proof remain pending.
+Focused regressions for confirm UI, Apps Script binding, and Public Front Door pass with zero real network/GitHub/Sheets writes. Canonical implementation then merged through PR #42 at `df6576a9d9655cf1c3b89072aacd40479ca133d8`, deployed as protected Apps Script v39, and passed deterministic live proof `T019C-LIVE-20261004-112655-9312eff5`. Independent HISTORY search found zero proof rows; GitHub `main` plus the canonical T-016 target remained unchanged; temporary proof deployment was removed and development HEAD restored/verified 16/16. T-019C is LIVE PASS.
