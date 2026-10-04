@@ -60,6 +60,16 @@ function setStatus(message, isError) {
   status.className = 'card' + (isError ? ' error' : '');
 }
 
+function showNoPendingRequest(deps) {
+  const doc = (deps && deps.document) || document;
+  setSaveState(
+    'NO REQUEST',
+    'Signed in. No pending ASC request found. Return to the original ASC Public Front Door tab and press CONTINUE to replay the preserved request.',
+    false,
+    { document: doc }
+  );
+}
+
 function setSaveState(state, message, isError, deps) {
   const doc = (deps && deps.document) || document;
   const stateEl = doc.getElementById('save-state');
@@ -313,7 +323,7 @@ function bootAscPreview() {
     const pending = preservePendingRequest(locationLike, window.sessionStorage);
 
     if (!pending.fragment) {
-      setStatus('Signed in. No pending ASC request found.', false);
+      showNoPendingRequest();
       return;
     }
 
@@ -330,7 +340,7 @@ function bootAscPreview() {
         showConfirmControls(envelope, pending.fragment, serverPreview);
       });
     } catch (error) {
-      setStatus('Pending request could not be decoded: ' + error.message, true);
+      setSaveState('FAILED', 'Pending request could not be decoded: ' + error.message, true);
     }
   });
 }
