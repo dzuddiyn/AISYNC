@@ -183,6 +183,7 @@ Project detail uses progressive disclosure:
 
 Workspace
 ├── Project Pulse
+│   └── factual Save / sync health (STALE / SAVED / FAILED / Not provided)
 ├── Continue naturally → ASC Front Door
 └── one factual contextual card when supported
 
