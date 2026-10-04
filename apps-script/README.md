@@ -557,3 +557,45 @@ Production deployment evidence:
 - development HEAD was restored after the versioned release.
 
 Remaining Gate 5 closure evidence: owner-visible production verification of Review/History completeness and Workspace non-regression.
+
+
+## Gate 5 owner-visible closure proof — 2026-10-04
+
+Final owner-visible production acceptance is complete on protected Apps Script production v27.
+
+Observed in production:
+
+### Workspace
+- Workspace remains the default/compact project surface.
+- Project Pulse remains concise.
+- Index freshness and Save / sync health both show **STALE**.
+- "Continue naturally" remains visible.
+- The contextual warning says **Project state needs refresh**.
+- Gate 5 audit sections do **not** re-expand Workspace into a technical wall.
+
+### Review
+- Review is clearly labeled as read-only indexed evidence.
+- **Review overview** shows the explicit STALE caveat: indexed evidence is not current canonical truth.
+- **Commit-linked ZASS CI** is visible and factually shows **NOT_FOUND** for the stale indexed commit, with explicit text that this is not a PASS result.
+- **Decisions** are projected separately.
+- **Design / architecture** shows neutral absence: `No design/architecture records indexed.`
+- **Selection state** shows neutral absence: `No selection state indexed.`
+- **Action Plan** remains inspectable.
+- **Lineage / sources** is rendered as readable lineage/source cards.
+- **Commit / version trail** is visible with deduplicated commit entries and GitHub commit links.
+- Raw project records remain secondary/on-demand.
+
+### History
+- History is a separate audit surface.
+- Audit events show operation, timestamp, request, destination, affected resource, status, and commit/record identity.
+- Compact receipt truth is visible, including `Outcome`, `Verified`, and `Write performed`.
+- Verified-write events show factual commit IDs.
+- NO_CHANGE events show `Verified: true`, `Write performed: no`, and do not invent a commit.
+- Raw receipt JSON remains available behind a details control.
+
+Interpretation:
+- the production `NOT_FOUND` CI result is a truthful stale-index read result, not a Gate 5 failure;
+- neutral absence for Design/architecture and Selection state is the expected factual behavior for the current AISYNC index;
+- positive rendering paths for explicit design/selection records are covered by automated fixtures.
+
+Gate 5 owner-visible acceptance: **PASS**.
