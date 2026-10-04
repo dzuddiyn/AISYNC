@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LOCAL PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -502,7 +502,7 @@ T-019D is therefore **LIVE PASS**. T-019 remains CURRENT pending broader disaste
 
 ## T-019E — Broader disaster recovery / migration safety
 
-Status: **LOCAL PASS / canonical SAVE + protected deploy + live proof pending**
+Status: **LIVE PASS — canonical source merged, protected production v44, live recovery/migration proof complete**
 
 ### Recovery authority model
 
@@ -585,4 +585,30 @@ Focused regression proves:
 - existing dashboard read and HISTORY writer tests remain PASS under the shared migration-safe DB pointer;
 - full repository regression passes.
 
-T-019E remains LOCAL PASS until canonical SAVE, protected deployment, and live recovery/migration proof complete.
+### Live evidence
+
+Canonical T-019E implementation merged through PR #46 at `05f3a336bd41e8cf2f73ea2cb82e203328d852ca` and protected production is Apps Script v44 (`T019E-disaster-recovery-migration-safety`).
+
+Live proof `T019E-LIVE-20261004-131641-26c53994` performed a controlled real migration of the ASC DB operational/index pointer:
+
+- created and validated private DR bundle `AISYNC-disaster-recovery-v0.1-20261004-131644.json`;
+- created a private recovery spreadsheet from the bundle;
+- verified the recovery candidate checksum exactly matched the original ASC DB snapshot;
+- migrated `ASC_DB_SPREADSHEET_ID` to the recovery candidate;
+- verified `getDashboardProject('AISYNC')` read from the candidate;
+- verified `historySpreadsheetId_()` resolved HISTORY writes to the same candidate;
+- verified candidate snapshot content matched the original DB checksum;
+- rolled the pointer back to the original production DB;
+- restored the exact pre-proof Script Property configuration shape;
+- verified original HISTORY checksum and row count were unchanged;
+- verified healthy private continuity refused disaster restore with `DR_CONTINUITY_CURRENT_HEALTHY`;
+- verified private continuity file ID/checksum and canonical GitHub commit were unchanged;
+- trashed the staged recovery copy after rollback.
+
+Independent Drive metadata confirmed the proof JSON and DR bundle were private and owner-only. Independent HISTORY search returned zero `T019E-LIVE` rows. Independent GitHub verification confirmed `main` remained `05f3a336bd41e8cf2f73ea2cb82e203328d852ca` and the canonical T-016 target blob remained `5427b6cc4aa0c2a87a9532121e1cb8a4bc0a7e22`.
+
+Temporary proof v45 was undeployed, Apps Script development HEAD was restored and verified 16/16, and protected production remained pinned to v44.
+
+Canonical evidence: [`proofs/t019e-disaster-recovery-migration-live.md`](../proofs/t019e-disaster-recovery-migration-live.md).
+
+T-019E is therefore **LIVE PASS**. T-019 remains CURRENT pending secret rotation, deployment/rollback proof, and final operator runbook acceptance.
