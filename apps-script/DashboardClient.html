@@ -17,8 +17,9 @@ let dashboardState = {
   ciResult: null,
   continuityResult: null,
   projectView: 'WORKSPACE',
-  handoffForm: { threadId: '', provider: '', route: 'DUMP', draft: '' },
-  handoffResult: null
+  handoffForm: { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' },
+  handoffResult: null,
+  threadCreateResult: null
 };
 
 function escapeHtml(value) {
@@ -296,8 +297,12 @@ function renderThreadOptions(continuityResult, selectedThreadId) {
   }).join('');
 }
 
-function renderProjectContinuation(project, continuityResult, handoffForm, handoffResult) {
-  const form = handoffForm || { threadId: '', provider: '', route: 'DUMP', draft: '' };
+function renderProjectContinuation(project, continuityResult, handoffForm, handoffResult, threadCreateResult) {
+  const form = handoffForm || { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' };
+  const threads = continuityResult && continuityResult.ok === true && Array.isArray(continuityResult.threads)
+    ? continuityResult.threads
+    : null;
+  const noThreads = Array.isArray(threads) && threads.length === 0;
   const route = DASHBOARD_ENTRIES.indexOf(form.route) >= 0 ? form.route : 'DUMP';
   const providerOptions = '<option value="">Choose AI provider</option>' + HANDOFF_PROVIDERS.map(function (provider) {
     return '<option value="' + provider + '"' + (provider === form.provider ? ' selected' : '') + '>' + provider + '</option>';
@@ -310,8 +315,23 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
     return '<option value="' + item[0] + '"' + (item[0] === route ? ' selected' : '') + '>' + item[1] + '</option>';
   }).join('');
 
-  let status = '<p id="project-handoff-status" class="muted">Nothing is saved by preparing or opening a handoff.</p>';
-  let actions = '<button type="button" data-handoff-action="prepare">PREPARE HANDOFF</button>';
+  let status = noThreads
+    ? '<p id="project-handoff-status" class="muted">No private thread exists yet. START PRIVATE THREAD saves only the title and current context below in the owner-only continuity store; it does not write GitHub or Sheets.</p>'
+    : '<p id="project-handoff-status" class="muted">Nothing is saved by preparing or opening a handoff.</p>';
+  let actions = noThreads
+    ? '<button type="button" data-handoff-action="start-thread">START PRIVATE THREAD</button>'
+    : '<button type="button" data-handoff-action="prepare">PREPARE HANDOFF</button>';
+  if (threadCreateResult && threadCreateResult.ok === true) {
+    status = '<p id="project-handoff-status" class="muted">Private thread created at revision ' +
+      escapeHtml(threadCreateResult.revision) + '. It is now ready for a scoped handoff.</p>';
+  } else if (threadCreateResult && threadCreateResult.ok === false) {
+    status = '<p id="project-handoff-status" class="error">FAILED (' + escapeHtml(threadCreateResult.error && threadCreateResult.error.code || 'UNKNOWN') +
+      ') — ' + escapeHtml(threadCreateResult.error && threadCreateResult.error.message || 'Private thread could not be created.') + '</p>';
+  }
+  const firstThreadFields = noThreads
+    ? '<label>Thread title<input id="project-thread-title" maxlength="200" placeholder="Name this private thread" value="' + escapeHtml(form.threadTitle) + '"></label>'
+    : '';
+
   if (handoffResult && handoffResult.ok === true) {
     status = '<p id="project-handoff-status" class="muted">Handoff ready for ' + escapeHtml(handoffResult.provider) +
       '. Copy it, then open the provider.</p>';
@@ -329,6 +349,7 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
     '<p class="muted">ASC transfers only the minimum continuity for the selected thread. Provider-held memory/profile is not imported.</p>' +
     '<div class="handoff-grid">' +
       '<label>Thread<select id="project-thread">' + renderThreadOptions(continuityResult, form.threadId) + '</select></label>' +
+      firstThreadFields +
       '<label>AI provider<select id="project-provider">' + providerOptions + '</select></label>' +
       '<label>Route<select id="project-route">' + routeOptions + '</select></label>' +
     '</div>' +
@@ -419,7 +440,7 @@ function renderContextualCard(result) {
 function renderProjectWorkspace(result) {
   const p = result.project;
   return renderProjectPulse(p, result.history) +
-    renderProjectContinuation(p, dashboardState.continuityResult, dashboardState.handoffForm, dashboardState.handoffResult) +
+    renderProjectContinuation(p, dashboardState.continuityResult, dashboardState.handoffForm, dashboardState.handoffResult, dashboardState.threadCreateResult) +
     renderContextualCard(result);
 }
 
@@ -715,7 +736,8 @@ function showList() {
   dashboardState.ciResult = null;
   dashboardState.continuityResult = null;
   dashboardState.handoffResult = null;
-  dashboardState.handoffForm = { threadId: '', provider: '', route: 'DUMP', draft: '' };
+  dashboardState.threadCreateResult = null;
+  dashboardState.handoffForm = { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' };
   dashboardState.projectView = 'WORKSPACE';
   dashboardRoot().innerHTML = renderProjectList(dashboardState.list, dashboardState.entry);
 }
@@ -752,6 +774,36 @@ function loadProjectContinuity(projectId) {
       showProject();
     })
     .getDashboardProjectContinuity(projectId);
+}
+
+function startProjectThread() {
+  const project = dashboardState.projectResult && dashboardState.projectResult.project;
+  if (!project) return;
+  dashboardState.threadCreateResult = null;
+  dashboardState.handoffResult = null;
+  setProjectHandoffStatus('Starting owner-only private thread…', false);
+  google.script.run
+    .withSuccessHandler(function (result) {
+      dashboardState.threadCreateResult = result;
+      if (result && result.ok === true && result.thread_id) {
+        dashboardState.handoffForm.threadId = result.thread_id;
+        loadProjectContinuity(project.project_id);
+        return;
+      }
+      showProject();
+    })
+    .withFailureHandler(function () {
+      dashboardState.threadCreateResult = {
+        ok: false,
+        error: { code: 'SERVER_CALL_FAILED', message: 'The private project thread could not be created.' }
+      };
+      showProject();
+    })
+    .createDashboardProjectThread({
+      project_id: project.project_id,
+      title: dashboardState.handoffForm.threadTitle,
+      current: dashboardState.handoffForm.draft
+    });
 }
 
 function prepareProjectHandoff() {
@@ -815,11 +867,13 @@ function openPreparedProjectHandoff() {
 function captureProjectHandoffField(target) {
   if (!target || !target.id) return false;
   if (target.id === 'project-thread') dashboardState.handoffForm.threadId = target.value;
+  else if (target.id === 'project-thread-title') dashboardState.handoffForm.threadTitle = target.value;
   else if (target.id === 'project-provider') dashboardState.handoffForm.provider = target.value;
   else if (target.id === 'project-route') dashboardState.handoffForm.route = target.value;
   else if (target.id === 'project-draft') dashboardState.handoffForm.draft = target.value;
   else return false;
   dashboardState.handoffResult = null;
+  dashboardState.threadCreateResult = null;
   return true;
 }
 
@@ -837,11 +891,12 @@ function openProject(projectId) {
       dashboardState.ciResult = null;
       dashboardState.continuityResult = null;
       dashboardState.handoffResult = null;
+      dashboardState.threadCreateResult = null;
       dashboardState.projectView = 'WORKSPACE';
       const initialRoute = DASHBOARD_ENTRIES.indexOf(String(result.project && result.project.ui_entry || '').toUpperCase()) >= 0
         ? String(result.project.ui_entry).toUpperCase()
         : 'DUMP';
-      dashboardState.handoffForm = { threadId: '', provider: '', route: initialRoute, draft: '' };
+      dashboardState.handoffForm = { threadId: '', threadTitle: '', provider: '', route: initialRoute, draft: '' };
       showProject();
 
       const project = result.project || {};
@@ -909,6 +964,7 @@ function handleDashboardClick(event) {
     showProject();
     return;
   }
+  if (target.dataset.handoffAction === 'start-thread') { startProjectThread(); return; }
   if (target.dataset.handoffAction === 'prepare') { prepareProjectHandoff(); return; }
   if (target.dataset.handoffAction === 'copy') { copyPreparedProjectHandoff(); return; }
   if (target.dataset.handoffAction === 'show') { showPreparedProjectHandoffText(); return; }
@@ -918,7 +974,17 @@ function handleDashboardClick(event) {
 
 function handleDashboardFieldChange(event) {
   if (captureProjectHandoffField(event.target)) {
-    setProjectHandoffStatus('Handoff inputs changed. Prepare a new handoff before copying or opening.', false);
+    const threads = dashboardState.continuityResult && dashboardState.continuityResult.ok === true &&
+      Array.isArray(dashboardState.continuityResult.threads)
+      ? dashboardState.continuityResult.threads
+      : null;
+    const noThreads = Array.isArray(threads) && threads.length === 0;
+    setProjectHandoffStatus(
+      noThreads
+        ? 'First-thread inputs changed. START PRIVATE THREAD when the title and current context are ready.'
+        : 'Handoff inputs changed. Prepare a new handoff before copying or opening.',
+      false
+    );
   }
 }
 

@@ -628,3 +628,29 @@ DIFF_CHECK=0
 ```
 
 Remaining T-018 work after canonical SAVE/merge/deploy: join the existing protected SAVE/receipt/HISTORY/CI/return/reopen mechanics into one ordinary-user journey and prove that journey live without exposing raw internal contracts.
+
+
+### T-018A production v28 and zero-thread bootstrap follow-up
+
+The canonical handoff slice is live on the owner-only production deployment as Apps Script v28 (`T018A-project-thread-handoff`). Release construction used immutable v27 as the baseline and changed only the required T-017 continuity runtime/wrappers plus T-018A Workspace files; an independent v28 clone matched all 16 production files exactly. Development HEAD was restored after deployment.
+
+Owner-visible verification showed the handoff UI live but correctly reported `No private thread available`. Independent inspection of the private Drive continuity state confirmed there is no AISYNC private thread; only the prior T-015 proof project remains and its proof thread is tombstoned. This is factual absence, not a rendering failure.
+
+The bounded follow-up therefore adds a first-thread bootstrap instead of seeding synthetic data:
+- only when the selected project has zero private threads, Workspace exposes `Thread title` plus the existing `What next?` field and `START PRIVATE THREAD`;
+- the server rechecks that no thread exists immediately before creation;
+- the persisted semantic record contains only owner-provided `title` and `continuity.current`;
+- ASC generates the private request/thread/revision/event identities and does not infer lifecycle state or other method semantics;
+- the write uses the existing owner-only private continuity store only; it does not write GitHub or Sheets;
+- after creation, Workspace reloads the project continuity and the existing PREPARE HANDOFF path is used unchanged.
+
+Local follow-up verification on canonical `main` `b9483b39e5d38594cc86ff525659c80502d382f5`:
+```text
+T-018A dashboard continuity handoff binding: PASS
+T-009B/C dashboard UI + routing test: PASS
+T-009A dashboard read layer test: PASS
+TEST_FILES_PASS=28
+DIFF_CHECK=0
+```
+
+This follow-up remains at owner SAVE gate; production v28 itself remains the currently deployed release until the bootstrap patch is saved, merged, and released.
