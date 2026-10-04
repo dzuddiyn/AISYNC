@@ -6,8 +6,21 @@
 // infer, or refresh method-owned semantics (stage, progress, latest update). Index
 // freshness is attached from exact GitHub source evidence by T-015; method-owned semantics are never inferred.
 
+const ASC_DB_LEGACY_SPREADSHEET_ID_ = '11pWE0E-jEZhigVAYGcsfVXW0TODRcNMgOZHFfUQIHKw';
+const ASC_DB_SPREADSHEET_PROPERTY_ = 'ASC_DB_SPREADSHEET_ID';
+
+function ascDbSpreadsheetId_() {
+  try {
+    const configured = PropertiesService.getScriptProperties().getProperty(ASC_DB_SPREADSHEET_PROPERTY_);
+    if (typeof configured === 'string' && configured.trim()) return configured.trim();
+  } catch (error) {
+    // Fall back to the locked v0.1 spreadsheet ID when Script Properties are unavailable.
+  }
+  return ASC_DB_LEGACY_SPREADSHEET_ID_;
+}
+
 const ASC_DB_READ_CONFIG_ = Object.freeze({
-  spreadsheetId: '11pWE0E-jEZhigVAYGcsfVXW0TODRcNMgOZHFfUQIHKw'
+  legacySpreadsheetId: ASC_DB_LEGACY_SPREADSHEET_ID_
 });
 
 const ASC_DB_SCHEMA_ = Object.freeze({
@@ -39,7 +52,7 @@ function ascDbReadError_(code, message, extra) {
 
 function ascDbSourceInfo_(tabs) {
   return {
-    spreadsheet_id: ASC_DB_READ_CONFIG_.spreadsheetId,
+    spreadsheet_id: ascDbSpreadsheetId_(),
     tabs: tabs.slice(),
     authority: 'OPERATIONAL_INDEX',
     freshness: ASC_DB_FRESHNESS_,
@@ -144,7 +157,7 @@ function ascProjectView_(row) {
 }
 
 function ascOpenAscDb_() {
-  return SpreadsheetApp.openById(ASC_DB_READ_CONFIG_.spreadsheetId);
+  return SpreadsheetApp.openById(ascDbSpreadsheetId_());
 }
 
 function getDashboardProjects() {

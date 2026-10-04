@@ -783,3 +783,15 @@ Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd4
 - Review loads telemetry only on demand and provides **REFRESH TELEMETRY**; Workspace is unchanged.
 - Focused server/UI regressions pass with no telemetry persistence/business-state mutation.
 - Canonical implementation merged through PR #44 at `3873e3289b9051d65c4d315daeb1e68adabaa615` and protected production is Apps Script v42 (`T019D-truthful-telemetry`). Live proof `T019D-LIVE-20261004-121558-21ca5345` PASS: two real owner snapshots both reported overall `DEGRADED` because index freshness was `STALE` while ASC DB, canonical GitHub, private continuity, GitHub App auth and latest SAVE evidence remained directly observed; telemetry stayed ephemeral, returned no secret material, made no repository write, and did not change HISTORY or private continuity. See `proofs/t019d-truthful-telemetry-live.md`.
+
+
+## T-019E broader disaster recovery / migration safety — LOCAL PASS
+
+- Adds owner-private portable DR bundle v0.1 with exact ASC DB tab snapshots, validated private continuity state, canonical GitHub recovery point, non-secret config, and SHA-256 integrity evidence.
+- Credential values are never included; secret recovery is a separate T-019 slice.
+- Unsupported bundle/schema versions are rejected rather than auto-migrated.
+- ASC DB dashboard reads and HISTORY writes now share the migration-safe `ASC_DB_SPREADSHEET_ID` Script Property, with the locked v0.1 spreadsheet ID as fallback.
+- A validated bundle can create a private staged ASC DB recovery copy; pointer migration requires expected-current + candidate checksum and rolls back on post-switch verification failure.
+- Continuity disaster recovery is allowed only when the current authority cannot be read/validated; healthy authority is refused, and Script Property pointers roll back on failed post-recovery verification.
+- Focused T-019E regression plus full repository regression pass locally.
+- Canonical SAVE, protected deploy, and live recovery/migration proof remain pending.
