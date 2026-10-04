@@ -499,3 +499,18 @@ Production:
 - all **27** repository `test-*.mjs` files PASS and `git diff --check` PASS.
 
 The failed auto-return is therefore closed as a bounded UX/platform compatibility finding, not a persistence or architecture failure.
+
+
+## Gate 4 owner-visible closure proof — 2026-10-04
+
+Final owner-visible production acceptance is complete.
+
+Observed on protected production:
+- valid pending request visibly showed **UNSAVED** before confirmation;
+- after explicit **CONFIRM & SYNC**, the UI visibly showed **SYNCING** before the final state;
+- factual receipt rendered **SAVED** with `Outcome: NO_CHANGE`, `New write performed: no`, and `Verified: true`;
+- the successful receipt remained factual without inventing a commit;
+- Workspace Project Pulse visibly showed **Save / sync health: STALE** while the prior SAVE receipt was successful, proving the UI does not conflate persistence success with index freshness;
+- the D-030 user-activated return control is the guaranteed post-SAVE path; timer-driven auto-return is not required.
+
+Gate 4 owner-visible acceptance: **PASS**.
