@@ -8,7 +8,7 @@ const gatewaySource = fs.readFileSync(new URL('./public/Gateway.gs', import.meta
 
 function makeUtilities() {
   return {
-    newBlob(value) {
+    newBlob(value, contentType = null) {
       const bytes = Buffer.isBuffer(value)
         ? Buffer.from(value)
         : Array.isArray(value)
@@ -20,6 +20,9 @@ function makeUtilities() {
         },
         getDataAsString() {
           return bytes.toString('utf8');
+        },
+        getContentType() {
+          return contentType;
         }
       };
     },
@@ -33,6 +36,9 @@ function makeUtilities() {
       };
     },
     ungzip(blob) {
+      if (!blob.getContentType || !blob.getContentType()) {
+        throw new Error('Blob object must have non-null content type for this operation.');
+      }
       const input = Buffer.from(blob.getBytes().map(v => v & 0xff));
       const out = zlib.gunzipSync(input);
       return {
