@@ -106,7 +106,7 @@ AP-012 | CURRENT
 Action: Integrate the production human journey into one coherent UI: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → receipt/HISTORY → CI → reopen/transfer.
 Dependencies: AP-009 through AP-011.
 Pass / stop condition: the normal journey is usable without raw contracts, raw GitHub paths, or developer intervention.
-Current result: PROMOTED — AP-011 / T-017 is PASS; AP-012 / T-018 becomes the active execution slice.
+Current result: IN PROGRESS — T-018A local implementation PASS for the first integrated UX boundary: protected Project → Thread → Route/Provider → scoped AI handoff. Private thread summaries are read only in the owner session; the route remains visible/overridable; only minimum selected-thread continuity plus the user's explicit next message is transferred; bearer tokens stay server-side; and no new writer is introduced. Fresh-clone canonical-main proof passes all 28 repository test files. Remaining AP-012 work is the factual SAVE → receipt/HISTORY → CI → reopen/transfer continuation and one owner-visible end-to-end production proof.
 Feeds design: YES
 
 AP-013 | QUEUED
@@ -456,3 +456,14 @@ Finding: T-017 is PASS. Canonical gateway/bootstrap remediation was merged throu
 The live METHODS registry was fully reconciled in one three-method batch against exact ZASS `main` commit `26b174e4dbc6570452b372712e9bf49abc86c4ef`: ZASSPILL v1.0.0 / 62,797 chars stored as 26,468-char `gzip+base64:`, ZASSIMPLE v0.3.0 / 18,748 chars plain, and ZASSELECTION v0.2.2 / 16,025 chars plain. All three rows share the same source commit, version cells remain text, and Public Method deployment v5 transparently returns the original Markdown rather than physical storage encoding.
 
 Final external receiver re-proof used Google Antigravity CLI from an empty workspace with only a scoped temporary `read_url(dzuddiyn.github.io)` permission. It fetched the exact receiver-facing GitHub Pages ZASSPILL gateway and returned `T017_RECEIVER_PASS`, `method_version: 1.0.0`, exact `thread_id: th_01ARZ3NDEKTSV4RRFFQ69G5FAV`, numeric `source_revision: 3`, distinct `continuity_reference: cr_01ARZ3NDEKTSV4RRFFQ69G5FB8`, and exact continuity sentence `Valve calibration checkpoint is row 18 with target marker 42.` The temporary read-url permission and temporary Gemini CLI settings were removed after proof; no provider-held personal memory/profile was transferred. AP-011 is complete and AP-012 / T-018 is promoted.
+
+
+PF-064 | T-018A PROJECT / THREAD CONTINUATION HANDOFF — LOCAL PASS / SAVE GATE
+
+Finding: after T-017 closure, the remaining human-journey gap was factual and narrow: Project Workspace could show project state, save/sync health, Review/CI, and History, but `Continue naturally` still opened a generic public Front Door without the selected private project/thread continuity. That meant Project → Thread → Route/Provider → handoff was not yet one coherent owner workflow.
+
+Local remediation adds an owner-only Apps Script binding (`DashboardContinuity.gs`) plus Workspace controls. The protected dashboard now lists only minimal private thread projections (title/current/revision identity), requires explicit AI provider, keeps DUMP/DECIDE/DESIGN visible and overridable, accepts the user's next-message draft, creates the existing cross-method handoff + 10-minute scoped continuity reference server-side, builds the existing T-017 scoped bootstrap with expected method-version guard, and returns only the bootstrap/provider URL to the owner client. The opaque bearer token returned by the reference service is deliberately not returned to the browser. No GitHub/Sheets writer is added and no provider-held memory/profile is imported.
+
+The ordinary surface hides raw bootstrap mechanics by default. After PREPARE HANDOFF it exposes COPY HANDOFF, SHOW HANDOFF TEXT (manual fallback), and OPEN PROVIDER. The generic public Front Door remains available only as a new-conversation fallback. Existing Workspace/Review/History, factual SAVE health, CI, and persistence boundaries remain unchanged.
+
+Evidence: focused dashboard continuity/UI/read tests PASS; fresh clone of canonical `main` `81d53f9a04b1b015e6750f9d5df12ee51179ea90` with the bounded patch passes all 28 repository `test-*.mjs` files and `git diff --check = 0`. T-018 remains IN PROGRESS; after owner SAVE/merge/deploy, continue with the remaining factual SAVE → receipt/HISTORY → CI → reopen/transfer join and owner-visible production journey proof.

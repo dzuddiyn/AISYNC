@@ -599,3 +599,32 @@ Interpretation:
 - positive rendering paths for explicit design/selection records are covered by automated fixtures.
 
 Gate 5 owner-visible acceptance: **PASS**.
+
+
+## T-018A protected project/thread continuation handoff — LOCAL PASS
+
+T-018 starts by joining the already-proven private continuity boundary to the ordinary Project Workspace. This slice does **not** add a writer and does not close T-018.
+
+Implemented locally:
+- `DashboardContinuity.gs` exposes owner-only `getDashboardProjectContinuity(projectId)` and `prepareDashboardProjectHandoff(input)`;
+- thread listing uses the existing T-017 ZASSPILL retrieval projection, returning only thread id/revision/title/state/current to the protected owner UI;
+- PREPARE HANDOFF re-reads the exact selected thread, extracts only `title/current/matters/open`, creates the existing cross-method handoff, issues a 600-second scoped continuity reference, and builds the existing version-guarded T-017 transfer bootstrap;
+- provider choice is explicit: ChatGPT / Gemini / Copilot;
+- route choice is visible and overridable: DUMP / DECIDE / DESIGN, mapped to the existing ZASSPILL / ZASSELECTION / ZASSIMPLE Method Gateway URLs and expected versions;
+- the scoped bearer token remains server-side and is not returned to the browser;
+- Workspace keeps the bootstrap hidden by default and exposes `COPY HANDOFF`, `SHOW HANDOFF TEXT`, and `OPEN PROVIDER` only after successful preparation;
+- public ASC Front Door remains a new-conversation fallback; preparing/opening a handoff does not imply SAVE or persistence.
+
+Local verification:
+```text
+T-018A dashboard continuity handoff binding: PASS
+owner-only project/thread -> route/provider -> scoped handoff: PASS
+bearer token remains server-side: PASS
+T-009B/C dashboard UI + routing test: PASS
+T-009A dashboard read layer test: PASS
+Fresh clone @ 81d53f9a04b1b015e6750f9d5df12ee51179ea90
+TEST_FILES_PASS=28
+DIFF_CHECK=0
+```
+
+Remaining T-018 work after canonical SAVE/merge/deploy: join the existing protected SAVE/receipt/HISTORY/CI/return/reopen mechanics into one ordinary-user journey and prove that journey live without exposing raw internal contracts.

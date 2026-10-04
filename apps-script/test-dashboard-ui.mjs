@@ -35,6 +35,8 @@ const INDEX_HTML = read('Index.html');
   assert.doesNotMatch(DASH_HTML, /include\('Client'\)/);
   assert.doesNotMatch(CLIENT, /confirmAndSync|getConfirmSyncResult|SpreadsheetApp|UrlFetchApp|GITHUB_TOKEN/);
   assert.match(CLIENT, /getDashboardZassCiStatus\(repository, commitSha\)/, 'project detail requests factual commit-linked CI status');
+  assert.match(CLIENT, /getDashboardProjectContinuity\(projectId\)/, 'workspace loads protected private thread summaries');
+  assert.match(CLIENT, /prepareDashboardProjectHandoff\(/, 'workspace prepares protected scoped handoff server-side');
   assert.doesNotMatch(CLIENT, /\bZ(?:0\d{2}|10[01])\b/, 'dashboard client contains no ZASS rule-code logic');
 }
 
@@ -138,7 +140,14 @@ const project = (o) => ({
   assert.match(workspace, /Index freshness/);
   assert.match(workspace, /Save \/ sync health/);
   assert.match(workspace, /No qualifying SAVE receipt is indexed/);
-  assert.match(workspace, /Continue naturally/);
+  assert.match(workspace, /Continue this project/);
+  assert.match(workspace, /Loading private threads/);
+  assert.match(workspace, /Choose AI provider/);
+  assert.match(workspace, /DUMP — just talk/);
+  assert.match(workspace, /DECIDE — help me choose/);
+  assert.match(workspace, /DESIGN — help me build/);
+  assert.match(workspace, /PREPARE HANDOFF/);
+  assert.match(workspace, /Provider-held memory\/profile is not imported/);
   assert.match(workspace, /Open ASC Front Door/);
   assert.match(workspace, /🚀 Current Task/);
   assert.match(workspace, /UI &lt;flow&gt;/);
@@ -149,6 +158,38 @@ const project = (o) => ({
   assert.doesNotMatch(workspace, /Commit-linked ZASS CI/);
   assert.doesNotMatch(workspace, /TEST_ONLY_T008B/);
   assert.doesNotMatch(workspace, /confirmAndSync|writeToGitHub|writeToSheets/);
+
+  const continuation = sb.renderProjectContinuation(
+    detail.project,
+    {
+      ok: true,
+      threads: [
+        { thread_id: 'th_01ARZ3NDEKTSV4RRFFQ69G5FAV', title: 'Valve proof', current: 'row 18 marker 42', revision: 3 },
+        { thread_id: 'th_01ARZ3NDEKTSV4RRFFQ69G5FB0', title: 'Other thread', current: 'waiting', revision: 1 }
+      ]
+    },
+    {
+      threadId: 'th_01ARZ3NDEKTSV4RRFFQ69G5FAV',
+      provider: 'Gemini',
+      route: 'DECIDE',
+      draft: 'Banding <dua> pilihan.'
+    },
+    {
+      ok: true,
+      provider: 'Gemini',
+      bootstrap: 'PRIVATE BOOTSTRAP MUST NOT RENDER',
+      provider_url: 'https://gemini.google.com/app'
+    }
+  );
+  assert.match(continuation, /Valve proof — row 18 marker 42/);
+  assert.match(continuation, /value="Gemini" selected/);
+  assert.match(continuation, /value="DECIDE" selected/);
+  assert.match(continuation, /Banding &lt;dua&gt; pilihan\./);
+  assert.match(continuation, /COPY HANDOFF/);
+  assert.match(continuation, /SHOW HANDOFF TEXT/);
+  assert.match(continuation, /OPEN GEMINI/);
+  assert.doesNotMatch(continuation, /PRIVATE BOOTSTRAP MUST NOT RENDER/);
+  assert.doesNotMatch(continuation, /continuity_reference:/);
 
   const stale = sb.renderProjectDetail({
     ...detail,

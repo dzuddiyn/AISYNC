@@ -16,7 +16,7 @@ Do: Integrate the production human journey into one coherent UI: login → proje
 Depends on: T-015 through T-017 — satisfied.
 Boundary: preserve existing authority and method boundaries; ordinary users should not need raw contracts, raw GitHub paths, or developer intervention.
 Pass: login → project/thread → route/provider → handoff → SAVE → receipt/HISTORY → CI → reopen/transfer works as one ordinary-user journey without raw internal mechanics.
-Current result: PROMOTED — T-017 is PASS; T-018 implementation has not started in this closure.
+Current result: IN PROGRESS — T-018A local implementation PASS for protected Project → Thread → Route/Provider → scoped AI handoff. Workspace now loads owner-only private thread summaries, requires explicit provider, keeps route visible/overridable, accepts the user's next message, creates the existing cross-method/scoped-continuity handoff server-side, keeps the bearer token server-side, and offers COPY / SHOW HANDOFF TEXT / OPEN PROVIDER without creating a new persistence path. Fresh-clone proof on canonical main `81d53f9a04b1b015e6750f9d5df12ee51179ea90` passes all 28 repository `test-*.mjs` files with `git diff --check = 0`. T-018 remains CURRENT: canonical SAVE/receipt/HISTORY/CI/reopen/transfer still needs to be joined and proven as one ordinary-user production journey after this bounded slice is saved/merged/deployed.
 
 ## Completed
 
