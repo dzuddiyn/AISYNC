@@ -19,7 +19,10 @@ let dashboardState = {
   projectView: 'WORKSPACE',
   handoffForm: { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' },
   handoffResult: null,
-  threadCreateResult: null
+  threadCreateResult: null,
+  providerReturnText: '',
+  methodReturnPreview: null,
+  methodReturnSave: null
 };
 
 function escapeHtml(value) {
@@ -297,6 +300,43 @@ function renderThreadOptions(continuityResult, selectedThreadId) {
   }).join('');
 }
 
+function renderProviderReturn(returnText, preview, saveResult) {
+  let previewHtml = '<p class="muted">Paste the ASC_METHOD_RESULT block returned by the AI after you issue SAVE. ASC will validate it before any persistence request is created.</p>';
+  let actions = '<button type="button" data-handoff-action="preview-return">PREVIEW RETURN</button>';
+
+  if (preview && preview.ok === true) {
+    previewHtml += '<div class="return-preview">' +
+      '<div><span class="pulse-label">Method</span>' + escapeHtml(preview.producing_method) + '</div>' +
+      '<div><span class="pulse-label">Source revision</span>' + escapeHtml(preview.source_revision) + '</div>' +
+      '<div><span class="pulse-label">Record ID</span>' + escapeHtml(preview.record_id) + '</div>' +
+      '<div><span class="pulse-label">Confirmed outcome</span>' + escapeHtml(preview.confirmed_outcome) + '</div>' +
+      '<div><span class="pulse-label">Still open</span>' + escapeHtml(handoffValueText(preview.still_open)) + '</div>' +
+      '</div>';
+    actions += '<button type="button" data-handoff-action="prepare-save">PREPARE ASC SAVE</button>';
+  } else if (preview && preview.ok === false) {
+    previewHtml += '<p class="error">RETURN REJECTED (' +
+      escapeHtml(preview.error && preview.error.code || 'UNKNOWN') + ') — ' +
+      escapeHtml(preview.error && preview.error.message || 'Provider return could not be validated.') + '</p>';
+  }
+
+  if (saveResult && saveResult.ok === true) {
+    previewHtml += '<p class="muted">ASC SAVE request prepared. Nothing is persisted yet. Open it, review the protected preview, then CONFIRM & SYNC.</p>';
+    actions += '<button type="button" data-handoff-action="open-save">OPEN ASC SAVE</button>';
+  } else if (saveResult && saveResult.ok === false) {
+    previewHtml += '<p class="error">SAVE PREPARE FAILED (' +
+      escapeHtml(saveResult.error && saveResult.error.code || 'UNKNOWN') + ') — ' +
+      escapeHtml(saveResult.error && saveResult.error.message || 'ASC SAVE could not be prepared.') + '</p>';
+  }
+
+  return '<div class="provider-return">' +
+    '<strong>Return from AI</strong>' +
+    previewHtml +
+    '<label>Provider result<textarea id="project-provider-return" maxlength="12000" placeholder="Paste ASC_METHOD_RESULT_BEGIN … ASC_METHOD_RESULT_END here.">' +
+      escapeHtml(returnText || '') + '</textarea></label>' +
+    '<div class="handoff-actions">' + actions + '</div>' +
+  '</div>';
+}
+
 function renderProjectContinuation(project, continuityResult, handoffForm, handoffResult, threadCreateResult) {
   const form = handoffForm || { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' };
   const threads = continuityResult && continuityResult.ok === true && Array.isArray(continuityResult.threads)
@@ -343,6 +383,10 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
       ') — ' + escapeHtml(handoffResult.error && handoffResult.error.message || 'Handoff could not be prepared.') + '</p>';
   }
 
+  const returnSection = handoffResult && handoffResult.ok === true
+    ? renderProviderReturn(dashboardState.providerReturnText, dashboardState.methodReturnPreview, dashboardState.methodReturnSave)
+    : '';
+
   return '<section class="card workspace-conversation">' +
     '<strong>Continue this project</strong>' +
     '<p>Choose the private thread, AI provider and route, then say what changed or what you want to do next.</p>' +
@@ -356,6 +400,7 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
     '<label>What next?<textarea id="project-draft" maxlength="4000" placeholder="Tell the AI what changed, what you are unsure about, or what you want to do next.">' + escapeHtml(form.draft) + '</textarea></label>' +
     status + '<div class="handoff-actions">' + actions + '</div>' +
     '<div id="project-handoff-manual" class="handoff-manual" hidden><p class="muted">Manual fallback: copy this handoff text into the selected provider.</p><pre id="project-handoff-manual-text"></pre></div>' +
+    returnSection +
     '<p class="muted">Need a new conversation instead? <a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open ASC Front Door</a>.</p>' +
   '</section>';
 }
@@ -737,6 +782,9 @@ function showList() {
   dashboardState.continuityResult = null;
   dashboardState.handoffResult = null;
   dashboardState.threadCreateResult = null;
+  dashboardState.providerReturnText = '';
+  dashboardState.methodReturnPreview = null;
+  dashboardState.methodReturnSave = null;
   dashboardState.handoffForm = { threadId: '', threadTitle: '', provider: '', route: 'DUMP', draft: '' };
   dashboardState.projectView = 'WORKSPACE';
   dashboardRoot().innerHTML = renderProjectList(dashboardState.list, dashboardState.entry);
@@ -810,6 +858,9 @@ function prepareProjectHandoff() {
   const project = dashboardState.projectResult && dashboardState.projectResult.project;
   if (!project) return;
   dashboardState.handoffResult = null;
+  dashboardState.providerReturnText = '';
+  dashboardState.methodReturnPreview = null;
+  dashboardState.methodReturnSave = null;
   setProjectHandoffStatus('Preparing scoped project handoff…', false);
   google.script.run
     .withSuccessHandler(function (result) {
@@ -864,6 +915,60 @@ function openPreparedProjectHandoff() {
   setProjectHandoffStatus('Provider opened. Paste the copied handoff into the chat.', false);
 }
 
+function previewProjectMethodReturn() {
+  const project = dashboardState.projectResult && dashboardState.projectResult.project;
+  if (!project) return;
+  dashboardState.methodReturnPreview = null;
+  dashboardState.methodReturnSave = null;
+  setProjectHandoffStatus('Validating provider return against the protected handoff…', false);
+  google.script.run
+    .withSuccessHandler(function (result) {
+      dashboardState.methodReturnPreview = result;
+      showProject();
+    })
+    .withFailureHandler(function () {
+      dashboardState.methodReturnPreview = {
+        ok: false,
+        error: { code: 'SERVER_CALL_FAILED', message: 'Provider return could not be validated.' }
+      };
+      showProject();
+    })
+    .previewDashboardMethodReturn({
+      project_id: project.project_id,
+      return_text: dashboardState.providerReturnText
+    });
+}
+
+function prepareProjectMethodReturnSave() {
+  const project = dashboardState.projectResult && dashboardState.projectResult.project;
+  if (!project || !dashboardState.methodReturnPreview || dashboardState.methodReturnPreview.ok !== true) return;
+  dashboardState.methodReturnSave = null;
+  setProjectHandoffStatus('Preparing secure ASC SAVE request…', false);
+  google.script.run
+    .withSuccessHandler(function (result) {
+      dashboardState.methodReturnSave = result;
+      showProject();
+    })
+    .withFailureHandler(function () {
+      dashboardState.methodReturnSave = {
+        ok: false,
+        error: { code: 'SERVER_CALL_FAILED', message: 'ASC SAVE could not be prepared.' }
+      };
+      showProject();
+    })
+    .prepareDashboardMethodReturnSave({
+      project_id: project.project_id,
+      return_text: dashboardState.providerReturnText
+    });
+}
+
+function openProjectMethodReturnSave() {
+  const result = dashboardState.methodReturnSave;
+  if (!result || result.ok !== true || typeof result.save_link !== 'string') return;
+  window.open(result.save_link, '_blank', 'noopener');
+  setProjectHandoffStatus('ASC SAVE opened. Review the protected preview, then CONFIRM & SYNC.', false);
+}
+
 function captureProjectHandoffField(target) {
   if (!target || !target.id) return false;
   if (target.id === 'project-thread') dashboardState.handoffForm.threadId = target.value;
@@ -874,6 +979,9 @@ function captureProjectHandoffField(target) {
   else return false;
   dashboardState.handoffResult = null;
   dashboardState.threadCreateResult = null;
+  dashboardState.providerReturnText = '';
+  dashboardState.methodReturnPreview = null;
+  dashboardState.methodReturnSave = null;
   return true;
 }
 
@@ -892,6 +1000,9 @@ function openProject(projectId) {
       dashboardState.continuityResult = null;
       dashboardState.handoffResult = null;
       dashboardState.threadCreateResult = null;
+      dashboardState.providerReturnText = '';
+      dashboardState.methodReturnPreview = null;
+      dashboardState.methodReturnSave = null;
       dashboardState.projectView = 'WORKSPACE';
       const initialRoute = DASHBOARD_ENTRIES.indexOf(String(result.project && result.project.ui_entry || '').toUpperCase()) >= 0
         ? String(result.project.ui_entry).toUpperCase()
@@ -969,10 +1080,20 @@ function handleDashboardClick(event) {
   if (target.dataset.handoffAction === 'copy') { copyPreparedProjectHandoff(); return; }
   if (target.dataset.handoffAction === 'show') { showPreparedProjectHandoffText(); return; }
   if (target.dataset.handoffAction === 'open') { openPreparedProjectHandoff(); return; }
+  if (target.dataset.handoffAction === 'preview-return') { previewProjectMethodReturn(); return; }
+  if (target.dataset.handoffAction === 'prepare-save') { prepareProjectMethodReturnSave(); return; }
+  if (target.dataset.handoffAction === 'open-save') { openProjectMethodReturnSave(); return; }
   if (target.dataset.back) { showList(); }
 }
 
 function handleDashboardFieldChange(event) {
+  if (event.target && event.target.id === 'project-provider-return') {
+    dashboardState.providerReturnText = event.target.value;
+    dashboardState.methodReturnPreview = null;
+    dashboardState.methodReturnSave = null;
+    setProjectHandoffStatus('Provider return changed. Preview it again before preparing ASC SAVE.', false);
+    return;
+  }
   if (captureProjectHandoffField(event.target)) {
     const threads = dashboardState.continuityResult && dashboardState.continuityResult.ok === true &&
       Array.isArray(dashboardState.continuityResult.threads)

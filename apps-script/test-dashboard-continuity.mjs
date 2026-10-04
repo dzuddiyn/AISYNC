@@ -10,7 +10,7 @@ const handoffId = 'ho_01ARZ3NDEKTSV4RRFFQ69G5FB6';
 const referenceId = 'cr_01ARZ3NDEKTSV4RRFFQ69G5FB8';
 
 function makeContext(overrides = {}) {
-  const calls = { handoff: [], reference: [], bootstrap: [], createThread: [] };
+  const calls = { handoff: [], reference: [], bootstrap: [], createThread: [], resultRecord: [], saveContracts: [] };
   const context = {
     calls,
     Utilities: {
@@ -64,7 +64,15 @@ function makeContext(overrides = {}) {
     }),
     ascZasspillCreateMethodHandoff_: (input) => {
       calls.handoff.push(input);
-      return { status: 'HANDOFF_CREATED', handoff: { handoff_id: handoffId } };
+      return {
+        status: 'HANDOFF_CREATED',
+        handoff: {
+          handoff_id: handoffId,
+          thread_id: input.threadId,
+          source_revision: 3,
+          target_method: input.targetMethod
+        }
+      };
     },
     ascZasspillIssueScopedReference_: (input) => {
       calls.reference.push(input);
@@ -89,6 +97,49 @@ function makeContext(overrides = {}) {
         'Current: ' + input.minimumRelevantContinuity.current
       ].join('\n');
     },
+    ascZasspillCrossMethodService_: () => ({
+      getHandoff: ({ projectId, handoffId: requested }) => requested === handoffId
+        ? {
+            status: 'HANDOFF_FOUND',
+            project_id: projectId,
+            handoff: {
+              handoff_id: handoffId,
+              thread_id: threadId,
+              source_revision: 3,
+              target_method: 'ZASSELECTION'
+            }
+          }
+        : { status: 'HANDOFF_NOT_FOUND', project_id: projectId, handoff_id: requested }
+    }),
+    ascZasspillReconcileMethodResult_: () => ({ status: 'SAFE_TO_APPLY', expected_revision: 3 }),
+    ascZasspillRecordMethodResult_: (input) => {
+      calls.resultRecord.push(input);
+      return { status: 'METHOD_RESULT_RECORDED', handoff_id: input.resultEnvelope.handoff_id };
+    },
+    ascProductionAuthorizationPolicy_: (contract) => {
+      calls.saveContracts.push(contract);
+      return { authorized: true };
+    },
+    ascSha256Hex_: () => 'a'.repeat(64),
+    ascRuntime_: () => ({
+      transport: {
+        createEnvelope: (contract, options) => ({
+          envelope_version: '0.1',
+          request_id: options.requestId,
+          issued_at: options.issuedAt,
+          expires_at: options.expiresAt,
+          integrity: { algorithm: 'SHA-256', digest: null },
+          contract
+        }),
+        encodeEnvelope: () => 'SEALED_TEST_PAYLOAD'
+      },
+      security: {
+        sealEnvelope: (envelope) => ({
+          ...envelope,
+          integrity: { algorithm: 'SHA-256', digest: 'a'.repeat(64) }
+        })
+      }
+    }),
     ...overrides
   };
   vm.createContext(context);
@@ -222,3 +273,125 @@ console.log('bearer token remains server-side: PASS');
 }
 
 assert.doesNotMatch(source, /state:\s*['\"]ACTIVE['\"]/);
+
+{
+  const ctx = makeContext();
+  const handoff = ctx.prepareDashboardProjectHandoff({
+    project_id: 'AISYNC',
+    thread_id: threadId,
+    provider: 'Gemini',
+    route: 'DECIDE',
+    draft: 'Continue this checkpoint.'
+  });
+  assert.equal(handoff.ok, true);
+  assert.match(handoff.bootstrap, /SAVE \/ return-to-ASC instruction:/);
+  assert.match(handoff.bootstrap, /ASC_METHOD_RESULT_BEGIN/);
+  assert.match(handoff.bootstrap, /ASC_METHOD_RESULT_END/);
+  assert.match(handoff.bootstrap, /CONFIRM & SYNC/);
+}
+
+function validMethodResultText(overrides = {}) {
+  const result = {
+    handoff_id: handoffId,
+    thread_id: threadId,
+    source_revision: 3,
+    producing_method: 'ZASSELECTION',
+    result_status: 'CONFIRMED_RESULT',
+    confirmed_outcome: 'Option B selected for the next calibration step.',
+    still_open: ['verify field timing'],
+    artifact_refs: [],
+    ...overrides
+  };
+  return 'ASC_METHOD_RESULT_BEGIN\n' + JSON.stringify(result) + '\nASC_METHOD_RESULT_END';
+}
+
+{
+  const ctx = makeContext();
+  const preview = ctx.previewDashboardMethodReturn({
+    project_id: 'AISYNC',
+    return_text: validMethodResultText()
+  });
+  assert.equal(preview.ok, true);
+  assert.equal(preview.reconciliation, 'SAFE_TO_APPLY');
+  assert.equal(preview.record_id, 'METHOD-RESULT-' + handoffId.slice(3));
+  assert.equal(preview.confirmed_outcome, 'Option B selected for the next calibration step.');
+  assert.equal(ctx.calls.resultRecord.length, 0, 'preview must not record the method result');
+  assert.equal(ctx.calls.saveContracts.length, 0, 'preview must not prepare a production write');
+}
+
+{
+  const ctx = makeContext();
+  const prepared = ctx.prepareDashboardMethodReturnSave({
+    project_id: 'AISYNC',
+    return_text: validMethodResultText()
+  });
+  assert.equal(prepared.ok, true);
+  assert.equal(prepared.persistence_state, 'NOT_SAVED_YET');
+  assert.match(prepared.request_id, /^ASC-T018B-[0-9A-HJKMNP-TV-Z]{26}$/);
+  assert.equal(prepared.record_id, 'METHOD-RESULT-' + handoffId.slice(3));
+  assert.match(prepared.save_link, /^https:\/\/dzuddiyn\.github\.io\/AISYNC\/asc\/#asc=SEALED_TEST_PAYLOAD$/);
+  assert.equal(ctx.calls.resultRecord.length, 1);
+  assert.equal(ctx.calls.saveContracts.length, 1);
+  const contract = ctx.calls.saveContracts[0];
+  assert.equal(contract.Project, 'AISYNC');
+  assert.equal(contract['Source method'], 'ZASSELECTION');
+  assert.equal(contract.Operation, 'SAVE');
+  assert.equal(contract['Record type'], 'method_result');
+  assert.equal(contract['Record ID'], 'METHOD-RESULT-' + handoffId.slice(3));
+  assert.match(contract['Content/change'], /Option B selected for the next calibration step\./);
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(contract.Lineage)),
+    ['thread:' + threadId, 'handoff:' + handoffId, 'source_revision:3']
+  );
+  assert.deepEqual(JSON.parse(JSON.stringify(contract.Destination)), ['GitHub']);
+}
+
+{
+  const ctx = makeContext();
+  const proseOnly = ctx.previewDashboardMethodReturn({
+    project_id: 'AISYNC',
+    return_text: 'State checkpoint updated locally. Files are ready to push.'
+  });
+  assert.equal(proseOnly.ok, false);
+  assert.equal(proseOnly.error.code, 'METHOD_RESULT_BLOCK_MISSING');
+
+  const wrongMethod = ctx.previewDashboardMethodReturn({
+    project_id: 'AISYNC',
+    return_text: validMethodResultText({ producing_method: 'ZASSIMPLE' })
+  });
+  assert.equal(wrongMethod.ok, false);
+  assert.equal(wrongMethod.error.code, 'METHOD_RESULT_IDENTITY_MISMATCH');
+}
+
+{
+  const ctx = makeContext({
+    ascZasspillReconcileMethodResult_: () => ({
+      status: 'RECONCILIATION_REQUIRED',
+      source_revision: 3,
+      current_revision: 4
+    })
+  });
+  const stale = ctx.previewDashboardMethodReturn({
+    project_id: 'AISYNC',
+    return_text: validMethodResultText()
+  });
+  assert.equal(stale.ok, false);
+  assert.equal(stale.error.code, 'RECONCILIATION_REQUIRED');
+}
+
+{
+  const ctx = makeContext({
+    ascProductionAuthorizationPolicy_: () => ({ authorized: false })
+  });
+  const denied = ctx.prepareDashboardMethodReturnSave({
+    project_id: 'AISYNC',
+    return_text: validMethodResultText()
+  });
+  assert.equal(denied.ok, false);
+  assert.equal(denied.error.code, 'SAVE_NOT_AUTHORIZED');
+  assert.equal(ctx.calls.resultRecord.length, 0);
+}
+
+console.log('T-018B provider return -> protected ASC SAVE bridge: PASS');
+console.log('provider prose cannot masquerade as persistence: PASS');
+console.log('preview is non-mutating; secure SAVE still requires CONFIRM & SYNC: PASS');
