@@ -4,17 +4,25 @@
 // method-owned lifecycle/progress semantics.
 
 // Project/index freshness may need to read private repositories and must not depend
-// on the shared anonymous GitHub API rate limit. The server-side token is read from
-// Script Properties and is never returned in freshness evidence.
+// on either the shared anonymous GitHub API rate limit or a separate legacy PAT.
+// T-019F reuses the short-lived GitHub App installation credential boundary already
+// required by production writes; the installation token is never returned in
+// freshness evidence.
 function ascReadGitHubProjectJson_(url) {
   if (typeof url !== 'string' || url.indexOf(ASC_ZASS_CI_GITHUB_API_PREFIX_) !== 0) {
     return ascZassCiTransportError_('INVALID_GITHUB_API_URL', 'Only the GitHub API origin is allowed.');
   }
 
-  var token = ascScriptProperty_('GITHUB_TOKEN');
-  if (!token) {
-    return ascZassCiTransportError_('GITHUB_TOKEN_MISSING', 'Server GitHub credential is not configured.');
+  var tokenResult = ascGitHubAppInstallationToken_();
+  if (!tokenResult || tokenResult.ok !== true) {
+    return ascZassCiTransportError_(
+      tokenResult && tokenResult.error && tokenResult.error.code
+        ? tokenResult.error.code
+        : 'GITHUB_APP_TOKEN_UNAVAILABLE',
+      'GitHub App installation credential is unavailable.'
+    );
   }
+  var token = tokenResult.token;
 
   var response;
   try {

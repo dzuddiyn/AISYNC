@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS / T-019F LOCAL PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -612,3 +612,76 @@ Temporary proof v45 was undeployed, Apps Script development HEAD was restored an
 Canonical evidence: [`proofs/t019e-disaster-recovery-migration-live.md`](../proofs/t019e-disaster-recovery-migration-live.md).
 
 T-019E is therefore **LIVE PASS**. T-019 remains CURRENT pending secret rotation, deployment/rollback proof, and final operator runbook acceptance.
+
+
+## T-019F — Secret rotation
+
+Status: **LOCAL PASS / canonical SAVE + protected deploy + live rotation pending**
+
+### Credential boundary
+
+T-019F narrows Production v1 GitHub credentials to one GitHub App identity.
+
+- GITHUB_APP_PRIVATE_KEY remains the active server-side private key.
+- ASC_GITHUB_APP_PRIVATE_KEY_CANDIDATE is a temporary staged candidate.
+- ASC_GITHUB_APP_PRIVATE_KEY_PREVIOUS is retained only while rollback remains available.
+- ASC_GITHUB_APP_KEY_ROTATION_META stores non-secret audit state and fingerprints.
+- project-index freshness now obtains a short-lived GitHub App installation token instead of using GITHUB_TOKEN.
+- the legacy GITHUB_TOKEN can therefore be retired after GitHub App verification.
+
+Secret values are never returned by the rotation/status functions.
+
+### Rotation procedure
+
+1. Generate a new private key for the same GitHub App while the old GitHub-side key remains valid.
+2. Stage the PEM only in server-side Script Property ASC_GITHUB_APP_PRIVATE_KEY_CANDIDATE.
+3. Run candidate validation. This mints a short-lived installation token with the candidate without changing the active key.
+4. Promote under the Apps Script script lock:
+   - reject missing/same candidate;
+   - validate candidate first;
+   - save the current active key into the temporary previous slot;
+   - switch the active property to the candidate;
+   - remove the candidate slot;
+   - immediately obtain an installation token using the new active key.
+5. If active verification fails, restore the prior active key automatically and restore the candidate for diagnosis/retry.
+6. While the new active key is verified but the previous slot remains, manual rollback can validate and restore the previous key.
+7. Revoke the old private key in GitHub App settings.
+8. Finalize only with explicit oldKeyRevoked=true; active auth is reverified and the previous local secret is deleted.
+
+### Legacy read-token retirement
+
+ascRetireLegacyGitHubReadToken_() removes GITHUB_TOKEN only after GitHub App installation auth succeeds. If App verification fails, the legacy token is restored exactly.
+
+Project freshness no longer reads GITHUB_TOKEN, so retiring the PAT removes an unnecessary long-lived production credential.
+
+### Audit surface
+
+ascSecretRotationStatus_() returns only:
+
+- presence booleans;
+- SHA-256 fingerprints;
+- legacy-token presence boolean;
+- allowlisted timestamps/state/failure-code metadata.
+
+The raw metadata property is sanitized before being returned. Private keys, tokens, arbitrary metadata fields, and Bearer credentials are not exposed.
+
+### Local evidence
+
+Focused regression proves:
+
+- candidate validation does not mutate the active key;
+- valid promotion retains previous key and verifies the new active key;
+- post-promotion verification failure auto-rolls back;
+- pre-promotion candidate failure performs no key mutation;
+- manual rollback restores the previous active key;
+- finalize refuses to run without explicit old-key revocation confirmation;
+- finalize revalidates active auth and deletes the previous local secret;
+- successful legacy PAT retirement removes GITHUB_TOKEN;
+- failed PAT retirement restores it exactly;
+- duplicate/missing candidates fail safely;
+- rotation status sanitizes arbitrary metadata and emits no secret material;
+- project freshness uses GitHub App auth and no longer references GITHUB_TOKEN;
+- existing GitHub App auth tests remain PASS;
+- full repository regression passes.
+
+T-019F remains LOCAL PASS until canonical SAVE, protected deployment, and live key rotation / old-key retirement proof complete.

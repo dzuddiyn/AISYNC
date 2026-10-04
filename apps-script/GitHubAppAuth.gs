@@ -143,10 +143,15 @@ function ascGitHubAppJwt_(config, nowMs) {
   return signingInput + '.' + ascBase64UrlBytesNoPad_(signature);
 }
 
-function ascGitHubAppInstallationToken_() {
-  var config = ascGitHubAppConfig_();
-  if (!config.ok) {
-    return config;
+function ascGitHubAppInstallationTokenForConfig_(config) {
+  if (!config || config.ok === false || !config.clientId || !config.installationId || !config.privateKey) {
+    return {
+      ok: false,
+      error: {
+        code: 'GITHUB_APP_CONFIG_MISSING',
+        message: 'GitHub App client ID, installation ID, and private key must be configured server-side.'
+      }
+    };
   }
 
   var jwt;
@@ -231,6 +236,14 @@ function ascGitHubAppInstallationToken_() {
     token: data.token,
     expiresAt: data.expires_at
   };
+}
+
+function ascGitHubAppInstallationToken_() {
+  var config = ascGitHubAppConfig_();
+  if (!config.ok) {
+    return config;
+  }
+  return ascGitHubAppInstallationTokenForConfig_(config);
 }
 
 function ascCreateGitHubAppRestClient_() {
