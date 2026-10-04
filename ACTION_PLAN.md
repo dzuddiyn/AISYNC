@@ -435,3 +435,14 @@ Local remediation prepared:
 - keep private WHO/provider memory outside transferred context.
 
 The synthetic provider test project was removed from the ASC Private Continuity Store and the temporary proof deployment was undeployed after evidence capture. T-017 remains IN PROGRESS until the refreshed gateway is canonically published and external receiver re-proof passes.
+
+
+PF-062 | T-017 METHODS >50K STORAGE BLOCKER — LOCAL REMEDIATION PASS / SAVE GATE
+
+Finding: canonical ZASSPILL v1.0.0 is 62,797 characters, beyond the Google Sheets 50,000-character cell limit. The attempted reconciliation therefore exposed a real storage blocker rather than a semantic or receiver defect. Live inspection also found a partial/hybrid `METHODS` state: the ZASSPILL row had been owner-proofed at v1.0.0 using a temporary `gzip+base64:` representation, while ZASSIMPLE and ZASSELECTION remained on the prior source commit; the ZASSELECTION version cell had also been auto-coerced by Sheets from `0.2.2` into a date-formatted numeric value.
+
+This is treated as implementation/storage hardening under PF-014/D-028, not a new authority model. The local `t017-methods-storage-hardening` patch is based on canonical `main` commit `9b820214975848491c4731b4f1acdc5b2263db08` and preserves the existing three-row, nine-column logical Method Snapshot Record and one-sync/one-source-commit rule. Physical `METHODS.content` storage now remains plain text through 45,000 characters, uses `gzip+base64:` above that threshold, fails closed if the encoded payload exceeds 49,000 characters, and is transparently decoded on read. Snapshot rows are formatted as text before write so version strings cannot be silently converted into spreadsheet dates. No truncation is allowed and GitHub remains the method Source of Truth.
+
+Evidence: the real 62,797-character ZASSPILL v1.0.0 payload was already round-trip proven by the temporary owner-only Apps Script reconciliation at about 26.4k stored characters; the canonicalized local regression test passes; a fresh clone of current `main` plus the patch passes all 27 repository `test-*.mjs` files with `git diff --check = 0`.
+
+T-017 remains IN PROGRESS. Next gate after explicit owner SAVE: commit/push the bounded patch, review/merge PR, deploy the canonical sync/read implementation, run one full three-method exact-HEAD reconciliation, independently verify all three live `METHODS` rows share the same canonical source commit with correct versions/content, then rerun the external Gemini continuation proof. T-017 closes only if that field re-proof passes.

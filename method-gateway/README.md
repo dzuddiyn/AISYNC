@@ -15,7 +15,7 @@ The gateway must serve an AI-SYNC-held snapshot itself. It must not solve the pr
 | Method | Canonical path | Current review version | Approx. characters |
 |---|---|---:|---:|
 | ZASSPILL | `ZASSPILL/ZASSPILL_MY.md` | 1.0.0 | 62,797 |
-| ZASSIMPLE | `ZASSIMPLE/ZASSIMPLE_MY.md` | 0.2.5 | 18,334 |
+| ZASSIMPLE | `ZASSIMPLE/ZASSIMPLE_MY.md` | 0.3.0 | 18,748 |
 | ZASSELECTION | `ZASSELECTION/ZASSELECTION_MY.md` | 0.2.2 | 16,025 |
 
 These are review-time observations only. GitHub remains canonical and the gateway must always capture the actual source commit/version during sync.
@@ -336,3 +336,20 @@ Remediation for T-017:
 - cover the static receiver snapshot with a regression test.
 
 This is evidence-triggered hardening allowed by D-028/T-013B. It does not move semantic authority from the canonical ZASS repository to AISYNC.
+
+## T-017 METHODS storage hardening
+
+ZASSPILL v1.0.0 is 62,797 characters, which exceeds the Google Sheets 50,000-character limit for one cell. The logical Method Snapshot Record v0.1 remains unchanged; only the physical representation of `METHODS.content` is hardened:
+
+- content up to 45,000 characters remains plain text;
+- larger content is gzip-compressed and stored with the `gzip+base64:` prefix;
+- an encoded payload above 49,000 characters fails closed rather than being truncated;
+- the read path transparently decodes the stored payload before exposing logical `content`, so callers still receive the original Markdown;
+- every snapshot row is formatted as text before writing, preventing version strings such as `0.2.2` from being auto-coerced into spreadsheet dates;
+- the existing three-row, nine-column logical registry shape remains unchanged;
+- one normal sync still resolves one exact canonical GitHub HEAD and writes all three method snapshots from that same commit;
+- GitHub remains the method Source of Truth and D-028 receiver authority/transport boundaries remain unchanged.
+
+A temporary owner-only reconciliation already proved that the real 62,797-character ZASSPILL v1.0.0 snapshot compresses to about 26.4k characters and decodes exactly. That temporary proof updated only the ZASSPILL row, so the live `METHODS` table is intentionally treated as partially reconciled until the canonical implementation passes SAVE/merge/deploy and a full three-method batch sync is verified.
+
+Local regression coverage lives in `test-method-snapshot-compression.mjs`. On canonical `main` commit `9b820214975848491c4731b4f1acdc5b2263db08`, the hardened patch passes all 27 repository `test-*.mjs` files and `git diff --check`.
