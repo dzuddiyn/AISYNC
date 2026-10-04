@@ -48,25 +48,46 @@ function createWorld() {
       this.id = 'file-' + (++fileSeq);
       this.name = name;
       this.content = content;
+      this.trashed = false;
+      this.createdAt = new Date(1700000000000 + fileSeq);
     }
     getId() { return this.id; }
+    getName() { return this.name; }
     getSharingAccess() { return 'PRIVATE'; }
     getBlob() { return { getDataAsString: () => this.content }; }
     setContent(text) { this.content = String(text); return this; }
     setTrashed(value) { this.trashed = Boolean(value); return this; }
+    isTrashed() { return this.trashed; }
+    getDateCreated() { return new Date(this.createdAt.getTime()); }
   }
 
   class FakeFolder {
     constructor(name) {
       this.id = 'folder-' + (++folderSeq);
       this.name = name;
+      this.fileIds = [];
     }
     getId() { return this.id; }
     getSharingAccess() { return 'PRIVATE'; }
     createFile(name, content) {
       const f = new FakeFile(name, content);
+      this.fileIds.push(f.id);
       files.set(f.id, f);
       return f;
+    }
+    getFiles() {
+      const ids = this.fileIds.slice();
+      let index = 0;
+      return {
+        hasNext() {
+          while (index < ids.length && files.get(ids[index]).isTrashed()) index += 1;
+          return index < ids.length;
+        },
+        next() {
+          if (!this.hasNext()) throw new Error('no more files');
+          return files.get(ids[index++]);
+        }
+      };
     }
   }
 
@@ -361,7 +382,16 @@ assert.equal(
 );
 
 assert.equal(w.folders.size, 1);
-assert.equal(w.files.size, 9, 'private store versions include T-015 mutations plus T-017 handoff/result/reference state changes');
+assert.equal(w.files.size, 17, 'eight state mutations must add eight verified backups plus eight next-authority files');
+const activeBackups = Array.from(w.files.values()).filter(file =>
+  file.getName().startsWith('continuity-backup-v0.1-') && !file.isTrashed()
+);
+const activeAuthorities = Array.from(w.files.values()).filter(file =>
+  file.getName().startsWith('continuity-state-v0.1') && !file.isTrashed()
+);
+assert.equal(activeBackups.length, 8, 'every changed transaction must retain one verified backup');
+assert.equal(activeAuthorities.length, 1, 'Script Property pointer must remain the single active authority');
+assert.equal(activeAuthorities[0].getId(), w.properties.get('ASC_CONTINUITY_STATE_FILE_ID'));
 assert.ok(w.properties.get('ASC_CONTINUITY_FOLDER_ID'));
 assert.ok(w.properties.get('ASC_CONTINUITY_STATE_FILE_ID'));
 
