@@ -39,6 +39,15 @@ const synced = {
   receipt: verifiedReceipt, historyOutcome: 'HISTORY_PERSISTED', error: null
 };
 
+// No request is neutral: never label an empty protected page UNSAVED.
+{
+  const doc = fakeDocument();
+  sandbox.showNoPendingRequest({ document: doc });
+  assert.equal(doc.els['save-state'].textContent, 'NO REQUEST');
+  assert.match(doc.els.status.textContent, /Return to the original ASC Public Front Door tab and press CONTINUE/);
+  assert.doesNotMatch(doc.els.status.textContent, /^UNSAVED/);
+}
+
 // Confirmation object is explicit and request-bound.
 assert.equal(
   JSON.stringify(sandbox.buildConfirmation('req-1')),
