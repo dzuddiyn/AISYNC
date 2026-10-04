@@ -770,7 +770,7 @@ Focused regressions:
 Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd40479ca133d8` and protected production is Apps Script v39, `T019C-degraded-offline-behavior`. Deterministic live proof `T019C-LIVE-20261004-112655-9312eff5` PASS: exact immutable-v39 client behavior rendered DEGRADED for pre-confirm unavailability, OUTCOME UNKNOWN after one forced post-confirm response loss, blocked blind duplicate CONFIRM, and exposed lookup-only CHECK RESULT. Live `getConfirmSyncResult()` returned OUTCOME_UNKNOWN / `writePerformed=null` for the never-submitted proof request; independent HISTORY search found zero proof rows and GitHub `main` plus the canonical T-016 target remained unchanged. Temporary proof deployment was removed and development HEAD restored/verified 16/16. See `proofs/t019c-degraded-offline-live.md`.
 
 
-## T-019D truthful telemetry — LOCAL PASS
+## T-019D truthful telemetry — LIVE PASS / DEPLOYED v42
 
 - Adds owner-only `getProductionTelemetry(project_id)`.
 - Snapshot is ephemeral (`persisted=false`) and never becomes a competing source of truth.
@@ -782,4 +782,4 @@ Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd4
 - GitHub App telemetry may mint a short-lived installation token as an auth probe, but returns no token/private key and performs no repository write.
 - Review loads telemetry only on demand and provides **REFRESH TELEMETRY**; Workspace is unchanged.
 - Focused server/UI regressions pass with no telemetry persistence/business-state mutation.
-- Protected deploy and live owner proof remain pending.
+- Canonical implementation merged through PR #44 at `3873e3289b9051d65c4d315daeb1e68adabaa615` and protected production is Apps Script v42 (`T019D-truthful-telemetry`). Live proof `T019D-LIVE-20261004-121558-21ca5345` PASS: two real owner snapshots both reported overall `DEGRADED` because index freshness was `STALE` while ASC DB, canonical GitHub, private continuity, GitHub App auth and latest SAVE evidence remained directly observed; telemetry stayed ephemeral, returned no secret material, made no repository write, and did not change HISTORY or private continuity. See `proofs/t019d-truthful-telemetry-live.md`.

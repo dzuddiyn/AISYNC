@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LOCAL PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -387,7 +387,7 @@ T-019C is therefore **LIVE PASS**. This does not close T-019 as a whole.
 
 ## T-019D — Truthful telemetry
 
-Status: **LOCAL PASS / protected deploy + live proof pending**
+Status: **LIVE PASS — canonical source merged, protected production v42, live owner telemetry proof complete**
 
 ### Contract
 
@@ -457,4 +457,44 @@ Focused regressions prove:
 - Review renders truthful OK / ERROR / UNKNOWN states and refresh control;
 - Workspace remains unaffected.
 
-T-019D remains LOCAL PASS until protected deployment and live owner telemetry proof complete.
+### Live evidence
+
+Canonical T-019D implementation merged through PR #44 at `3873e3289b9051d65c4d315daeb1e68adabaa615` and protected production is Apps Script v42 (`T019D-truthful-telemetry`).
+
+Live owner proof `T019D-LIVE-20261004-121558-21ca5345` executed two real `getProductionTelemetry('AISYNC')` snapshots from exact v42 runtime behavior. The first snapshot was observed at `2026-10-04T12:16:00.422Z`; the second at `2026-10-04T12:16:02.925Z`.
+
+Both snapshots truthfully reported overall `DEGRADED` because the required index-freshness probe was `STALE`. The directly observed probe states were otherwise:
+
+- ASC DB: `OK`;
+- canonical GitHub: `OK`;
+- private continuity: `OK`;
+- GitHub App auth: `OK`;
+- latest SAVE evidence: `SUCCESS`.
+
+This is a PASS for truthful telemetry, not a claim that production was fully healthy. T-019D passed because the overall state matched the direct evidence instead of promoting a stale operational index to OK.
+
+Observed proof checks all returned true:
+
+- first and second snapshots returned successfully;
+- both snapshots were ephemeral (`persisted=false`);
+- required probes carried source/state/`observed_at`;
+- overall state matched the required-probe evidence;
+- refresh produced a non-older observation;
+- `secrets_exposed=false` and no token/private-key/Bearer material was returned;
+- the GitHub App auth probe explicitly reported `repository_write_performed=false`;
+- HISTORY fingerprint was unchanged before/after both telemetry calls;
+- private continuity file identity, last-modified time, byte length, and SHA-256 fingerprint were unchanged.
+
+Private evidence filename:
+
+`AISYNC_T019D_LIVE_PROOF_T019D-LIVE-20261004-121558-21ca5345.json`
+
+Independent Drive metadata confirmed the evidence artifact is an `application/json` file, `shared=false`, with only the owner permission visible. The proof artifact itself was created only after the no-mutation fingerprints were captured; it is evidence storage, not telemetry authority or continuity state.
+
+Independent HISTORY search for `T019D-LIVE` returned zero matching rows. Independent GitHub verification after the proof confirmed `main` still at `3873e3289b9051d65c4d315daeb1e68adabaa615` and canonical target `records/T016-LIVE-20261003181842.md` still had blob SHA `5427b6cc4aa0c2a87a9532121e1cb8a4bc0a7e22` with unchanged content.
+
+Temporary proof version v43 used an owner-only harness above immutable v42. The temporary deployment was removed afterward, Apps Script development HEAD was restored and independently verified 16/16 files, the temporary deployment ID was absent, and protected production remained pinned to v42.
+
+Canonical evidence: [`proofs/t019d-truthful-telemetry-live.md`](../proofs/t019d-truthful-telemetry-live.md).
+
+T-019D is therefore **LIVE PASS**. T-019 remains CURRENT pending broader disaster recovery, secret rotation, deployment/rollback, migration-safety closure where still required, and final operator runbook acceptance.
