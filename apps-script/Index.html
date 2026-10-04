@@ -8,6 +8,9 @@
       body { font-family: Arial, sans-serif; margin: 24px; color: #202124; background: #fff; }
       main { max-width: 760px; margin: 0 auto; }
       .badge { display: inline-block; padding: 4px 8px; background: #f1f3f4; border-radius: 12px; font-size: 12px; }
+      .save-state { font-weight: 700; letter-spacing: .03em; }
+      .save-row { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
+      .receipt-summary { white-space: pre-line; line-height: 1.5; }
       .card { border: 1px solid #dadce0; border-radius: 12px; padding: 18px; margin-top: 16px; }
       .muted { color: #5f6368; }
       .error { color: #b3261e; }
@@ -21,6 +24,7 @@
       <span class="badge">AISYNC Production v1 · CONFIRM &amp; SYNC</span>
       <h1>ASC Preview</h1>
       <p class="muted">Google Account access is enforced by the web-app deployment. Nothing is persisted unless you explicitly press CONFIRM &amp; SYNC.</p>
+      <div class="save-row"><span>Save / sync state:</span><span id="save-state" class="badge save-state">UNSAVED</span></div>
       <div id="status" class="card">Loading…</div>
       <div id="preview" class="card" hidden>
         <h2>Pending request</h2>
@@ -31,8 +35,12 @@
         </div>
       </div>
       <div id="receipt" class="card" hidden>
-        <h2>Write receipt</h2>
-        <pre id="receipt-json"></pre>
+        <h2>Factual save receipt</h2>
+        <div id="receipt-summary" class="receipt-summary"></div>
+        <details>
+          <summary>Raw receipt JSON</summary>
+          <pre id="receipt-json"></pre>
+        </details>
         <a id="main-ui-link" href="#" target="_top" hidden>Return to main ASC UI</a>
       </div>
     </main>
