@@ -102,17 +102,18 @@ Pass / stop condition: an ordinary user can continue the same project/thread acr
 Result: PASS — local continuity/retrieval contract and private Drive live proof pass; the stale gateway/bootstrap defects were canonically repaired; full three-method exact-commit METHODS reconciliation and decoded public read verification pass; final Google Antigravity receiver re-proof fetched the exact GitHub Pages ZASSPILL gateway at v1.0.0 and preserved the exact thread, numeric source revision, distinct continuity reference, and transferred current-state sentence without provider-memory enrichment.
 Feeds design: YES
 
-AP-012 | CURRENT
+AP-012 | PASS
 Action: Integrate the production human journey into one coherent UI: login → project/thread → DUMP/DECIDE/DESIGN → provider handoff → SAVE → receipt/HISTORY → CI → reopen/transfer.
 Dependencies: AP-009 through AP-011.
 Pass / stop condition: the normal journey is usable without raw contracts, raw GitHub paths, or developer intervention.
-Current result: IN PROGRESS — T-018A and T-018B are canonical/live through PR #35 / `48ff55442c16c9c6070bdc64e5c58401ceb25064` and protected Apps Script v30. The v30 owner journey passed first-thread → Gemini DESIGN handoff → bounded `ASC_METHOD_RESULT` → non-mutating preview → method-result record → protected Front Door replay/security preview → explicit `CONFIRM & SYNC`. The factual SAVE request `ASC-T018B-01M42V6M2CX4ZJAN602WD97194` produced verified commit `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3`, exact method-result artifact, and HISTORY `SUCCESS / VERIFIED_WRITE / write_performed=true / verified=true`; all were independently read back. GitHub Pages build/deployment run `37184900100` for the SAVE commit succeeded, but no `ZASS CI / zass-check` run exists for that artifact commit, so CI is reported factually rather than treating Pages as ZASS CI. The PROJECTS operational index remains STALE on old commit `2e0c773faaa2597a5df72fa77fea42d911bb0412`. The saved provider result is canonical, but private continuity intentionally remained revision 1/current-old after T-018B, so direct reopen/transfer would still send the old checkpoint. T-018C is LOCAL PASS on base `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3`: after reload the Workspace surfaces only handoff results backed by verified GitHub SAVE receipts; the owner explicitly chooses `ADVANCE THREAD FROM SAVED RESULT`; exact recorded result + receipt + source revision are revalidated; `confirmed_outcome` advances `continuity.current`, `still_open` replaces `continuity.open`, all other semantic fields are preserved, event lineage records the method-result/handoff/save commit, revision increments once, retries are idempotent, stale revisions fail closed, and no additional GitHub/Sheets write occurs. Multiple pending saved results require explicit owner selection. Fresh-clone proof passes all 28 repository tests with `git diff --check = 0`. Remaining AP-012 work: save/merge/deploy T-018C, prove live continuity revision 1→2, then prepare a second-provider handoff and verify it carries revision 2 and the new saved checkpoint.
+Result: PASS — T-018A/B/C are canonical and protected production is v31. The owner journey passed real first-thread creation, Gemini DESIGN handoff, bounded provider return, non-mutating preview, secure owner-confirmed SAVE, factual GitHub/HISTORY receipt, truthful commit-linked CI/status reporting, saved-result continuity advance revision 1→2, and cross-provider reopen/transfer. Independent private-store verification confirmed handoff `ho_01M42Y3NBG6814SHNF374YWTZZ` and scoped reference `cr_01M42Y3RGRPMJKXXT79J223RRD` carry `source_revision: 2` plus the advanced saved checkpoint. Receiving ChatGPT then echoed exactly the same `thread_id`, `source_revision: 2`, advanced `current`, and `open: []`. Provider memory was not imported, providers received no write credentials, private continuity remained owner-only, and absent/stale CI/index state was reported factually instead of being mislabeled PASS.
 Feeds design: YES
 
-AP-013 | QUEUED
+AP-013 | CURRENT
 Action: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
-Dependencies: AP-009 through AP-012.
+Dependencies: AP-009 through AP-012 — satisfied.
 Pass / stop condition: critical state can be recovered or rolled back truthfully without silent duplication/data loss and without exposing secrets.
+Current result: CURRENT — AP-012 / T-018 is complete; no AP-013 implementation claim is made yet.
 Feeds design: YES
 
 AP-014 | QUEUED
@@ -506,3 +507,16 @@ Advance authority: the server re-reads the protected handoff result, validates h
 Local verification: focused T-018A/T-018B/T-018C continuity, UI and read regressions PASS; missing receipt fails `VERIFIED_SAVE_REQUIRED`; stale revision fails `REVISION_CONFLICT`; exact retry is idempotent; multi-pending UI requires explicit owner choice. Fresh clone of canonical `main` `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3` plus the bounded T-018C patch passes all 28 repository `test-*.mjs` files and `git diff --check = 0`.
 
 Next gate: owner SAVE T-018C, merge/deploy from immutable production v30, prove live thread revision 1→2 with new current/open + event lineage, then prepare a handoff to a second AI provider and independently verify that its source revision and minimum continuity use revision 2 rather than the old checkpoint.
+
+
+PF-068 | T-018 INTEGRATED HUMAN UX — FULL END-TO-END PASS / CLOSURE SAVE GATE
+
+Closure evidence: protected production v31 completed the ordinary-user chain from project/thread through provider handoff, owner-confirmed SAVE, factual receipt/HISTORY, truthful CI/index status, saved-result continuity advance, and reopen/transfer to a second AI provider. Private continuity advanced from revision 1 to revision 2 only after a verified GitHub SAVE receipt. The next ChatGPT handoff stored `source_revision: 2`, the advanced saved `current`, and `open: []`; receiving ChatGPT echoed exactly the same `thread_id`, `source_revision: 2`, `current`, and `open: []` with no provider-memory enrichment.
+
+Pass interpretation: T-018's CI requirement is satisfied by truthful commit-linked status integration, not by inventing a `ZASS CI` result where no workflow exists. The method-result SAVE commit had a successful GitHub Pages build but no `ZASS CI / zass-check` run, while the operational project index remained STALE; ASC preserved those factual states. This is correct integration behavior and not a hidden PASS claim.
+
+Boundary result: no provider received write credentials, no provider-local save was accepted as canonical persistence, PREVIEW remained non-mutating, private continuity remained owner-only, continuity advance created no extra GitHub/HISTORY write, stale revisions fail closed, and cross-provider transfer carried only scoped minimum continuity.
+
+Lifecycle result: T-018 / AP-012 PASS. AISYNC as a whole remains `DO IT`; T-019 / AP-013 becomes CURRENT. T-020 closed beta and T-021 Production v1 release acceptance remain queued before project-level `DELIVERED !!`.
+
+Next gate: owner SAVE of the documentation-only T-018 closure/promote patch.

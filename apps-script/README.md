@@ -717,3 +717,20 @@ DIFF_CHECK=0
 ```
 
 Next after canonical SAVE/merge/deploy: reload AISYNC Workspace, confirm the verified saved-result card survives the previous browser/session boundary, press `ADVANCE THREAD FROM SAVED RESULT`, independently verify private revision 2 + updated current/open + event lineage, then create a second-provider handoff and prove its source revision/current are the advanced values.
+
+
+## T-018 Integrated Human UX — PASS / production v31
+
+T-018 is complete; the AISYNC project lifecycle remains `DO IT` because T-019 reliability/operations, T-020 closed beta, and T-021 Production v1 release acceptance are still outstanding.
+
+Final live proof:
+- protected production Apps Script: v31 `T018C-saved-result-reopen-transfer`;
+- real owner-private thread: `th_01M42FTAP1KSHHP9FMJ2M2QTWB`;
+- factual owner-confirmed SAVE artifact: `records/METHOD-RESULT-01M42TNZ3WXJFWFS39EWY581SY.md` at commit `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3`, with matching HISTORY `SUCCESS / VERIFIED_WRITE / write_performed=true / verified=true`;
+- owner continuity advance applied the verified saved result once, moving private revision `1 -> 2`, setting the saved outcome as `continuity.current`, setting explicit `still_open` to `continuity.open=[]`, and recording method-result/handoff/save-commit lineage without another GitHub/Sheets write;
+- final ChatGPT handoff `ho_01M42Y3NBG6814SHNF374YWTZZ` + scoped reference `cr_01M42Y3RGRPMJKXXT79J223RRD` independently stored `source_revision: 2` and the advanced saved checkpoint;
+- receiving ChatGPT echoed the exact transferred identity/state: `thread_id: th_01M42FTAP1KSHHP9FMJ2M2QTWB`, `source_revision: 2`, `current: ZASSIMPLE method gateway version 0.3.0 verified and integrated human journey continuation confirmed.`, `open: []`.
+
+CI/index reporting remains factual: the SAVE artifact commit had a successful GitHub Pages build but no `ZASS CI / zass-check` run, and the operational project index remained explicitly STALE. T-018 treats truthful absence/staleness as correct integration behavior; it does not convert those states into a false PASS.
+
+Authority boundaries remain unchanged: GitHub is canonical artifact authority, private continuity remains owner-only, external AI receives only scoped minimum continuity, provider-held memory/profile is not portable authority, providers receive no repository credentials, and canonical persistence still requires owner-confirmed ASC SAVE.
