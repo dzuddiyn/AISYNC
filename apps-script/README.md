@@ -654,3 +654,35 @@ DIFF_CHECK=0
 ```
 
 This follow-up remains at owner SAVE gate; production v28 itself remains the currently deployed release until the bootstrap patch is saved, merged, and released.
+
+
+## T-018B provider return → protected ASC SAVE — LOCAL PASS
+
+Live production T-018A proved first private-thread creation and a scoped Gemini DESIGN handoff. The first Gemini `SAVE` field run then exposed a real return-path defect: the provider described a local/session save and files ready to push, while independent private-store read-back showed `handoff.result=null` and no GitHub/HISTORY persistence.
+
+T-018B keeps the existing authority model and adds only the missing bridge:
+- outbound handoff bootstrap explicitly says that provider/local persistence claims are invalid and supplies a compact `ASC_METHOD_RESULT` return shape;
+- after handoff, Workspace exposes `Return from AI` only on demand;
+- `PREVIEW RETURN` is non-mutating and strictly validates block shape, protected handoff identity, thread, source revision, producing method, and current revision;
+- plain prose such as “checkpoint updated locally” is rejected and cannot become SAVE evidence;
+- `PREPARE ASC SAVE` records the accepted method result idempotently against the handoff and creates a separate `method_result` artifact with deterministic Record ID `METHOD-RESULT-<handoff ULID>`;
+- the server reuses the existing production project registry, ASC v0.1 envelope, SHA-256 sealing, Front Door fragment transport, owner gate, replay protection, preview, and `CONFIRM & SYNC` path;
+- the provider never receives GitHub credentials and never writes GitHub/Sheets directly;
+- `OPEN ASC SAVE` only opens the prepared secure request; persistence state is still `NOT_SAVED_YET` until the existing protected flow returns a verified receipt.
+
+Continuity state is deliberately not auto-mutated from `confirmed_outcome` in this slice. Method-result recording, GitHub artifact persistence, and later reopen/transfer semantic reconciliation remain distinct authority steps.
+
+Local verification:
+```text
+T-018A dashboard continuity handoff binding: PASS
+T-018B provider return -> protected ASC SAVE bridge: PASS
+provider prose cannot masquerade as persistence: PASS
+preview is non-mutating; secure SAVE still requires CONFIRM & SYNC: PASS
+T-009B/C dashboard UI + routing test: PASS
+T-009A dashboard read layer test: PASS
+Fresh clone @ da64175b5fcd80cc428bd0487d8569f60b41cd59
+TEST_FILES_PASS=28
+DIFF_CHECK=0
+```
+
+Next after canonical SAVE/merge/deploy: rerun the Gemini field case and require the complete production chain `SAVE` → `ASC_METHOD_RESULT` → Return from AI preview → `OPEN ASC SAVE` → protected preview → `CONFIRM & SYNC` → verified receipt/HISTORY → Review/CI.

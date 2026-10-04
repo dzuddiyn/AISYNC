@@ -592,3 +592,50 @@ console.log('T-009B/C dashboard UI + routing test: PASS');
   assert.match(firstThread, /does not write GitHub or Sheets/);
   assert.doesNotMatch(firstThread, /PREPARE HANDOFF/);
 }
+
+{
+  const emptyReturn = sb.renderProviderReturn('', null, null);
+  assert.match(emptyReturn, /Return from AI/);
+  assert.match(emptyReturn, /PREVIEW RETURN/);
+  assert.doesNotMatch(emptyReturn, /PREPARE ASC SAVE|OPEN ASC SAVE/);
+
+  const previewReturn = sb.renderProviderReturn(
+    'ASC_METHOD_RESULT_BEGIN ...',
+    {
+      ok: true,
+      producing_method: 'ZASSIMPLE',
+      source_revision: 1,
+      record_id: 'METHOD-RESULT-01ABC',
+      confirmed_outcome: 'Checkpoint <verified>',
+      still_open: ['SAVE proof']
+    },
+    null
+  );
+  assert.match(previewReturn, /PREPARE ASC SAVE/);
+  assert.match(previewReturn, /Checkpoint &lt;verified&gt;/);
+  assert.doesNotMatch(previewReturn, /OPEN ASC SAVE/);
+}
+
+{
+  const preparedReturn = sb.renderProviderReturn(
+    'ASC_METHOD_RESULT_BEGIN ...',
+    {
+      ok: true,
+      producing_method: 'ZASSIMPLE',
+      source_revision: 1,
+      record_id: 'METHOD-RESULT-01ABC',
+      confirmed_outcome: 'Checkpoint verified',
+      still_open: []
+    },
+    {
+      ok: true,
+      save_link: 'INTERNAL_LINK_VALUE'
+    }
+  );
+  assert.match(preparedReturn, /OPEN ASC SAVE/);
+  assert.match(preparedReturn, /Nothing is persisted yet/);
+  assert.doesNotMatch(preparedReturn, /INTERNAL_LINK_VALUE/);
+}
+
+assert.match(CLIENT, /previewDashboardMethodReturn\(/);
+assert.match(CLIENT, /prepareDashboardMethodReturnSave\(/);
