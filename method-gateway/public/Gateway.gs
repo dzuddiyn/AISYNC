@@ -68,7 +68,7 @@ function decodeMethodSnapshotContent_(stored) {
   const encoded = value.slice(METHOD_CONTENT_GZIP_PREFIX.length);
   const bytes = Utilities.base64Decode(encoded);
   return Utilities.ungzip(
-    Utilities.newBlob(bytes)
+    Utilities.newBlob(bytes, 'application/gzip', 'method.md.gz')
   ).getDataAsString('UTF-8');
 }
 
