@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -136,7 +136,7 @@ Do not repair the pointer or JSON manually unless a later locked recovery proced
 
 T-019A protects against state-file corruption, bad mutation, operator mistake, and schema-incompatible restore attempts inside the owner-private Drive store.
 
-It is **not yet** account-wide disaster recovery. Backups remain within the same owner Drive environment. Broader disaster recovery, replay-marker lifecycle, degraded/offline behavior, telemetry, secret rotation, deployment/rollback, and final operator acceptance remain T-019 work.
+It is **not yet** account-wide disaster recovery. Backups remain within the same owner Drive environment. Broader disaster recovery, degraded/offline behavior, telemetry, secret rotation, deployment/rollback, and final operator acceptance remain T-019 work.
 
 ## Evidence
 
@@ -197,7 +197,7 @@ T-019A is therefore LIVE PASS. This does not close T-019 as a whole.
 
 ## T-019B — Replay / idempotency lifecycle
 
-Status: **LOCAL PASS / canonical SAVE + deploy + live proof pending**
+Status: **LIVE PASS - canonical source merged, protected production v35, live proof complete**
 
 ### Transport replay marker lifecycle
 
@@ -264,4 +264,16 @@ Focused flow + Apps Script binding regressions prove:
 - purged marker does not resurrect an expired envelope;
 - generated `AscRuntime.gs` matches the mechanical runtime build.
 
-Live production marker cleanup/duplicate-write proof remains pending deployment.
+### Live evidence
+
+Canonical T-019B implementation merged through PR #40 at `e4f37e652847dc170c0876ab9b246c62cb21c23f` and protected production is pinned to Apps Script v35 (`T019B-replay-idempotency-lifecycle`).
+
+Deterministic live proof `T019B-LIVE-DET-20261004-103536-a317023f` used the real production Script Properties/lock, production registry, GitHub App installation credential boundary, and canonical existing target `records/T016-LIVE-20261003181842.md`. It proved current-marker cleanup, legacy-marker cleanup, active-marker retention, exact `expires_at + 24h` retention, same-request `REPLAY_REJECTED`, and fresh-request identical-content `NO_CHANGE`.
+
+The live proof performed 2 GitHub reads and 0 GitHub PUTs. Independent GitHub verification after the proof confirmed `main` still at `e4f37e652847dc170c0876ab9b246c62cb21c23f`, target blob SHA still `5427b6cc4aa0c2a87a9532121e1cb8a4bc0a7e22`, and exact target content unchanged. No duplicate commit was created.
+
+The proof ran through a temporary owner-only deployment built from immutable v35 source plus proof-only wrappers. The protected production deployment itself remained pinned to v35. After proof completion the temporary deployment was removed, Apps Script development HEAD was restored/verified 16/16, and the temporary deployment ID was absent.
+
+Canonical evidence: [`proofs/t019b-replay-idempotency-live.md`](../proofs/t019b-replay-idempotency-live.md).
+
+T-019B is therefore **LIVE PASS**. This does not close T-019 as a whole.

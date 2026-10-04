@@ -133,4 +133,4 @@ Canonical T-016 source merged through PR #13 at `cfbc379408080ee22b4eaf478354558
 
 Production reliability work is tracked in [OPERATIONS.md](./OPERATIONS.md).
 
-Current state: **T-019 IN PROGRESS**. T-019A private-continuity backup/restore is LIVE PASS on protected production v32. T-019B replay/idempotency lifecycle is LOCAL PASS and awaiting canonical save/deploy/live proof. Degraded/offline behavior, truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final operator acceptance remain open.
+Current state: **T-019 IN PROGRESS**. T-019A private-continuity backup/restore is LIVE PASS. T-019B replay/idempotency lifecycle is LIVE PASS from canonical PR #40 / merge `e4f37e652847dc170c0876ab9b246c62cb21c23f`, with protected production pinned to Apps Script v35 and live replay/idempotency evidence completed without a duplicate GitHub write. Degraded/offline behavior, truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final operator acceptance remain open.
