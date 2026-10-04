@@ -736,7 +736,7 @@ CI/index reporting remains factual: the SAVE artifact commit had a successful Gi
 Authority boundaries remain unchanged: GitHub is canonical artifact authority, private continuity remains owner-only, external AI receives only scoped minimum continuity, provider-held memory/profile is not portable authority, providers receive no repository credentials, and canonical persistence still requires owner-confirmed ASC SAVE.
 
 
-## T-019C degraded / offline behavior — LOCAL PASS
+## T-019C degraded / offline behavior — LIVE PASS / DEPLOYED v39
 
 T-019C hardens the existing protected CONFIRM & SYNC path without adding an offline writer or changing semantic authority.
 
@@ -767,4 +767,4 @@ Focused regressions:
 - `apps-script/test-apps-script-binding.mjs` proves missing/unreadable cached results return canonical `OUTCOME_UNKNOWN` with `writePerformed=null`.
 - `docs/asc/test-front-door.mjs` re-proves session preservation and local copy/open handoff fallback with no persistence writer.
 
-Protected deployment and live outage/response-loss proof remain pending.
+Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd40479ca133d8` and protected production is Apps Script v39, `T019C-degraded-offline-behavior`. Deterministic live proof `T019C-LIVE-20261004-112655-9312eff5` PASS: exact immutable-v39 client behavior rendered DEGRADED for pre-confirm unavailability, OUTCOME UNKNOWN after one forced post-confirm response loss, blocked blind duplicate CONFIRM, and exposed lookup-only CHECK RESULT. Live `getConfirmSyncResult()` returned OUTCOME_UNKNOWN / `writePerformed=null` for the never-submitted proof request; independent HISTORY search found zero proof rows and GitHub `main` plus the canonical T-016 target remained unchanged. Temporary proof deployment was removed and development HEAD restored/verified 16/16. See `proofs/t019c-degraded-offline-live.md`.

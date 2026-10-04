@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LOCAL PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -281,7 +281,7 @@ T-019B is therefore **LIVE PASS**. This does not close T-019 as a whole.
 
 ## T-019C — Degraded / offline behavior
 
-Status: **LOCAL PASS / protected deploy + live outage proof pending**
+Status: **LIVE PASS — canonical source merged, protected production v39, live degraded/outcome-unknown proof complete**
 
 ### Contract
 
@@ -355,4 +355,31 @@ Focused regressions prove:
 - `WRITE_OUTCOME_UNKNOWN` → OUTCOME UNKNOWN;
 - Front Door draft/handoff fallback remains local and exposes no persistence writer.
 
-No live outage injection has been performed yet. T-019C remains LOCAL PASS until protected deployment and live response-loss/outage proof complete.
+### Live evidence
+
+Canonical T-019C implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd40479ca133d8` and protected production is pinned to Apps Script v39 (`T019C-degraded-offline-behavior`).
+
+Deterministic live proof `T019C-LIVE-20261004-112655-9312eff5` executed the exact immutable-v39 `Client.html` behavior inside live Apps Script V8 while fault-injecting pre-confirm service unavailability and post-confirm response loss without invoking the production write path. It also used the live server `getConfirmSyncResult(request_id)` binding for a never-submitted proof request.
+
+Observed behavior:
+- pre-confirm unavailable state rendered `DEGRADED`, kept CONFIRM disabled, and exposed RETRY SERVER CHECK;
+- retry server check remained non-writing;
+- one forced post-confirm response loss rendered `OUTCOME UNKNOWN`, kept duplicate CONFIRM disabled, exposed CHECK RESULT, and explicitly forbade blind re-confirm;
+- verified-write + HISTORY failure and `WRITE_UNVERIFIED` classified as DEGRADED;
+- `WRITE_OUTCOME_UNKNOWN` classified as OUTCOME UNKNOWN;
+- live server missing-result lookup returned `OUTCOME_UNKNOWN` with `writePerformed=null`;
+- CHECK RESULT performed result lookup only and preserved the unknown state without starting a write.
+
+Independent HISTORY search found zero rows for both proof request IDs:
+- `T019C-LIVE-CLIENT-20261004-112655-9312eff5`;
+- `T019C-LIVE-RESULT-20261004-112655-9312eff5`.
+
+Independent GitHub verification after the proof confirmed `main` still at `df6576a9d9655cf1c3b89072aacd40479ca133d8` and canonical target blob `5427b6cc4aa0c2a87a9532121e1cb8a4bc0a7e22` unchanged. The proof therefore created no GitHub commit or duplicate persistence write.
+
+Private evidence filename: `AISYNC_T019C_LIVE_PROOF_T019C-LIVE-20261004-112655-9312eff5.json`.
+
+A temporary browser harness v40 did not produce deterministic evidence and is not counted as PASS evidence. The final PASS used temporary v41 with deterministic server execution. The temporary deployment was removed afterward, Apps Script development HEAD was restored and verified 16/16, and protected production remained pinned to v39.
+
+Canonical evidence: [`proofs/t019c-degraded-offline-live.md`](../proofs/t019c-degraded-offline-live.md).
+
+T-019C is therefore **LIVE PASS**. This does not close T-019 as a whole.
