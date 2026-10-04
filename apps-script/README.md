@@ -686,3 +686,34 @@ DIFF_CHECK=0
 ```
 
 Next after canonical SAVE/merge/deploy: rerun the Gemini field case and require the complete production chain `SAVE` → `ASC_METHOD_RESULT` → Return from AI preview → `OPEN ASC SAVE` → protected preview → `CONFIRM & SYNC` → verified receipt/HISTORY → Review/CI.
+
+
+## T-018C saved result → private continuity advance — LOCAL PASS
+
+T-018B is now live on protected Apps Script v30 and has one factual production SAVE proof. The verified method-result artifact is canonical at commit `11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3`, and HISTORY records `SUCCESS / VERIFIED_WRITE / write_performed=true / verified=true`. The same commit triggered a successful GitHub Pages build/deployment, but no `ZASS CI / zass-check` run exists for this artifact SAVE commit; do not label Pages as ZASS CI.
+
+T-018C closes the remaining reopen/transfer gap without auto-applying provider output:
+- after Workspace reload, the server surfaces recorded CONFIRMED_RESULT handoffs only when the private thread is still at the result source revision and HISTORY contains a matching verified GitHub SAVE receipt;
+- the owner explicitly presses `ADVANCE THREAD FROM SAVED RESULT`; when more than one result is pending, ASC renders every candidate and does not choose automatically;
+- the advance re-reads the canonical handoff result and private thread and fails closed on missing receipt, identity mismatch, tombstone/not-found, or revision conflict;
+- `confirmed_outcome` becomes `continuity.current`; explicit `still_open` becomes `continuity.open`; title, matters and other semantic fields are preserved;
+- the existing private continuity mutation primitive increments revision, appends an UPDATE event, and records method-result ID, handoff ID and SAVE commit in event change lineage;
+- deterministic request identity plus exact-event recognition makes retry idempotent;
+- continuity advance writes only the owner-private continuity store and does not create another GitHub/Sheets write;
+- any prepared handoff/return/save client state is cleared after successful advance so a stale revision cannot be copied forward.
+
+Local verification:
+```text
+T-018A dashboard continuity handoff binding: PASS
+T-018B provider return -> protected ASC SAVE bridge: PASS
+T-018C saved result -> private continuity advance: PASS
+verified SAVE required; stale revision fails closed; retry idempotent: PASS
+T-009B/C dashboard UI + routing test: PASS
+T-009A dashboard read layer test: PASS
+Sheet mutation calls: none
+Fresh clone @ 11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3
+TEST_FILES_PASS=28
+DIFF_CHECK=0
+```
+
+Next after canonical SAVE/merge/deploy: reload AISYNC Workspace, confirm the verified saved-result card survives the previous browser/session boundary, press `ADVANCE THREAD FROM SAVED RESULT`, independently verify private revision 2 + updated current/open + event lineage, then create a second-provider handoff and prove its source revision/current are the advanced values.

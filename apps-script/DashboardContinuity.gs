@@ -114,7 +114,8 @@ function getDashboardProjectContinuity(projectId) {
           state: thread.state || null,
           current: thread.current == null ? null : thread.current
         };
-      })
+      }),
+      pending_saved_results: ascDashboardPendingSavedResults_(projectId, projectResult)
     };
   } catch (error) {
     return ascDashboardHandoffError_('CONTINUITY_READ_FAILED', 'Private project threads could not be listed.');
@@ -542,4 +543,190 @@ function prepareDashboardMethodReturnSave(input) {
       'ASC SAVE could not be prepared from the provider return.'
     );
   }
+}
+
+function ascDashboardVerifiedSaveReceipt_(projectResult, recordId) {
+  const history = projectResult && Array.isArray(projectResult.history) ? projectResult.history : [];
+  const suffix = '/records/' + recordId + '.md';
+  const matches = history.filter(function (row) {
+    if (row.operation !== 'SAVE' || row.destination !== 'GitHub' || row.status !== 'SUCCESS') return false;
+    if (typeof row.affected_resource !== 'string' || !row.affected_resource.endsWith(suffix)) return false;
+    if (typeof row.receipt_json !== 'string' || !row.receipt_json.trim()) return false;
+    try {
+      const receipt = JSON.parse(row.receipt_json);
+      return receipt &&
+        receipt.status === 'SUCCESS' &&
+        receipt.affected_resource === row.affected_resource &&
+        receipt.commit_or_record_id === row.commit_or_record_id &&
+        receipt.verified === true &&
+        (receipt.adapter_outcome === 'VERIFIED_WRITE' || receipt.adapter_outcome === 'NO_CHANGE');
+    } catch (error) {
+      return false;
+    }
+  });
+  if (!matches.length) return null;
+  matches.sort(function (a, b) {
+    return Date.parse(a.timestamp || 0) - Date.parse(b.timestamp || 0);
+  });
+  return matches[matches.length - 1];
+}
+
+function advanceDashboardSavedMethodResult(input) {
+  if (!ascDashboardHandoffOwner_()) {
+    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Advancing private continuity requires the owner session.');
+  }
+  const request = input && typeof input === 'object' ? input : {};
+  const projectId = typeof request.project_id === 'string' ? request.project_id.trim() : '';
+  const handoffId = typeof request.handoff_id === 'string' ? request.handoff_id.trim() : '';
+  if (!projectId) return ascDashboardHandoffError_('INVALID_PROJECT_ID', 'A project_id string is required.');
+  if (!handoffId) return ascDashboardHandoffError_('INVALID_HANDOFF_ID', 'A handoff_id string is required.');
+
+  try {
+    const projectResult = getDashboardProject(projectId);
+    if (!projectResult || projectResult.ok !== true) return projectResult;
+
+    const lookup = ascZasspillCrossMethodService_().getHandoff({
+      projectId: projectId,
+      handoffId: handoffId
+    });
+    if (!lookup || lookup.status !== 'HANDOFF_FOUND') {
+      return ascDashboardHandoffError_('HANDOFF_NOT_FOUND', 'The saved handoff does not exist in this project.');
+    }
+    if (!lookup.handoff.result || lookup.handoff.result.result_status !== 'CONFIRMED_RESULT') {
+      return ascDashboardHandoffError_('METHOD_RESULT_NOT_RECORDED', 'This handoff has no confirmed recorded method result.');
+    }
+    const resultEnvelope = JSON.parse(JSON.stringify(lookup.handoff.result));
+    if (lookup.handoff.thread_id !== resultEnvelope.thread_id ||
+        lookup.handoff.source_revision !== resultEnvelope.source_revision ||
+        lookup.handoff.target_method !== resultEnvelope.producing_method) {
+      return ascDashboardHandoffError_('METHOD_RESULT_IDENTITY_MISMATCH', 'Recorded method-result identity does not match the protected handoff.');
+    }
+
+    const recordId = ascDashboardMethodResultRecordId_(resultEnvelope.handoff_id);
+    const receiptRow = ascDashboardVerifiedSaveReceipt_(projectResult, recordId);
+    if (!receiptRow) {
+      return ascDashboardHandoffError_(
+        'VERIFIED_SAVE_REQUIRED',
+        'A verified GitHub SAVE receipt for this method-result artifact is required before advancing continuity.'
+      );
+    }
+
+    const read = ascZasspillGetById_(projectId, resultEnvelope.thread_id);
+    if (!read || read.status !== 'FOUND') {
+      return ascDashboardHandoffError_(
+        read && read.status ? read.status : 'THREAD_NOT_FOUND',
+        'The private thread is not available for continuity advance.'
+      );
+    }
+
+    const currentSemantic = read.record && read.record.semantic_record &&
+      typeof read.record.semantic_record === 'object'
+      ? JSON.parse(JSON.stringify(read.record.semantic_record))
+      : {};
+    const currentContinuity = currentSemantic.continuity &&
+      typeof currentSemantic.continuity === 'object'
+      ? currentSemantic.continuity
+      : {};
+
+    if (read.revision !== resultEnvelope.source_revision) {
+      const events = ascReadPrivateContinuityEvents_(projectId, resultEnvelope.thread_id);
+      const last = Array.isArray(events) && events.length ? events[events.length - 1] : null;
+      if (read.revision === resultEnvelope.source_revision + 1 &&
+          currentContinuity.current === resultEnvelope.confirmed_outcome &&
+          last && last.change &&
+          last.change.method_result === recordId &&
+          last.change.handoff_id === resultEnvelope.handoff_id) {
+        return {
+          ok: true,
+          status: 'ALREADY_ADVANCED',
+          project_id: projectId,
+          thread_id: resultEnvelope.thread_id,
+          revision: read.revision,
+          current: currentContinuity.current,
+          record_id: recordId,
+          save_commit: receiptRow.commit_or_record_id || null
+        };
+      }
+      return ascDashboardHandoffError_(
+        'REVISION_CONFLICT',
+        'The private thread changed after this method result was produced; review the latest thread before advancing.'
+      );
+    }
+
+    const nextSemantic = JSON.parse(JSON.stringify(currentSemantic));
+    nextSemantic.continuity = Object.assign({}, currentContinuity, {
+      current: resultEnvelope.confirmed_outcome,
+      open: JSON.parse(JSON.stringify(resultEnvelope.still_open))
+    });
+
+    const applied = ascApplyPrivateContinuityMutation_({
+      projectId: projectId,
+      requestId: 'req_' + resultEnvelope.handoff_id.slice(3),
+      threadId: resultEnvelope.thread_id,
+      expectedRevision: resultEnvelope.source_revision,
+      operation: 'UPDATE',
+      changes: {
+        current: resultEnvelope.confirmed_outcome,
+        open: JSON.parse(JSON.stringify(resultEnvelope.still_open)),
+        method_result: recordId,
+        handoff_id: resultEnvelope.handoff_id,
+        save_commit: receiptRow.commit_or_record_id || null
+      },
+      nextSemanticRecord: nextSemantic
+    });
+
+    if (!applied || (applied.status !== 'APPLIED' && applied.status !== 'ALREADY_APPLIED')) {
+      return ascDashboardHandoffError_(
+        applied && applied.status ? applied.status : 'CONTINUITY_ADVANCE_FAILED',
+        'The saved method result could not be applied to private continuity.'
+      );
+    }
+
+    return {
+      ok: true,
+      status: applied.status === 'ALREADY_APPLIED' ? 'ALREADY_ADVANCED' : 'ADVANCED',
+      project_id: projectId,
+      thread_id: resultEnvelope.thread_id,
+      revision: applied.revision || (resultEnvelope.source_revision + 1),
+      current: resultEnvelope.confirmed_outcome,
+      record_id: recordId,
+      save_commit: receiptRow.commit_or_record_id || null
+    };
+  } catch (error) {
+    return ascDashboardHandoffError_(
+      error && error.message ? error.message : 'CONTINUITY_ADVANCE_FAILED',
+      'Saved method result could not advance the private thread.'
+    );
+  }
+}
+
+function ascDashboardPendingSavedResults_(projectId, projectResult) {
+  const state = ascPrivateContinuityStore_().read();
+  const project = state && state.projects && state.projects[projectId];
+  if (!project || !project.handoffs || typeof project.handoffs !== 'object') return [];
+
+  return Object.keys(project.handoffs).map(function (handoffId) {
+    const handoff = project.handoffs[handoffId];
+    const result = handoff && handoff.result;
+    if (!result || result.result_status !== 'CONFIRMED_RESULT') return null;
+    const thread = project.threads && project.threads[result.thread_id];
+    if (!thread || thread.revision !== result.source_revision) return null;
+
+    const recordId = ascDashboardMethodResultRecordId_(handoffId);
+    const receipt = ascDashboardVerifiedSaveReceipt_(projectResult, recordId);
+    if (!receipt) return null;
+
+    return {
+      handoff_id: handoffId,
+      thread_id: result.thread_id,
+      source_revision: result.source_revision,
+      producing_method: result.producing_method,
+      confirmed_outcome: result.confirmed_outcome,
+      record_id: recordId,
+      save_commit: receipt.commit_or_record_id || null,
+      saved_at: receipt.timestamp || null
+    };
+  }).filter(function (item) { return item !== null; }).sort(function (a, b) {
+    return Date.parse(a.saved_at || 0) - Date.parse(b.saved_at || 0);
+  });
 }

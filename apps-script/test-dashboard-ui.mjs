@@ -639,3 +639,73 @@ console.log('T-009B/C dashboard UI + routing test: PASS');
 
 assert.match(CLIENT, /previewDashboardMethodReturn\(/);
 assert.match(CLIENT, /prepareDashboardMethodReturnSave\(/);
+
+{
+  const pending = sb.renderPendingSavedResult({
+    ok: true,
+    threads: [{ thread_id: 'th_TEST', revision: 1, title: 'AISYNC', current: 'old' }],
+    pending_saved_results: [{
+      handoff_id: 'ho_01M42TNZ3WXJFWFS39EWY581SY',
+      thread_id: 'th_TEST',
+      source_revision: 1,
+      producing_method: 'ZASSIMPLE',
+      confirmed_outcome: 'Saved checkpoint <ready>',
+      record_id: 'METHOD-RESULT-01M42TNZ3WXJFWFS39EWY581SY',
+      save_commit: '11ff6215ecc95f4bfc4e8282d8e82a5206b31ac3',
+      saved_at: '2026-10-04T07:08:44.048Z'
+    }]
+  }, null);
+  assert.match(pending, /Saved result ready to continue/);
+  assert.match(pending, /source revision 1/);
+  assert.match(pending, /Saved checkpoint &lt;ready&gt;/);
+  assert.match(pending, /METHOD-RESULT-01M42TNZ3WXJFWFS39EWY581SY/);
+  assert.match(pending, /ADVANCE THREAD FROM SAVED RESULT/);
+  assert.match(pending, /data-handoff-id="ho_01M42TNZ3WXJFWFS39EWY581SY"/);
+  assert.match(pending, /does not create another GitHub\/Sheets write/);
+}
+
+{
+  const advanced = sb.renderPendingSavedResult(
+    { ok: true, threads: [], pending_saved_results: [] },
+    {
+      ok: true,
+      status: 'ADVANCED',
+      revision: 2,
+      current: 'Saved checkpoint now current.'
+    }
+  );
+  assert.match(advanced, /Saved result applied to private continuity/);
+  assert.match(advanced, /revision 2/);
+  assert.match(advanced, /Saved checkpoint now current\./);
+  assert.match(advanced, /next handoff will use this newer thread revision/);
+  assert.doesNotMatch(advanced, /ADVANCE THREAD FROM SAVED RESULT/);
+}
+
+assert.match(CLIENT, /advanceDashboardSavedMethodResult\(/);
+assert.match(CLIENT, /advance-saved-result/);
+
+{
+  const multiple = sb.renderPendingSavedResult({
+    ok: true,
+    threads: [],
+    pending_saved_results: [
+      {
+        handoff_id: 'ho_01M42TNZ3WXJFWFS39EWY581SY',
+        source_revision: 1,
+        confirmed_outcome: 'First saved result',
+        record_id: 'METHOD-RESULT-FIRST'
+      },
+      {
+        handoff_id: 'ho_01M42TNZ3WXJFWFS39EWY581SZ',
+        source_revision: 1,
+        confirmed_outcome: 'Second saved result',
+        record_id: 'METHOD-RESULT-SECOND'
+      }
+    ]
+  }, null);
+  assert.match(multiple, /More than one verified saved result is waiting/);
+  assert.match(multiple, /ASC will not choose for you/);
+  assert.equal((multiple.match(/ADVANCE THREAD FROM SAVED RESULT/g) || []).length, 2);
+  assert.match(multiple, /First saved result/);
+  assert.match(multiple, /Second saved result/);
+}
