@@ -47,6 +47,23 @@ function ascDashboardHandoffRoute_(route) {
   return ASC_DASHBOARD_HANDOFF_ROUTES_[String(route || '').toUpperCase()] || null;
 }
 
+function ascDashboardRequestId_() {
+  const alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  let value = new Date().getTime();
+  let timePart = '';
+  for (let i = 0; i < 10; i += 1) {
+    timePart = alphabet[value % 32] + timePart;
+    value = Math.floor(value / 32);
+  }
+  const hex = Utilities.getUuid().replace(/-/g, '').toUpperCase();
+  let randomPart = '';
+  for (let i = 0; i < 16; i += 1) {
+    const byte = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+    randomPart += alphabet[byte % 32];
+  }
+  return 'req_' + timePart + randomPart;
+}
+
 function ascDashboardMinimumContinuity_(readResult) {
   const record = readResult && readResult.record;
   const semantic = record && record.semantic_record && typeof record.semantic_record === 'object'
@@ -96,6 +113,66 @@ function getDashboardProjectContinuity(projectId) {
     };
   } catch (error) {
     return ascDashboardHandoffError_('CONTINUITY_READ_FAILED', 'Private project threads could not be listed.');
+  }
+}
+
+function createDashboardProjectThread(input) {
+  if (!ascDashboardHandoffOwner_()) {
+    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Starting a private project thread requires the owner session.');
+  }
+
+  const request = input && typeof input === 'object' ? input : {};
+  const projectId = typeof request.project_id === 'string' ? request.project_id.trim() : '';
+  const title = typeof request.title === 'string' ? request.title.trim() : '';
+  const current = typeof request.current === 'string' ? request.current.trim() : '';
+
+  if (!projectId) return ascDashboardHandoffError_('INVALID_PROJECT_ID', 'A project_id string is required.');
+  if (!title || title.length > 200) {
+    return ascDashboardHandoffError_('INVALID_THREAD_TITLE', 'Thread title must be 1–200 characters.');
+  }
+  if (!current || current.length > 4000) {
+    return ascDashboardHandoffError_('INVALID_THREAD_CURRENT', 'Current context must be 1–4000 characters.');
+  }
+
+  try {
+    const projectResult = getDashboardProject(projectId);
+    if (!projectResult || projectResult.ok !== true) return projectResult;
+
+    const existing = ascZasspillListThreads_(projectId);
+    if (!existing || existing.status !== 'LIST_RESULT' || !Array.isArray(existing.threads)) {
+      return ascDashboardHandoffError_('CONTINUITY_READ_FAILED', 'Private project threads could not be checked before creation.');
+    }
+    if (existing.threads.length > 0) {
+      return ascDashboardHandoffError_('THREADS_ALREADY_EXIST', 'A private project thread already exists. Reload the project and choose it instead.');
+    }
+
+    const created = ascBootstrapPrivateContinuityThread_({
+      projectId: projectId,
+      requestId: ascDashboardRequestId_(),
+      resolution: { status: 'NO_MATCH' },
+      semanticRecord: {
+        title: title,
+        continuity: { current: current }
+      }
+    });
+
+    if (!created || (created.status !== 'CREATED' && created.status !== 'ALREADY_APPLIED')) {
+      return ascDashboardHandoffError_(
+        created && created.status ? created.status : 'THREAD_CREATE_FAILED',
+        'The private project thread could not be created.'
+      );
+    }
+
+    return {
+      ok: true,
+      project_id: projectId,
+      thread_id: created.thread_id || (created.original_result && created.original_result.thread_id) || null,
+      revision: created.revision || (created.original_result && created.original_result.revision) || 1,
+      title: title,
+      current: current
+    };
+  } catch (error) {
+    return ascDashboardHandoffError_('THREAD_CREATE_FAILED', 'The private project thread could not be created.');
   }
 }
 

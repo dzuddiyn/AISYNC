@@ -10,9 +10,12 @@ const handoffId = 'ho_01ARZ3NDEKTSV4RRFFQ69G5FB6';
 const referenceId = 'cr_01ARZ3NDEKTSV4RRFFQ69G5FB8';
 
 function makeContext(overrides = {}) {
-  const calls = { handoff: [], reference: [], bootstrap: [] };
+  const calls = { handoff: [], reference: [], bootstrap: [], createThread: [] };
   const context = {
     calls,
+    Utilities: {
+      getUuid: () => '12345678-90ab-cdef-1234-567890abcdef'
+    },
     ascAuthorizationContext_: () => ({ activeUser: 'owner@example.com', effectiveUser: 'owner@example.com' }),
     ascIsOwner_: () => true,
     getDashboardProject: (projectId) => ({
@@ -31,6 +34,17 @@ function makeContext(overrides = {}) {
         current: 'Valve calibration checkpoint is row 18 with target marker 42.'
       }]
     }),
+    ascBootstrapPrivateContinuityThread_: (input) => {
+      calls.createThread.push(input);
+      return {
+        status: 'CREATED',
+        project_id: input.projectId,
+        request_id: input.requestId,
+        thread_id: threadId,
+        revision: 1,
+        event_id: 'ev_01ARZ3NDEKTSV4RRFFQ69G5FC9'
+      };
+    },
     ascZasspillGetById_: (projectId, selectedThreadId) => ({
       operation: 'GET_BY_ID',
       status: 'FOUND',
@@ -163,3 +177,48 @@ assert.match(source, /ascDashboardHandoffOwner_/);
 console.log('T-018A dashboard continuity handoff binding: PASS');
 console.log('owner-only project/thread -> route/provider -> scoped handoff: PASS');
 console.log('bearer token remains server-side: PASS');
+
+{
+  const ctx = makeContext({
+    ascZasspillListThreads_: (projectId) => ({ operation: 'LIST_THREADS', status: 'LIST_RESULT', project_id: projectId, threads: [] })
+  });
+  const result = ctx.createDashboardProjectThread({
+    project_id: 'AISYNC',
+    title: 'AISYNC integrated UX',
+    current: 'Continue T-018 from the production Workspace.'
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.thread_id, threadId);
+  assert.equal(result.revision, 1);
+  assert.equal(ctx.calls.createThread.length, 1);
+  assert.match(ctx.calls.createThread[0].requestId, /^req_[0-9A-HJKMNP-TV-Z]{26}$/);
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.calls.createThread[0].resolution)), { status: 'NO_MATCH' });
+  assert.deepEqual(JSON.parse(JSON.stringify(ctx.calls.createThread[0].semanticRecord)), {
+    title: 'AISYNC integrated UX',
+    continuity: { current: 'Continue T-018 from the production Workspace.' }
+  });
+  assert.equal(Object.prototype.hasOwnProperty.call(ctx.calls.createThread[0].semanticRecord, 'state'), false);
+}
+
+{
+  const ctx = makeContext();
+  const result = ctx.createDashboardProjectThread({
+    project_id: 'AISYNC', title: 'Second thread', current: 'Do not create when one already exists.'
+  });
+  assert.equal(result.error.code, 'THREADS_ALREADY_EXIST');
+  assert.equal(ctx.calls.createThread.length, 0);
+}
+
+{
+  const emptyList = (projectId) => ({ operation: 'LIST_THREADS', status: 'LIST_RESULT', project_id: projectId, threads: [] });
+  const ctx = makeContext({ ascZasspillListThreads_: emptyList });
+  assert.equal(ctx.createDashboardProjectThread({ project_id: 'AISYNC', title: '', current: 'context' }).error.code, 'INVALID_THREAD_TITLE');
+  assert.equal(ctx.createDashboardProjectThread({ project_id: 'AISYNC', title: 'Thread', current: '' }).error.code, 'INVALID_THREAD_CURRENT');
+}
+
+{
+  const ctx = makeContext({ ascIsOwner_: () => false });
+  assert.equal(ctx.createDashboardProjectThread({ project_id: 'AISYNC', title: 'Thread', current: 'context' }).error.code, 'OWNER_REQUIRED');
+}
+
+assert.doesNotMatch(source, /state:\s*['\"]ACTIVE['\"]/);

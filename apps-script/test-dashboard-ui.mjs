@@ -570,3 +570,25 @@ const project = (o) => ({
 
 
 console.log('T-009B/C dashboard UI + routing test: PASS');
+
+{
+  const firstThread = sb.renderProjectContinuation(
+    project(),
+    { ok: true, threads: [] },
+    {
+      threadId: '',
+      threadTitle: 'AISYNC working thread',
+      provider: '',
+      route: 'DESIGN',
+      draft: 'Continue the integrated UX from this production project.'
+    },
+    null,
+    null
+  );
+  assert.match(firstThread, /No private thread available/);
+  assert.match(firstThread, /Thread title/);
+  assert.match(firstThread, /AISYNC working thread/);
+  assert.match(firstThread, /START PRIVATE THREAD/);
+  assert.match(firstThread, /does not write GitHub or Sheets/);
+  assert.doesNotMatch(firstThread, /PREPARE HANDOFF/);
+}
