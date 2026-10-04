@@ -133,4 +133,4 @@ Canonical T-016 source merged through PR #13 at `cfbc379408080ee22b4eaf478354558
 
 Production reliability work is tracked in [OPERATIONS.md](./OPERATIONS.md).
 
-Current state: **T-019 IN PROGRESS**. T-019A private-continuity backup/restore is LOCAL PASS only; live recovery proof and the remaining replay/degraded/offline/telemetry/secret-rotation/deployment/rollback work are not yet complete.
+Current state: **T-019 IN PROGRESS**. T-019A private-continuity backup/restore is LIVE PASS on protected production v32. Replay/idempotency lifecycle, degraded/offline behavior, truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback, and final operator acceptance remain open.

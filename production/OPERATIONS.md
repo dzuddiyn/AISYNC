@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LOCAL PASS / LIVE PROOF PENDING**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -157,3 +157,39 @@ Local T-019A regression coverage proves:
 Fresh-clone full repository proof on canonical base `7f8cced5a2672cf4462674d7cd3450c2452e988e`: **28/28 test files PASS, git diff --check = 0**.
 
 Live Drive backup/restore proof is still pending canonical SAVE/merge/deployment.
+
+
+### Live production proof — PASS
+
+Protected production: Apps Script v32 `T019A-private-continuity-recovery`.
+
+Controlled owner-only proof used the real private continuity store but restored the exact same semantic state, so no project/thread meaning changed.
+
+Observed sequence:
+
+- authoritative state before restore: `1LC5xtpMVc0TBP69b6Ael5COo5tBrBSlK`;
+- manual baseline backup: `14dAnxbSqF4zN55loZ_lZ6f7n66iH4KBu`, reason `T019A_LIVE_PROOF_BASELINE`;
+- PRE_RESTORE safety backup: `1EE6FUFLVYQ2NB_iU1UsAb6sKTdF2nfOB`;
+- authoritative state after restore: `1Tengb02h3dbadqNP2d53vsBkVYc3UGYb`;
+- schema remained `0.1`;
+- project count remained `2`;
+- pointer moved: true;
+- state_equal: true;
+- active private backups after proof: `2`.
+
+Independent Google Drive reads confirmed:
+
+- restored authority exists and is private (`shared=false`);
+- both proof backups exist and are private;
+- both backup envelopes reference the original authoritative file;
+- both embedded backup states are exactly equal to the restored authoritative JSON state;
+- AISYNC thread remained revision `2`, with the same saved `continuity.current` and `open: []`.
+
+Proof infrastructure cleanup was also verified:
+
+- temporary owner-only operator deployment was deleted;
+- Apps Script development HEAD was restored to its pre-proof snapshot and hash-verified `16/16`;
+- protected production deployment remained pinned to v32;
+- temporary operator wrappers are not live on production.
+
+T-019A is therefore LIVE PASS. This does not close T-019 as a whole.
