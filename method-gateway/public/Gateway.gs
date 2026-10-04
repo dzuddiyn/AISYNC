@@ -57,6 +57,21 @@ function normalizePath_(path) {
     .toLowerCase();
 }
 
+const METHOD_CONTENT_GZIP_PREFIX = 'gzip+base64:';
+
+function decodeMethodSnapshotContent_(stored) {
+  const value = String(stored || '');
+  if (!value.startsWith(METHOD_CONTENT_GZIP_PREFIX)) {
+    return value;
+  }
+
+  const encoded = value.slice(METHOD_CONTENT_GZIP_PREFIX.length);
+  const bytes = Utilities.base64Decode(encoded);
+  return Utilities.ungzip(
+    Utilities.newBlob(bytes)
+  ).getDataAsString('UTF-8');
+}
+
 function readSnapshot_(methodKey) {
   const sheet = SpreadsheetApp
     .openById(METHOD_GATEWAY_CONFIG.spreadsheetId)
@@ -81,7 +96,7 @@ function readSnapshot_(methodKey) {
         source_path: rows[i][5],
         source_commit: rows[i][6],
         synced_at: rows[i][7],
-        content: rows[i][8]
+        content: decodeMethodSnapshotContent_(rows[i][8])
       };
     }
   }

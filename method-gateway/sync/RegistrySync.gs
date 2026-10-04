@@ -37,6 +37,31 @@ const METHOD_HEADERS = Object.freeze([
   'content'
 ]);
 
+const METHOD_CONTENT_GZIP_PREFIX = 'gzip+base64:';
+const METHOD_CONTENT_PLAIN_LIMIT = 45000;
+const METHOD_CONTENT_CELL_LIMIT = 49000;
+
+function encodeMethodSnapshotContent_(content) {
+  const text = String(content);
+  if (text.length <= METHOD_CONTENT_PLAIN_LIMIT) {
+    return text;
+  }
+
+  const compressed = Utilities.gzip(
+    Utilities.newBlob(text, 'text/plain', 'method.md')
+  ).getBytes();
+  const encoded = METHOD_CONTENT_GZIP_PREFIX + Utilities.base64Encode(compressed);
+
+  if (encoded.length > METHOD_CONTENT_CELL_LIMIT) {
+    throw new Error(
+      'Method snapshot still exceeds safe Google Sheets cell size after gzip+base64: ' +
+      encoded.length
+    );
+  }
+
+  return encoded;
+}
+
 function syncMethodsFromGitHub() {
   const cfg = METHOD_SYNC_CONFIG;
   const headCommit = getGitHubBranchHead_(cfg.sourceRepo, cfg.sourceBranch);
@@ -147,11 +172,13 @@ function upsertSnapshots_(sheet, snapshots) {
       snapshot.source_path,
       snapshot.source_commit,
       snapshot.synced_at,
-      snapshot.content
+      encodeMethodSnapshotContent_(snapshot.content)
     ]];
 
     const rowNumber = existingKeys[snapshot.method_key] || (sheet.getLastRow() + 1);
-    sheet.getRange(rowNumber, 1, 1, METHOD_HEADERS.length).setValues(values);
+    const rowRange = sheet.getRange(rowNumber, 1, 1, METHOD_HEADERS.length);
+    rowRange.setNumberFormat('@');
+    rowRange.setValues(values);
   });
 }
 
