@@ -406,3 +406,34 @@ Observed on protected production Apps Script v23:
 - the default Workspace no longer exposes the previous full technical wall.
 
 The Review surface also displayed a factual `READ_ERROR / GITHUB_READ_FAILED` for commit-linked CI tied to the stale indexed commit. This is correct truthful-error behavior and is not a Gate 3 failure.
+
+
+## ZASS SYSTEM Gate 4 factual SAVE / sync patch — 2026-10-04
+
+Scope: project the already-proven T-016 persistence boundary into one truthful user-facing save/sync state model. No new writer is introduced.
+
+Protected Confirm & Sync:
+- explicit product states: **UNSAVED → SYNCING → SAVED / FAILED**;
+- `SAVED` requires a SUCCESS receipt, `verified=true`, `HISTORY_PERSISTED`, and a synced server result;
+- `VERIFIED_WRITE` shows the attributable commit/record identifier;
+- `NO_CHANGE` is SAVED with `write_performed=false` and explicitly says no new commit was required;
+- `VERIFIED_WRITE_RECONCILED` is SAVED only because persisted content was verified; it explicitly says no attributable commit SHA is available when none exists;
+- unverified, unknown, replay-rejected, HISTORY-failed, or unavailable final results render **FAILED**, never SAVED;
+- verified SAVED state remains visible for 3 seconds before the existing automatic return to the main ASC UI;
+- compact factual receipt is shown first; raw receipt JSON remains available under details.
+
+Project Workspace:
+- Project Pulse now includes **Save / sync health**;
+- factual `STALE` index freshness takes precedence over historical success, preventing an old SAVE receipt from making current project state look synchronized;
+- otherwise the latest indexed `operation=SAVE` row may project SAVED only when its receipt is parseable, status SUCCESS, and `verified=true`;
+- latest failed SAVE projects FAILED;
+- absent/insufficient receipt evidence stays **Not provided**, not invented UNSAVED/SAVED.
+
+Verification:
+- all **26** repository `test-*.mjs` files PASS;
+- `git diff --check` PASS;
+- confirm UI regressions cover UNSAVED/SYNCING/SAVED/FAILED, delayed return, VERIFIED_WRITE, NO_CHANGE, reconciled success, and unverified failure;
+- dashboard regressions cover STALE precedence, verified SAVED, NO_CHANGE, FAILED, and insufficient receipt evidence;
+- browser client still exposes no direct GitHub/Sheets/token writer.
+
+Production deployment + owner-visible proof remain required before Gate 4 closure.
