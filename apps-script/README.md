@@ -419,7 +419,7 @@ Protected Confirm & Sync:
 - `NO_CHANGE` is SAVED with `write_performed=false` and explicitly says no new commit was required;
 - `VERIFIED_WRITE_RECONCILED` is SAVED only because persisted content was verified; it explicitly says no attributable commit SHA is available when none exists;
 - unverified, unknown, replay-rejected, HISTORY-failed, or unavailable final results render **FAILED**, never SAVED;
-- verified SAVED state remains visible for 3 seconds before the existing automatic return to the main ASC UI;
+- verified SAVED state remains visible and exposes the guaranteed user-activated `Return to main ASC UI` control; live Gate 4 proof showed timer-driven top-level navigation is not reliable in the Apps Script/browser sandbox, so the product no longer promises or depends on auto-return;
 - compact factual receipt is shown first; raw receipt JSON remains available under details.
 
 Project Workspace:
@@ -444,3 +444,18 @@ Production deployment evidence:
 - the current development HEAD containing T-017 was restored after release and remains separate from production v24.
 
 Remaining Gate 4 closure evidence: owner-visible production proof of UNSAVED → SYNCING → SAVED/FAILED and Project Pulse save/sync health.
+
+
+## Gate 4 owner-visible return finding — 2026-10-04
+
+Live production proof reached a factual `SAVED / NO_CHANGE / verified=true` receipt successfully. The attempted timer-driven top-level navigation did **not** move the browser back to the main ASC UI.
+
+This is a UX/platform behavior finding, not a persistence failure.
+
+D-030 already defines the guaranteed v0.1 return path as a user-activated `Return to main ASC UI` link/button and makes automatic top-level navigation optional. Gate 4 now follows that decision literally:
+- after factual SAVED, the receipt remains visible;
+- the pending fragment is cleared;
+- a prominent user-activated return control is exposed;
+- no timer-driven top-level navigation is promised or required.
+
+The live failure therefore resulted in a bounded UX compatibility fix, not an architecture reopen.
