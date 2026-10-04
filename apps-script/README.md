@@ -768,3 +768,18 @@ Focused regressions:
 - `docs/asc/test-front-door.mjs` re-proves session preservation and local copy/open handoff fallback with no persistence writer.
 
 Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd40479ca133d8` and protected production is Apps Script v39, `T019C-degraded-offline-behavior`. Deterministic live proof `T019C-LIVE-20261004-112655-9312eff5` PASS: exact immutable-v39 client behavior rendered DEGRADED for pre-confirm unavailability, OUTCOME UNKNOWN after one forced post-confirm response loss, blocked blind duplicate CONFIRM, and exposed lookup-only CHECK RESULT. Live `getConfirmSyncResult()` returned OUTCOME_UNKNOWN / `writePerformed=null` for the never-submitted proof request; independent HISTORY search found zero proof rows and GitHub `main` plus the canonical T-016 target remained unchanged. Temporary proof deployment was removed and development HEAD restored/verified 16/16. See `proofs/t019c-degraded-offline-live.md`.
+
+
+## T-019D truthful telemetry — LOCAL PASS
+
+- Adds owner-only `getProductionTelemetry(project_id)`.
+- Snapshot is ephemeral (`persisted=false`) and never becomes a competing source of truth.
+- Probes: ASC DB, canonical GitHub read, index freshness, existing private-continuity authority, GitHub App auth, latest SAVE/HISTORY evidence.
+- Every probe has `source` + `observed_at`.
+- `NOT_OBSERVED`, `UNVERIFIED`, `UNKNOWN`, `STALE`, and failures remain explicit.
+- Overall `OK` requires direct acceptable evidence from every required probe.
+- Continuity telemetry reads only an existing configured state file and does not create a store.
+- GitHub App telemetry may mint a short-lived installation token as an auth probe, but returns no token/private key and performs no repository write.
+- Review loads telemetry only on demand and provides **REFRESH TELEMETRY**; Workspace is unchanged.
+- Focused server/UI regressions pass with no telemetry persistence/business-state mutation.
+- Protected deploy and live owner proof remain pending.
