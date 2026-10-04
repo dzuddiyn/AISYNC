@@ -60,6 +60,20 @@ function setStatus(message, isError) {
   status.className = 'card' + (isError ? ' error' : '');
 }
 
+function setSaveState(state, message, isError, deps) {
+  const doc = (deps && deps.document) || document;
+  const stateEl = doc.getElementById('save-state');
+  if (stateEl) {
+    stateEl.textContent = state;
+    stateEl.className = 'badge save-state' + (isError ? ' error' : '');
+  }
+  const status = doc.getElementById('status');
+  if (status && typeof message === 'string') {
+    status.textContent = message;
+    status.className = 'card' + (isError ? ' error' : '');
+  }
+}
+
 function getAppsScriptLocation(callback) {
   if (
     typeof google !== 'undefined' &&
@@ -89,49 +103,95 @@ function buildConfirmation(requestId) {
 }
 
 // Redirect only after a verified SUCCESS receipt and persisted HISTORY. Everything else stays here.
-function canRedirectAfterSync(result) {
+function isFactualSavedResult(result) {
   return Boolean(result) &&
-    result.state === 'SYNCED' &&
-    typeof result.redirect === 'string' &&
-    result.redirect.indexOf(ASC_MAIN_UI_PREFIX) === 0 &&
-    result.redirect.length > ASC_MAIN_UI_PREFIX.length &&
-    !/\s/.test(result.redirect) &&
+    (result.state === 'SYNCED' || result.state === 'SYNCED_REDIRECT_UNAVAILABLE') &&
     Boolean(result.receipt) &&
     result.receipt.status === 'SUCCESS' &&
     result.receipt.verified === true &&
     result.historyOutcome === 'HISTORY_PERSISTED';
 }
 
+// Redirect only after a factual SAVED state. Everything else stays here.
+function canRedirectAfterSync(result) {
+  return isFactualSavedResult(result) &&
+    result.state === 'SYNCED' &&
+    typeof result.redirect === 'string' &&
+    result.redirect.indexOf(ASC_MAIN_UI_PREFIX) === 0 &&
+    result.redirect.length > ASC_MAIN_UI_PREFIX.length &&
+    !/\s/.test(result.redirect);
+}
+
+function classifySaveState(result) {
+  if (isFactualSavedResult(result)) return 'SAVED';
+  if (result && result.state === 'RESULT_PENDING') return 'SYNCING';
+  if (result && result.state === 'AWAITING_CONFIRMATION') return 'UNSAVED';
+  return 'FAILED';
+}
+
 function describeSyncResult(result) {
+  const state = classifySaveState(result);
+  if (state === 'SAVED') {
+    if (canRedirectAfterSync(result)) {
+      return { state, isError: false, message: 'SAVED — verified persistence and HISTORY recorded. Returning to the main ASC UI…' };
+    }
+    return { state, isError: false, message: 'SAVED — verified persistence and HISTORY recorded. Main ASC UI link is not configured.' };
+  }
+  if (state === 'SYNCING') {
+    return { state, isError: false, message: 'SYNCING — persistence is still being resolved. Do not treat this as saved yet.' };
+  }
+  if (state === 'UNSAVED') {
+    return { state, isError: false, message: 'UNSAVED — explicit CONFIRM & SYNC is required before persistence.' };
+  }
   if (!result || typeof result !== 'object') {
-    return { isError: true, message: 'FAILED — no factual sync result was returned. Nothing is reported as saved.' };
-  }
-  if (canRedirectAfterSync(result)) {
-    return { isError: false, message: 'SUCCESS — verified write and HISTORY recorded. Returning to the main ASC UI…' };
-  }
-  if (result.state === 'SYNCED_REDIRECT_UNAVAILABLE') {
-    return { isError: false, message: 'SUCCESS — verified write and HISTORY recorded. Main ASC UI link is not configured.' };
-  }
-  if (result.state === 'AWAITING_CONFIRMATION') {
-    return { isError: true, message: 'Not saved — explicit CONFIRM & SYNC is required.' };
+    return { state: 'FAILED', isError: true, message: 'FAILED — no factual sync result was returned. Nothing is reported as saved.' };
   }
   const code = result.error && result.error.code ? result.error.code : 'UNKNOWN';
   const reason = result.error && result.error.message ? result.error.message : 'Sync did not complete.';
-  return { isError: true, message: 'FAILED (' + code + ') — ' + reason };
+  return { state: 'FAILED', isError: true, message: 'FAILED (' + code + ') — ' + reason };
+}
+
+function describeReceipt(result) {
+  if (!result || !result.receipt) return '';
+  const receipt = result.receipt;
+  const lines = [];
+  lines.push('State: ' + classifySaveState(result));
+  lines.push('Outcome: ' + (receipt.adapter_outcome || 'Not provided'));
+  lines.push('Resource: ' + (receipt.affected_resource || 'Not provided'));
+
+  if (receipt.commit_or_record_id) {
+    lines.push('Commit / record: ' + receipt.commit_or_record_id);
+  } else if (receipt.adapter_outcome === 'NO_CHANGE') {
+    lines.push('Commit / record: No new commit — desired content already matched the authoritative target.');
+  } else if (receipt.adapter_outcome === 'VERIFIED_WRITE_RECONCILED') {
+    lines.push('Commit / record: No attributable commit SHA — persisted content was verified by reconciliation.');
+  } else {
+    lines.push('Commit / record: Not provided');
+  }
+
+  const performed = receipt.write_performed === true
+    ? 'yes'
+    : (receipt.write_performed === false ? 'no' : 'unknown');
+  lines.push('New write performed: ' + performed);
+  lines.push('Verified: ' + (receipt.verified === true ? 'true' : 'false'));
+  lines.push('Request: ' + (receipt.request_id || 'Not provided'));
+  lines.push('Timestamp: ' + (receipt.timestamp || 'Not provided'));
+  if (receipt.failure_reason) lines.push('Failure reason: ' + receipt.failure_reason);
+  return lines.join('\n');
 }
 
 function renderSyncResult(result, deps) {
   const doc = (deps && deps.document) || document;
   const view = describeSyncResult(result);
-  const status = doc.getElementById('status');
-  status.textContent = view.message;
-  status.className = 'card' + (view.isError ? ' error' : '');
+  setSaveState(view.state, view.message, view.isError, { document: doc });
 
   const receiptCard = doc.getElementById('receipt');
   const receiptPre = doc.getElementById('receipt-json');
+  const receiptSummary = doc.getElementById('receipt-summary');
   if (result && result.receipt) {
-    receiptPre.textContent = JSON.stringify(result.receipt, null, 2);
-    receiptCard.hidden = false;
+    if (receiptPre) receiptPre.textContent = JSON.stringify(result.receipt, null, 2);
+    if (receiptSummary) receiptSummary.textContent = describeReceipt(result);
+    if (receiptCard) receiptCard.hidden = false;
   }
 
   const button = doc.getElementById('confirm-sync');
@@ -140,13 +200,14 @@ function renderSyncResult(result, deps) {
     const storage = (deps && deps.storage) || window.sessionStorage;
     storage.removeItem(ASC_PENDING_KEY);
     const navigate = (deps && deps.navigate) || function(url) { window.top.location.href = url; };
+    const schedule = (deps && deps.schedule) || function(fn, ms) { return setTimeout(fn, ms); };
     const link = doc.getElementById('main-ui-link');
     if (link) {
       link.href = result.redirect;
       link.hidden = false;
     }
-    navigate(result.redirect);
-    return 'REDIRECTED';
+    schedule(function () { navigate(result.redirect); }, 3000);
+    return 'REDIRECT_SCHEDULED';
   }
 
   // Failure or incomplete: keep the pending request visible. T-010: after CONFIRM, any
@@ -186,7 +247,7 @@ function requestConfirmAndSync() {
   }
   const button = document.getElementById('confirm-sync');
   button.disabled = true;
-  setStatus('Syncing… write is being attempted and verified. Do not treat this as saved yet.', false);
+  setSaveState('SYNCING', 'SYNCING — write is being attempted and verified. Do not treat this as saved yet.', false);
   google.script.run
     .withSuccessHandler(handleConfirmResponse)
     .withFailureHandler(function(error) {
@@ -230,7 +291,7 @@ function showConfirmControls(envelope, fragment, serverPreview) {
   button.disabled = !view.enabled;
   note.textContent = view.note;
   note.className = view.isError ? 'error' : 'muted';
-  if (view.isError) setStatus(view.note, true);
+  setSaveState(view.enabled ? 'UNSAVED' : 'FAILED', view.note, view.isError);
   button.onclick = requestConfirmAndSync;
   return view;
 }
@@ -259,9 +320,10 @@ function bootAscPreview() {
     try {
       const envelope = decodePendingEnvelope(pending.fragment);
       renderPendingPreview(envelope);
-      setStatus(
-        'Signed in with Google. Pending request restored from ' + pending.source +
-        '. Preview only — no write has occurred.',
+      setSaveState(
+        'UNSAVED',
+        'UNSAVED — pending request restored from ' + pending.source +
+        '. Preview only; no write has occurred.',
         false
       );
       loadServerPreview(pending.fragment, function(serverPreview) {
