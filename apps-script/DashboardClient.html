@@ -358,22 +358,271 @@ function renderProjectWorkspace(result) {
     renderContextualCard(result);
 }
 
+
+function recordTypeToken(value) {
+  return normalizeStateToken(value);
+}
+
+function recordsOfTypes(records, types) {
+  const allowed = Array.isArray(types) ? types : [];
+  return (Array.isArray(records) ? records : []).filter(function (row) {
+    return allowed.indexOf(recordTypeToken(row.record_type)) >= 0;
+  });
+}
+
+function parseLineageArray(value) {
+  const raw = value === undefined || value === null ? '' : String(value);
+  if (raw.trim() === '') return { state: 'EMPTY', values: [], raw: raw };
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return { state: 'UNREADABLE', values: [], raw: raw };
+    return {
+      state: 'OK',
+      values: parsed.map(function (item) {
+        if (typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean') return String(item);
+        return JSON.stringify(item);
+      }),
+      raw: raw
+    };
+  } catch (error) {
+    return { state: 'UNREADABLE', values: [], raw: raw };
+  }
+}
+
+function renderReadableLineage(value) {
+  const parsed = parseLineageArray(value);
+  if (parsed.state === 'EMPTY') return '<span class="not-provided">No lineage provided.</span>';
+  if (parsed.state === 'UNREADABLE') {
+    return '<details><summary>Unreadable lineage — show raw</summary><pre>' + escapeHtml(parsed.raw) + '</pre></details>';
+  }
+  if (parsed.values.length === 0) return '<span class="muted">[]</span>';
+  return '<ul class="lineage-list">' + parsed.values.map(function (item) {
+    return '<li>' + escapeHtml(item) + '</li>';
+  }).join('') + '</ul>';
+}
+
+function renderRecordCategory(title, rows, emptyText) {
+  const columns = ['record_id', 'status', 'summary', 'source_artifact', 'source_commit', 'canonical_url', 'updated_at'];
+  return renderSection(title, renderTable(columns, rows, emptyText));
+}
+
+function renderReviewOverview(project) {
+  const freshness = projectFreshness(project);
+  const caveat = freshness === 'STALE'
+    ? '<p class="error">Projection is STALE — inspect this as indexed evidence, not current canonical truth.</p>'
+    : '<p class="muted">Projection freshness: ' + escapeHtml(freshness) + '.</p>';
+  return '<section class="card review-overview">' +
+    '<h2>Review overview</h2>' +
+    caveat +
+    renderIndexMeta(project.index_metadata) +
+    '<div class="review-current-state">' +
+      '<div><span class="pulse-label">Progress summary</span>' + textOrNotProvided(project.progress_summary) + '</div>' +
+      '<div><span class="pulse-label">Next Action Plan</span>' + textOrNotProvided(project.next_action_plan) + '</div>' +
+      '<div><span class="pulse-label">Next stage</span>' + textOrNotProvided(project.next_stage) + '</div>' +
+    '</div>' +
+  '</section>';
+}
+
+function renderLineageSources(result) {
+  const records = Array.isArray(result.records) ? result.records : [];
+  const actionPlan = Array.isArray(result.action_plan) ? result.action_plan : [];
+  const items = [];
+
+  records.forEach(function (row) {
+    if (
+      String(row.lineage_json || '').trim() === '' &&
+      String(row.source_artifact || '').trim() === '' &&
+      String(row.source_commit || '').trim() === '' &&
+      String(row.canonical_url || '').trim() === ''
+    ) return;
+
+    let source = '<div class="muted">Source: ' + textOrNotProvided(row.source_artifact) +
+      ' · commit ' + textOrNotProvided(row.source_commit) + '</div>';
+    if (typeof row.canonical_url === 'string' && /^https:\/\/\S+$/.test(row.canonical_url)) {
+      source += '<div><a href="' + escapeHtml(row.canonical_url) + '" target="_blank" rel="noopener">Open canonical source</a></div>';
+    }
+    items.push('<article class="review-item">' +
+      '<strong>' + textOrNotProvided(row.record_id) + '</strong>' +
+      '<div><span class="pulse-label">Lineage</span>' + renderReadableLineage(row.lineage_json) + '</div>' +
+      source +
+    '</article>');
+  });
+
+  actionPlan.forEach(function (row) {
+    if (
+      String(row.source_lineage || '').trim() === '' &&
+      String(row.source_artifact || '').trim() === '' &&
+      String(row.source_commit || '').trim() === ''
+    ) return;
+    items.push('<article class="review-item">' +
+      '<strong>' + textOrNotProvided(row.ap_id) + '</strong>' +
+      '<div><span class="pulse-label">Source lineage</span>' + textOrNotProvided(row.source_lineage) + '</div>' +
+      '<div class="muted">Source: ' + textOrNotProvided(row.source_artifact) +
+        ' · commit ' + textOrNotProvided(row.source_commit) + '</div>' +
+    '</article>');
+  });
+
+  return renderSection(
+    'Lineage / sources',
+    items.length ? '<div class="review-stack">' + items.join('') + '</div>' :
+      '<p class="muted">No lineage/source metadata indexed for this project.</p>'
+  );
+}
+
+function isGitShaLike(value) {
+  return /^[0-9a-f]{7,40}$/i.test(String(value || '').trim());
+}
+
+function validGithubRepo(value) {
+  return /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(value || '').trim());
+}
+
+function collectCommitTrail(result) {
+  const project = result.project || {};
+  const repo = String(project.github_repo || '');
+  const rows = [];
+  const byCommit = {};
+
+  function add(commit, provenance, artifact, timestamp) {
+    const token = String(commit || '').trim();
+    if (!token) return;
+    if (!byCommit[token]) {
+      byCommit[token] = {
+        commit: token,
+        provenance: [],
+        artifacts: [],
+        timestamps: [],
+        url: validGithubRepo(repo) && isGitShaLike(token)
+          ? 'https://github.com/' + repo + '/commit/' + token
+          : ''
+      };
+      rows.push(byCommit[token]);
+    }
+    const item = byCommit[token];
+    if (provenance && item.provenance.indexOf(provenance) < 0) item.provenance.push(provenance);
+    if (artifact && item.artifacts.indexOf(artifact) < 0) item.artifacts.push(artifact);
+    if (timestamp && item.timestamps.indexOf(timestamp) < 0) item.timestamps.push(timestamp);
+  }
+
+  if (project.index_metadata) {
+    add(
+      project.index_metadata.source_commit,
+      'Project index',
+      project.index_metadata.source_artifact,
+      project.index_metadata.updated_at
+    );
+  }
+
+  (Array.isArray(result.records) ? result.records : []).forEach(function (row) {
+    add(row.source_commit, 'Record ' + String(row.record_id || ''), row.source_artifact, row.updated_at);
+  });
+
+  (Array.isArray(result.action_plan) ? result.action_plan : []).forEach(function (row) {
+    add(row.source_commit, 'Action Plan ' + String(row.ap_id || ''), row.source_artifact, row.updated_at);
+  });
+
+  (Array.isArray(result.history) ? result.history : []).forEach(function (row) {
+    add(row.source_commit, 'History source ' + String(row.request_id || ''), row.affected_resource, row.timestamp);
+    if (isGitShaLike(row.commit_or_record_id)) {
+      add(row.commit_or_record_id, 'History result ' + String(row.request_id || ''), row.affected_resource, row.timestamp);
+    }
+  });
+
+  return rows;
+}
+
+function renderCommitTrail(result) {
+  const rows = collectCommitTrail(result);
+  if (!rows.length) {
+    return renderSection('Commit / version trail', '<p class="muted">No explicit commit/version identifiers indexed for this project.</p>');
+  }
+  const html = '<div class="review-stack">' + rows.map(function (row) {
+    const commit = row.url
+      ? '<a href="' + escapeHtml(row.url) + '" target="_blank" rel="noopener">' + escapeHtml(row.commit) + '</a>'
+      : escapeHtml(row.commit);
+    return '<article class="review-item">' +
+      '<strong>' + commit + '</strong>' +
+      '<div><span class="pulse-label">Provenance</span>' + escapeHtml(row.provenance.join(' · ')) + '</div>' +
+      '<div><span class="pulse-label">Artifacts/resources</span>' +
+        (row.artifacts.length ? escapeHtml(row.artifacts.join(' · ')) : '<span class="not-provided">Not provided</span>') + '</div>' +
+      '<div><span class="pulse-label">Indexed timestamps</span>' +
+        (row.timestamps.length ? escapeHtml(row.timestamps.join(' · ')) : '<span class="not-provided">Not provided</span>') + '</div>' +
+    '</article>';
+  }).join('') + '</div>';
+  return renderSection('Commit / version trail', html);
+}
+
+function receiptAuditSummary(row) {
+  const receipt = parseReceiptJson(row && row.receipt_json);
+  if (!receipt) {
+    return {
+      summary: '<span class="not-provided">No parseable receipt summary.</span>',
+      raw: row && row.receipt_json ? String(row.receipt_json) : ''
+    };
+  }
+  const performed = receipt.write_performed === true ? 'yes'
+    : (receipt.write_performed === false ? 'no' : 'unknown');
+  let html = '<div class="receipt-audit">' +
+    '<div>Outcome: ' + textOrNotProvided(receipt.adapter_outcome) + '</div>' +
+    '<div>Verified: <strong>' + escapeHtml(receipt.verified === true ? 'true' : 'false') + '</strong></div>' +
+    '<div>Write performed: ' + escapeHtml(performed) + '</div>' +
+    '<div>Commit / record: ' + textOrNotProvided(receipt.commit_or_record_id || row.commit_or_record_id) + '</div>' +
+  '</div>';
+  return { summary: html, raw: String(row.receipt_json || '') };
+}
+
+function renderHistoryAudit(history) {
+  const rows = Array.isArray(history) ? history : [];
+  if (!rows.length) return '<p class="muted">No HISTORY rows for this project.</p>';
+
+  return '<div class="audit-stack">' + rows.map(function (row) {
+    const receipt = receiptAuditSummary(row);
+    const failure = String(row.failure_reason || '').trim()
+      ? '<p class="error">Failure: ' + escapeHtml(row.failure_reason) + '</p>'
+      : '';
+    const raw = receipt.raw
+      ? '<details><summary>Raw receipt JSON</summary><pre>' + escapeHtml(receipt.raw) + '</pre></details>'
+      : '';
+    return '<article class="audit-event">' +
+      '<div class="audit-heading"><strong>' + textOrNotProvided(row.operation) + '</strong>' +
+        '<span class="badge">' + textOrNotProvided(row.status) + '</span></div>' +
+      '<div class="muted">' + textOrNotProvided(row.timestamp) +
+        ' · request ' + textOrNotProvided(row.request_id) +
+        ' · destination ' + textOrNotProvided(row.destination) + '</div>' +
+      '<div><span class="pulse-label">Affected resource</span>' + textOrNotProvided(row.affected_resource) + '</div>' +
+      '<div><span class="pulse-label">Commit / record</span>' + textOrNotProvided(row.commit_or_record_id) + '</div>' +
+      failure +
+      receipt.summary +
+      raw +
+    '</article>';
+  }).join('') + '</div>';
+}
+
 function renderProjectReview(result, ciResult) {
   const p = result.project;
+  const records = Array.isArray(result.records) ? result.records : [];
+  const decisions = recordsOfTypes(records, ['DECISION']);
+  const design = recordsOfTypes(records, ['DESIGN', 'ARCHITECTURE', 'DESIGN RECORD']);
+  const selection = recordsOfTypes(records, ['SELECTION', 'SELECTION MATRIX', 'MATRIX']);
+
   return '<section class="review-intro">' +
-      '<p class="muted">Technical/project evidence is shown here on demand. Workspace remains the default.</p>' +
-      renderIndexMeta(p.index_metadata) +
+      '<p class="muted">Review is read-only indexed evidence. Workspace remains the default working surface.</p>' +
     '</section>' +
+    renderReviewOverview(p) +
     renderZassCiStatus(p, ciResult) +
-    renderSection('Progress summary', '<p>' + textOrNotProvided(p.progress_summary) + '</p>') +
-    renderSection('Next Action Plan summary', '<p>' + textOrNotProvided(p.next_action_plan) + '</p>') +
-    renderSection('Next stage summary', '<p>' + textOrNotProvided(p.next_stage) + '</p>') +
+    renderRecordCategory('Decisions', decisions, 'No decisions indexed for this project.') +
+    renderRecordCategory('Design / architecture', design, 'No design/architecture records indexed.') +
+    renderRecordCategory('Selection state', selection, 'No selection state indexed.') +
     renderSection('Action Plan', renderTable(ACTION_PLAN_COLUMNS, result.action_plan, 'No ACTION_PLAN rows for this project.')) +
-    renderSection('ZASS / project records', renderTable(ZASS_COLUMNS, result.records, 'No RECORDS rows for this project.'));
+    renderLineageSources(result) +
+    renderCommitTrail(result) +
+    '<details class="raw-details"><summary>Raw project records</summary>' +
+      renderTable(ZASS_COLUMNS, records, 'No RECORDS rows for this project.') +
+    '</details>';
 }
 
 function renderProjectHistory(result) {
-  return renderSection('History', renderTable(HISTORY_COLUMNS, result.history, 'No HISTORY rows for this project.'));
+  return renderSection('History', renderHistoryAudit(result.history));
 }
 
 function renderProjectDetail(result, ciResult, view) {
