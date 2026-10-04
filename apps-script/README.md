@@ -436,4 +436,11 @@ Verification:
 - dashboard regressions cover STALE precedence, verified SAVED, NO_CHANGE, FAILED, and insufficient receipt evidence;
 - browser client still exposes no direct GitHub/Sheets/token writer.
 
-Production deployment + owner-visible proof remain required before Gate 4 closure.
+Production deployment evidence:
+- protected production deployment now points to **Apps Script version 24**, `Gate4-factual-save-sync`;
+- v24 was constructed from immutable Gate 3 production v23 plus exactly `Index.html`, `Client.html`, and `DashboardClient.html`;
+- independent post-deploy pull verified all three files match AISYNC Gate 4 merge `c4ab3e2be49a295e741f5a35ac0bde1667bd1a06`;
+- every other production file in v24 matches production v23;
+- the current development HEAD containing T-017 was restored after release and remains separate from production v24.
+
+Remaining Gate 4 closure evidence: owner-visible production proof of UNSAVED → SYNCING → SAVED/FAILED and Project Pulse save/sync health.
