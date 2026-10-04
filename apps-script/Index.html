@@ -14,7 +14,7 @@
       .card { border: 1px solid #dadce0; border-radius: 12px; padding: 18px; margin-top: 16px; }
       .muted { color: #5f6368; }
       .error { color: #b3261e; }
-      button { font: inherit; padding: 10px 16px; border-radius: 8px; border: 1px solid #1a73e8; background: #1a73e8; color: #fff; cursor: pointer; }
+      button, .button-link { font: inherit; padding: 10px 16px; border-radius: 8px; border: 1px solid #1a73e8; background: #1a73e8; color: #fff; cursor: pointer; text-decoration: none; display: inline-block; }
       button:disabled { background: #dadce0; border-color: #dadce0; color: #5f6368; cursor: not-allowed; }
       pre { white-space: pre-wrap; word-break: break-word; background: #f8f9fa; padding: 12px; border-radius: 8px; }
     </style>
@@ -41,7 +41,7 @@
           <summary>Raw receipt JSON</summary>
           <pre id="receipt-json"></pre>
         </details>
-        <a id="main-ui-link" href="#" target="_top" hidden>Return to main ASC UI</a>
+        <p><a id="main-ui-link" class="button-link" href="#" target="_top" hidden>Return to main ASC UI</a></p>
       </div>
     </main>
 
