@@ -36,8 +36,15 @@ function world(sequence) {
   }
   const context = {
     console,
-    ascScriptProperty_(name) {
-      return name === 'GITHUB_TOKEN' ? FAKE_TOKEN : null;
+    ascScriptProperty_() {
+      return null;
+    },
+    ascGitHubAppInstallationToken_() {
+      return {
+        ok: true,
+        token: FAKE_TOKEN,
+        expiresAt: '2026-10-03T05:30:00.000Z'
+      };
     },
     Uint8Array,
     Date: FakeDate,
@@ -126,11 +133,14 @@ function project(indexedCommit = canonical, sourceRef = 'main') {
 
 {
   const w = world([]);
-  w.context.ascScriptProperty_ = () => null;
+  w.context.ascGitHubAppInstallationToken_ = () => ({
+    ok: false,
+    error: { code: 'GITHUB_APP_CONFIG_MISSING', message: 'missing' }
+  });
   const result = w.context.ascProjectIndexFreshness_(project());
   assert.equal(result.status, 'UNVERIFIED');
   assert.equal(result.reason, 'CANONICAL_HEAD_READ_FAILED');
-  assert.equal(result.canonical.error.code, 'GITHUB_TOKEN_MISSING');
+  assert.equal(result.canonical.error.code, 'GITHUB_APP_CONFIG_MISSING');
   assert.equal(w.calls.length, 0);
 }
 
@@ -146,6 +156,7 @@ function project(indexedCommit = canonical, sourceRef = 'main') {
 assert.doesNotMatch(FRESHNESS, /SpreadsheetApp|setValue|setValues|appendRow|deleteRow/);
 assert.doesNotMatch(FRESHNESS, /progress_percent|lifecycle_stage|ZASSPILL|ZASSELECTION|ZASSIMPLE/);
 assert.doesNotMatch(FRESHNESS, /console\.log|Logger\.log/);
+assert.doesNotMatch(FRESHNESS, /GITHUB_TOKEN/);
 
 console.log('T-015 factual project-index freshness Apps Script binding: PASS');
 console.log('canonical default-branch head -> exact repo/ref/commit comparison: PASS');

@@ -795,3 +795,17 @@ Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd4
 - Continuity disaster recovery is allowed only when the current authority cannot be read/validated; healthy authority is refused, and Script Property pointers roll back on failed post-recovery verification.
 - Focused T-019E regression plus full repository regression pass locally.
 - Canonical implementation merged through PR #46 at `05f3a336bd41e8cf2f73ea2cb82e203328d852ca` and protected production is Apps Script v44 (`T019E-disaster-recovery-migration-safety`). Live proof `T019E-LIVE-20261004-131641-26c53994` PASS: private DR bundle validation, checksum-identical staged ASC DB creation, live pointer migration, dashboard/HISTORY target movement, rollback to the original DB, exact pre-proof DB config restoration, healthy-continuity refusal, unchanged HISTORY/continuity/GitHub, staged-copy cleanup, temporary v45 proof cleanup, and development HEAD restore 16/16 were all verified. See `proofs/t019e-disaster-recovery-migration-live.md`.
+
+
+## T-019F secret rotation — LOCAL PASS
+
+- GitHub App auth now supports config-specific token exchange so a staged key can be validated without changing the active key.
+- Owner-only secret rotation uses active / candidate / previous slots under the script lock.
+- Promotion validates first, switches active, verifies again, and auto-rolls back if the promoted key cannot authenticate.
+- Manual rollback remains available before finalization.
+- Finalization requires explicit confirmation that the old GitHub-side key has been revoked, revalidates the active key, then deletes the previous local secret.
+- Rotation status returns fingerprints/presence + sanitized audit metadata only; no key/token values.
+- ProjectFreshness.gs now uses the GitHub App installation token and contains no GITHUB_TOKEN dependency.
+- Legacy PAT retirement is owner-only and restores the PAT if GitHub App verification fails.
+- Focused and full repository regressions PASS locally.
+- Canonical SAVE, protected deploy, and live key rotation remain pending.
