@@ -1,7 +1,14 @@
 const HISTORY_WRITER_CONFIG = Object.freeze({
-  spreadsheetId: '11pWE0E-jEZhigVAYGcsfVXW0TODRcNMgOZHFfUQIHKw',
+  legacySpreadsheetId: '11pWE0E-jEZhigVAYGcsfVXW0TODRcNMgOZHFfUQIHKw',
   sheetName: 'HISTORY'
 });
+
+function historySpreadsheetId_() {
+  if (typeof ascDbSpreadsheetId_ === 'function') {
+    return ascDbSpreadsheetId_();
+  }
+  return HISTORY_WRITER_CONFIG.legacySpreadsheetId;
+}
 
 const HISTORY_WRITER_HEADERS = Object.freeze([
   'request_id',
@@ -32,7 +39,7 @@ function appendHistory(historyEntry) {
 
   try {
     const sheet = SpreadsheetApp
-      .openById(HISTORY_WRITER_CONFIG.spreadsheetId)
+      .openById(historySpreadsheetId_())
       .getSheetByName(HISTORY_WRITER_CONFIG.sheetName);
 
     if (!sheet) {

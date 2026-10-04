@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LOCAL PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -498,3 +498,91 @@ Temporary proof version v43 used an owner-only harness above immutable v42. The 
 Canonical evidence: [`proofs/t019d-truthful-telemetry-live.md`](../proofs/t019d-truthful-telemetry-live.md).
 
 T-019D is therefore **LIVE PASS**. T-019 remains CURRENT pending broader disaster recovery, secret rotation, deployment/rollback, migration-safety closure where still required, and final operator runbook acceptance.
+
+
+## T-019E — Broader disaster recovery / migration safety
+
+Status: **LOCAL PASS / canonical SAVE + protected deploy + live proof pending**
+
+### Recovery authority model
+
+T-019E does not create a new source of truth.
+
+- GitHub remains canonical for project/method artifacts and Git lineage.
+- ASC Private Continuity Store remains authoritative for private thread continuity.
+- ASC DB remains an operational/index projection plus factual HISTORY.
+- Secret credential values are intentionally excluded from disaster bundles and are recovered separately through the secret-rotation procedure.
+
+### Portable recovery bundle
+
+Owner-only `ascCreateDisasterRecoveryBundle_()` creates a private JSON bundle containing:
+
+- all four ASC DB tabs as exact display-value matrices with per-tab and aggregate SHA-256 checksums;
+- current validated private continuity state with schema version, source file ID, and SHA-256 checksum;
+- canonical GitHub repository/ref/commit recovery point;
+- non-secret configuration needed to understand the deployment boundary;
+- credential-presence booleans only, never secret values.
+
+The bundle is versioned as `0.1` and carries an overall checksum. It is portable: the private Drive copy is the default evidence copy, and the owner may export the JSON out-of-band for account-level disaster protection.
+
+### Migration safety
+
+Bundle validation fails closed on:
+
+- unsupported bundle version;
+- unsupported ASC DB or continuity schema;
+- malformed/missing required ASC DB headers;
+- row-width mismatch;
+- tab or aggregate checksum mismatch;
+- continuity checksum mismatch;
+- invalid canonical GitHub recovery point;
+- private-key, bearer-token, token field, or other forbidden secret material.
+
+No automatic schema migration is attempted. Unsupported future versions require an explicit migration implementation.
+
+### ASC DB staged recovery
+
+Both dashboard reads and HISTORY writes now resolve the operational spreadsheet through the same `ASC_DB_SPREADSHEET_ID` Script Property, with the locked v0.1 spreadsheet ID as the legacy fallback.
+
+Recovery flow:
+
+1. create a new private recovery spreadsheet from a validated bundle;
+2. recreate PROJECTS / RECORDS / ACTION_PLAN / HISTORY from the snapshot;
+3. validate all required headers, row shapes, privacy, and aggregate checksum;
+4. keep production on the existing DB until the candidate passes;
+5. migrate only with exact expected-current ID plus expected candidate SHA-256;
+6. verify the new pointer and candidate again after the switch;
+7. restore the prior pointer automatically if post-migration verification fails.
+
+A rollback helper applies the same validation before switching back to a prior known-good spreadsheet.
+
+### Private continuity disaster recovery
+
+The disaster path is intentionally narrower than ordinary T-019A restore:
+
+- if current continuity authority is healthy, disaster restore is refused;
+- if the current pointer is missing/unreadable/invalid, validated continuity state from the DR bundle may create a new private authoritative file;
+- the new file is read back and schema-validated before/after pointer movement;
+- Script Property folder/file pointers are rolled back and the new file is retired if post-recovery verification fails.
+
+Healthy continuity should use the normal T-019A backup/restore path instead.
+
+### Local evidence
+
+Focused regression proves:
+
+- private portable bundle creation and validation;
+- all critical recovery components present without credential values;
+- bundle checksum/version/schema corruption rejection;
+- exact four-tab staged DB reconstruction;
+- candidate privacy/schema validation;
+- stale-current and candidate-checksum migration rejection;
+- successful verified DB pointer migration;
+- healthy continuity authority cannot be overwritten by the disaster path;
+- unavailable continuity authority can be recreated from the validated bundle;
+- continuity pointer rollback on post-recovery verification failure;
+- secret-like material causes bundle rejection;
+- existing dashboard read and HISTORY writer tests remain PASS under the shared migration-safe DB pointer;
+- full repository regression passes.
+
+T-019E remains LOCAL PASS until canonical SAVE, protected deployment, and live recovery/migration proof complete.
