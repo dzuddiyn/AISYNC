@@ -77,23 +77,13 @@ for (const result of nonRedirecting) {
   assert.equal(sandbox.canRedirectAfterSync(result), false, JSON.stringify(result));
 }
 
-// Success path: SAVED is rendered factually before a delayed return to main UI.
+// Success path: SAVED is rendered factually and exposes the guaranteed user-activated return link.
 {
   const doc = fakeDocument();
   const storage = new FakeStorage();
   storage.setItem('asc.pending.fragment.v0.1', '#asc=abc');
-  const navigations = [];
-  const scheduled = [];
-  const outcome = sandbox.renderSyncResult(synced, {
-    document: doc,
-    storage,
-    navigate: (u) => navigations.push(u),
-    schedule: (fn, ms) => scheduled.push({ fn, ms })
-  });
-  assert.equal(outcome, 'REDIRECT_SCHEDULED');
-  assert.equal(navigations.length, 0, 'navigation is delayed so SAVED is visible');
-  assert.equal(scheduled.length, 1);
-  assert.equal(scheduled[0].ms, 3000);
+  const outcome = sandbox.renderSyncResult(synced, { document: doc, storage });
+  assert.equal(outcome, 'RETURN_LINK_READY');
   assert.equal(storage.getItem('asc.pending.fragment.v0.1'), null);
   assert.equal(doc.els.receipt.hidden, false);
   assert.equal(doc.els['save-state'].textContent, 'SAVED');
@@ -102,8 +92,9 @@ for (const result of nonRedirecting) {
   assert.match(doc.els['receipt-summary'].textContent, /Outcome: VERIFIED_WRITE/);
   assert.match(doc.els['receipt-summary'].textContent, /Commit \/ record: commit-sha-1/);
   assert.match(doc.els.status.textContent, /^SAVED/);
-  scheduled[0].fn();
-  assert.deepStrictEqual(navigations, ['https://sites.google.com/view/aisync-asc']);
+  assert.match(doc.els.status.textContent, /Use Return to main ASC UI/);
+  assert.equal(doc.els['main-ui-link'].hidden, false);
+  assert.equal(doc.els['main-ui-link'].href, 'https://sites.google.com/view/aisync-asc');
 }
 
 // Failure paths: visibly FAILED, receipt shown when present, pending request kept, no navigation.
