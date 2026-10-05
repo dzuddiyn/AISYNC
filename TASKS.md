@@ -1,6 +1,6 @@
 # AISYNC — ZASSIMPLE TASKS
 
-**Status:** PRODUCTION v1 DELIVERY TRACK — T-018 PASS / T-019 CURRENT
+**Status:** PRODUCTION v1 DELIVERY TRACK — T-019 PASS / T-020 CURRENT
 **Method:** ZASSIMPLE v0.3.0  
 **Lifecycle stage:** DO IT  
 **Design:** v1.0.12 CONFIRMED
@@ -10,15 +10,28 @@
 
 ## Current task
 
-T-019 | CURRENT — PRODUCTION RELIABILITY & OPERATIONS
-Source: AP-013, D-029, D-031
-Do: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
-Depends on: T-015 through T-018 — satisfied.
-Boundary: reliability work must preserve the existing GitHub canonical authority, owner-private continuity authority, server-side credential boundary, and truthful failure/reporting semantics.
-Pass: backup/restore, migration, degraded/offline, replay/idempotency lifecycle, telemetry, secret rotation, deployment and rollback are proven and documented.
-Current result: IN PROGRESS — T-019A through T-019G are LIVE PASS. T-019G proved real deployment rollback and roll-forward on the protected production deployment: baseline v46 was repointed to immutable v44, the rollback pointer and exact v44 runtime were verified 18/18, canonical GitHub remained unchanged, then production was restored to immutable v46 and verified 19/19 against the pre-proof release snapshot. Development HEAD remained independently stable at 16/16. Canonical repository state was not rewritten by either deployment-pointer change. Final operator runbook acceptance remains open.
+T-020 | CURRENT — HUMAN CLOSED BETA
+Source: AP-014, D-031
+Depends on: T-015 through T-019 — satisfied.
+Do: Run a closed beta with minimum three distinct non-developer humans; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
+Pass: minimum three distinct non-developer humans complete the core journey with factual evidence and without developer-side data repair or hidden canonical-state patching.
+Current result: NOT STARTED — T-019 reliability/operations is complete and the closed-beta gate is now unblocked.
 
 ## Completed
+
+T-019 | PASS — PRODUCTION RELIABILITY & OPERATIONS
+Source: AP-013, D-029, D-031
+Pass evidence:
+- T-019A private continuity backup/restore LIVE PASS;
+- T-019B replay/idempotency lifecycle LIVE PASS;
+- T-019C degraded/offline behavior LIVE PASS;
+- T-019D truthful telemetry LIVE PASS;
+- T-019E broader disaster recovery/migration safety LIVE PASS;
+- T-019F secret rotation LIVE PASS on protected production v46;
+- T-019G live deployment rollback v46 → immutable v44 → v46 PASS with exact runtime verification and unchanged canonical Git;
+- T-019H final operator runbook acceptance PASS: authority-aware quick start, 7/7 documented operator function references resolved, all linked proof files present, no secret literals, no stale blocker wording, 32/32 repository tests PASS, protected production restored to v46.
+Boundary preserved: GitHub canonical authority, owner-private continuity authority, operational/index ASC DB, server-side credential boundary, and immutable deployment-version authority remain distinct.
+Current result: PASS — AP-013 complete. T-020 / AP-014 Human Closed Beta is CURRENT. Project lifecycle remains DO IT.
 
 T-018 | PASS — INTEGRATED HUMAN UX
 Source: AP-012, D-020, D-021, D-031
@@ -372,11 +385,6 @@ Result: PASS — locked eight-field semantic contract is representable and mecha
 
 ## Queue
 
-T-020 | QUEUED — HUMAN CLOSED BETA
-Source: AP-014, D-031
-Depends on: T-015 through T-019.
-Pass: minimum three distinct non-developer humans complete the core journey with factual evidence and without developer-side data repair/hidden canonical-state patching.
-
 T-021 | QUEUED — PRODUCTION v1 RELEASE
 Source: AP-015, D-031
 Depends on: T-020 PASS.
@@ -384,14 +392,14 @@ Pass: release commit/deployment, known limitations, operator runbook, rollback p
 
 ## Delivered evidence
 
-Implementation evidence exists for T-001 through T-018 and T-013A/B. T-012 completed the technical proof baseline; T-014 locked Production v1 delivery criteria; T-015 through T-018 are PASS; T-019 is current.
+Implementation evidence exists for T-001 through T-019 and T-013A/B. T-012 completed the technical proof baseline; T-014 locked Production v1 delivery criteria; T-015 through T-019 are PASS; T-020 Human Closed Beta is current.
 
 Closure checks:
 - Built: YES — ASC v0.1 core/fallback path, method gateway slices, and commit-linked ZASS CI consumer through T-012 are implemented
 - Verified: YES — live T-011 owner-issued ZASSIMPLE SAVE produced verified GitHub persistence + factual HISTORY; T-012 added deployed/live-read/owner-visible commit-linked ZASS CI proof
 - Matches design: YES — including D-029 security/replay and D-030 successful-return refinement
 - Recorded: YES — canonical GitHub tracking/evidence updated
-- Current: T-019 — Production v1 reliability & operations
+- Current: T-020 — Human Closed Beta
 
 
 T-013 | PASS — PUBLIC METHOD GATEWAY v0.1 PROOF  
