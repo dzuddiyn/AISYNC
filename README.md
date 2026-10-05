@@ -509,6 +509,12 @@ ZASS Core
 
 ---
 
+## Future Create Project direction
+
+A post-Production v1 direction is LOCKED for AISYNC to create new Git-backed ZASS projects through a shared ZASS Project Bootstrap Core, explicit owner confirmation, GitHub repository creation, ZASS file seeding, AISYNC registration, and continuation into DESIGN. This is future work, not part of the current T-020 beta critical path.
+
+See [`docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md`](docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md).
+
 ## Project Source of Truth
 
 The working project record is:
