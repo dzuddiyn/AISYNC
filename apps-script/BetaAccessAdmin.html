@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AISYNC Beta Access</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:24px;color:#202124;background:#fff}
+    main{max-width:900px;margin:0 auto}
+    .card{border:1px solid #dadce0;border-radius:12px;padding:18px;margin-top:16px}
+    label{display:block;font-weight:600;margin-top:12px}
+    input{box-sizing:border-box;width:100%;margin-top:6px;padding:9px;border:1px solid #dadce0;border-radius:8px;font:inherit}
+    button{font:inherit;padding:9px 14px;border-radius:8px;border:1px solid #1a73e8;background:#1a73e8;color:#fff;cursor:pointer;margin-top:14px}
+    button.secondary{background:#fff;color:#1a73e8}
+    .muted{color:#5f6368}
+    .error{color:#b3261e}
+    pre{white-space:pre-wrap;word-break:break-all;background:#f8f9fa;padding:12px;border-radius:8px}
+    table{border-collapse:collapse;width:100%;font-size:13px}
+    th,td{padding:7px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+  </style>
+</head>
+<body>
+<main>
+  <h1>AISYNC Beta Access</h1>
+  <p class="muted">Owner-only administration. Invitation tokens are returned once and are never stored raw.</p>
+
+  <section class="card">
+    <h2>Create invitation</h2>
+    <label>Participant label<input id="label" placeholder="BETA-01"></label>
+    <label>Allowed project IDs<input id="projects" placeholder="Enter exact beta project ID(s), comma-separated"></label>
+    <label>Invitation lifetime (hours)<input id="invite-hours" type="number" min="1" max="168" value="72"></label>
+    <label>Participant access (days)<input id="participant-days" type="number" min="1" max="29" value="21"></label>
+    <button id="create" type="button">CREATE INVITATION</button>
+    <div id="created"></div>
+  </section>
+
+  <section class="card">
+    <h2>Participants</h2>
+    <button id="refresh" class="secondary" type="button">REFRESH</button>
+    <div id="participants" class="muted">Loading…</div>
+  </section>
+</main>
+<script>
+const created = document.getElementById('created');
+const participants = document.getElementById('participants');
+
+function esc(v){return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function loadParticipants(){
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r || r.ok !== true){participants.innerHTML='<p class="error">Could not load participants.</p>';return;}
+      if(!r.participants.length){participants.innerHTML='<p class="muted">No beta participants enrolled yet.</p>';return;}
+      participants.innerHTML='<table><thead><tr><th>ID</th><th>Label</th><th>Projects</th><th>Expires</th><th>State</th><th></th></tr></thead><tbody>'+
+        r.participants.map(function(p){
+          return '<tr><td>'+esc(p.participant_id)+'</td><td>'+esc(p.label)+'</td><td>'+esc(p.allowed_projects.join(', '))+'</td><td>'+esc(p.expires_at)+'</td><td>'+esc(p.state)+'</td><td><button class="secondary" data-revoke="'+esc(p.participant_id)+'">REVOKE</button></td></tr>';
+        }).join('')+'</tbody></table>';
+    })
+    .withFailureHandler(function(e){participants.textContent=e.message||String(e);participants.className='error';})
+    .listBetaAccessParticipants();
+}
+
+document.getElementById('create').addEventListener('click',function(){
+  created.className='muted'; created.textContent='Creating invitation…';
+  const projectIds=document.getElementById('projects').value.split(',').map(function(v){return v.trim();}).filter(Boolean);
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r || r.ok !== true){created.className='error';created.textContent=r&&r.error?r.error.message:'Invitation failed.';return;}
+      created.className='';
+      created.innerHTML='<p><strong>Invitation created.</strong> Share this URL only with '+esc(r.label)+'.</p><pre>'+esc(r.invite_url)+'</pre><p class="muted">Expires: '+esc(r.expires_at)+' · Projects: '+esc(r.allowed_projects.join(', '))+'</p>';
+    })
+    .withFailureHandler(function(e){created.className='error';created.textContent=e.message||String(e);})
+    .createBetaInvitation({
+      label:document.getElementById('label').value,
+      allowed_projects:projectIds,
+      invite_hours:Number(document.getElementById('invite-hours').value),
+      participant_days:Number(document.getElementById('participant-days').value)
+    });
+});
+
+document.getElementById('refresh').addEventListener('click',loadParticipants);
+participants.addEventListener('click',function(e){
+  const id=e.target&&e.target.dataset?e.target.dataset.revoke:null;
+  if(!id)return;
+  if(!confirm('Revoke '+id+'?'))return;
+  google.script.run.withSuccessHandler(loadParticipants).revokeBetaParticipant({participant_id:id});
+});
+loadParticipants();
+</script>
+</body>
+</html>

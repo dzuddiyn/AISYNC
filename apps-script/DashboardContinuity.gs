@@ -40,9 +40,11 @@ function ascDashboardHandoffError_(code, message) {
   return { ok: false, error: { code: code, message: message } };
 }
 
-function ascDashboardHandoffOwner_() {
+function ascDashboardHandoffActor_() {
   try {
-    return ascIsOwner_(ascAuthorizationContext_());
+    const context = ascAuthorizationContext_();
+    if (typeof ascIsBetaActor_ === 'function') return ascIsBetaActor_(context);
+    return ascIsOwner_(context); // isolated unit-test/backward-compatibility fallback
   } catch (error) {
     return false;
   }
@@ -87,8 +89,8 @@ function ascDashboardMinimumContinuity_(readResult) {
 }
 
 function getDashboardProjectContinuity(projectId) {
-  if (!ascDashboardHandoffOwner_()) {
-    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Protected project continuity requires the owner session.');
+  if (!ascDashboardHandoffActor_()) {
+    return ascDashboardHandoffError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required for protected project continuity.');
   }
   if (typeof projectId !== 'string' || !projectId.trim()) {
     return ascDashboardHandoffError_('INVALID_PROJECT_ID', 'A project_id string is required.');
@@ -123,8 +125,8 @@ function getDashboardProjectContinuity(projectId) {
 }
 
 function createDashboardProjectThread(input) {
-  if (!ascDashboardHandoffOwner_()) {
-    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Starting a private project thread requires the owner session.');
+  if (!ascDashboardHandoffActor_()) {
+    return ascDashboardHandoffError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required to start project continuity.');
   }
 
   const request = input && typeof input === 'object' ? input : {};
@@ -183,8 +185,8 @@ function createDashboardProjectThread(input) {
 }
 
 function prepareDashboardProjectHandoff(input) {
-  if (!ascDashboardHandoffOwner_()) {
-    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Protected project handoff requires the owner session.');
+  if (!ascDashboardHandoffActor_()) {
+    return ascDashboardHandoffError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required for project handoff.');
   }
 
   const request = input && typeof input === 'object' ? input : {};
@@ -412,8 +414,8 @@ function ascDashboardSecureSaveLink_(contract) {
 }
 
 function previewDashboardMethodReturn(input) {
-  if (!ascDashboardHandoffOwner_()) {
-    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Previewing a provider return requires the owner session.');
+  if (!ascDashboardHandoffActor_()) {
+    return ascDashboardHandoffError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required to preview a provider return.');
   }
   const request = input && typeof input === 'object' ? input : {};
   const projectId = typeof request.project_id === 'string' ? request.project_id.trim() : '';
@@ -462,8 +464,8 @@ function previewDashboardMethodReturn(input) {
 }
 
 function prepareDashboardMethodReturnSave(input) {
-  if (!ascDashboardHandoffOwner_()) {
-    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Preparing an ASC SAVE requires the owner session.');
+  if (!ascDashboardHandoffActor_()) {
+    return ascDashboardHandoffError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required to prepare an ASC SAVE.');
   }
   const request = input && typeof input === 'object' ? input : {};
   const projectId = typeof request.project_id === 'string' ? request.project_id.trim() : '';
@@ -572,8 +574,8 @@ function ascDashboardVerifiedSaveReceipt_(projectResult, recordId) {
 }
 
 function advanceDashboardSavedMethodResult(input) {
-  if (!ascDashboardHandoffOwner_()) {
-    return ascDashboardHandoffError_('OWNER_REQUIRED', 'Advancing private continuity requires the owner session.');
+  if (!ascDashboardHandoffActor_()) {
+    return ascDashboardHandoffError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required to advance project continuity.');
   }
   const request = input && typeof input === 'object' ? input : {};
   const projectId = typeof request.project_id === 'string' ? request.project_id.trim() : '';

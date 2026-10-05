@@ -64,7 +64,7 @@ function runT007TestOnlyHistoryProof() {
     receipt_json: JSON.stringify(receipt)
   };
 
-  const writeResult = appendHistory(historyEntry);
+  const writeResult = appendHistory_(historyEntry);
   if (!writeResult.ok) {
     return {
       ok: false,

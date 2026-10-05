@@ -212,5 +212,58 @@ assert.doesNotMatch(SOURCE, /\.(setValue|setValues|appendRow|insertRow|deleteRow
   assert.deepStrictEqual([r.records, r.action_plan, r.history], [[], [], []]);
 }
 
+
+// 6. T-020A1 beta access filters project list/detail before private/project data is returned.
+{
+  const w = world();
+  w.ctx.ascAuthorizationContext_ = () => ({
+    activeUser: '',
+    effectiveUser: 'owner@example.test',
+    betaAuthorized: true,
+    betaParticipantId: 'bp_test',
+    betaAllowedProjects: ['AISYNC']
+  });
+  w.ctx.ascIsBetaActor_ = (context) => context && context.betaAuthorized === true;
+  w.ctx.ascBetaCanAccessProject_ = (projectId, context) =>
+    Boolean(context) && Array.isArray(context.betaAllowedProjects) &&
+    context.betaAllowedProjects.includes(projectId);
+
+  const list = plain(w.ctx.getDashboardProjects());
+  assert.equal(list.ok, true);
+  assert.deepStrictEqual(list.groups.DUMP, []);
+  assert.deepStrictEqual(list.groups.DECIDE, []);
+  assert.deepStrictEqual(list.groups.DESIGN.map((p) => p.project_id), ['AISYNC']);
+  assert.deepStrictEqual(list.unrecognized_ui_entry, []);
+
+  assert.equal(plain(w.ctx.getDashboardProject('AISYNC')).ok, true);
+  assert.equal(
+    plain(w.ctx.getDashboardProject('AISYNC-2')).error.code,
+    'BETA_PROJECT_NOT_ALLOWED'
+  );
+}
+
+// 7. Signed-in-but-not-invited actor is denied before any ASC DB read.
+{
+  const w = world();
+  w.ctx.ascAuthorizationContext_ = () => ({
+    activeUser: '',
+    effectiveUser: 'owner@example.test',
+    betaAuthorized: false
+  });
+  w.ctx.ascIsBetaActor_ = () => false;
+  w.ctx.ascBetaCanAccessProject_ = () => false;
+
+  const list = plain(w.ctx.getDashboardProjects());
+  assert.equal(list.ok, false);
+  assert.equal(list.error.code, 'BETA_ACCESS_REQUIRED');
+  assert.equal(w.calls.length, 0);
+
+  const detail = plain(w.ctx.getDashboardProject('AISYNC'));
+  assert.equal(detail.ok, false);
+  assert.equal(detail.error.code, 'BETA_ACCESS_REQUIRED');
+  assert.equal(w.calls.length, 0);
+}
+
 console.log('T-009A dashboard read layer test: PASS');
+console.log('T-020A1 project-scoped beta dashboard access: PASS');
 console.log('Sheet mutation calls: none');

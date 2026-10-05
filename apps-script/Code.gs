@@ -1,7 +1,47 @@
-// Default route = T-008 preview / CONFIRM & SYNC (unchanged).
-// ?view=dashboard = T-009 read-only dashboard.
+// Default route = T-008 preview / CONFIRM & SYNC.
+// ?view=dashboard = project dashboard.
+// ?view=beta-enroll = one-time closed-beta enrollment.
+// ?view=beta-access = owner-only invitation/participant administration.
 function doGet(e) {
   const view = e && e.parameter ? e.parameter.view : undefined;
+
+  if (view === 'beta-enroll') {
+    const template = HtmlService.createTemplateFromFile('BetaEnroll');
+    template.inviteToken = e && e.parameter && typeof e.parameter.invite === 'string'
+      ? e.parameter.invite
+      : '';
+    template.dashboardUrl = ScriptApp.getService().getUrl() + '?view=dashboard';
+    return template
+      .evaluate()
+      .setTitle('AISYNC — Join Closed Beta')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
+  const authorization = ascAuthorizationContext_();
+
+  if (view === 'beta-access') {
+    if (!ascIsOwner_(authorization)) {
+      return HtmlService
+        .createTemplateFromFile('BetaAccessRequired')
+        .evaluate()
+        .setTitle('AISYNC — Access Required')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    }
+    return HtmlService
+      .createTemplateFromFile('BetaAccessAdmin')
+      .evaluate()
+      .setTitle('AISYNC — Beta Access')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
+  if (!ascIsBetaActor_(authorization)) {
+    return HtmlService
+      .createTemplateFromFile('BetaAccessRequired')
+      .evaluate()
+      .setTitle('AISYNC — Access Required')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
   if (view === 'dashboard') {
     return HtmlService
       .createTemplateFromFile('Dashboard')
@@ -16,7 +56,7 @@ function doGet(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-function include(filename) {
+function include_(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
@@ -54,24 +94,35 @@ function ascMainUiUrl_() {
 }
 
 function getBootstrapState() {
+  const authorization = ascAuthorizationContext_();
   return {
     authenticated: true,
-    ownerOnly: true,
-    writeEnabled: ascGitHubAppConfigured_() && ascProductionRegistryConfigured_(),
+    accessRole: ascIsOwner_(authorization)
+      ? 'OWNER'
+      : (ascIsBetaActor_(authorization) ? 'BETA' : 'NONE'),
+    writeEnabled: ascIsBetaActor_(authorization) &&
+      ascGitHubAppConfigured_() &&
+      ascProductionRegistryConfigured_(),
     redirectConfigured: ascMainUiUrl_() !== null,
     destinationPolicy: 'PRODUCTION_REGISTRY',
     destinationAuth: 'GITHUB_APP',
-    appVersion: '1.0-t016'
+    appVersion: '1.0-t020a1'
   };
 }
 
-// Owner-only identity remains the T-016 closed-beta authorization gate.
-// Project/repository/path authorization is a separate server-side registry decision.
+// Google Account remains the outer sign-in gate. In USER_DEPLOYING mode,
+// external-user email can be unavailable, so T-020A1 enriches this server-created
+// context with a hashed temporary-user-key allowlist. Privileged owner identity
+// remains the active/effective-user equality check below.
 function ascAuthorizationContext_() {
-  return {
+  const base = {
     activeUser: Session.getActiveUser().getEmail() || '',
     effectiveUser: Session.getEffectiveUser().getEmail() || ''
   };
+  if (typeof ascBetaAuthorizationContext_ === 'function') {
+    return ascBetaAuthorizationContext_(base);
+  }
+  return base;
 }
 
 // Current protected deployment remains owner-only. T-018 may broaden the human
@@ -281,6 +332,13 @@ function ascClaimReplay_(requestId, expiresAt) {
 // Returns only safe, non-credential fields; CONFIRM & SYNC may be enabled only when
 // securityValid and writeEnabled are both true.
 function previewAscRequest(request) {
+  if (!ascIsBetaActor_(ascAuthorizationContext_())) {
+    return ascPreviewResult_(ascFailed_(
+      'ACCESS',
+      'BETA_ACCESS_REQUIRED',
+      'Invited beta access is required.'
+    ));
+  }
   let envelope;
   try {
     envelope = ascDecodeFragment_(request && request.fragment);
@@ -292,7 +350,7 @@ function previewAscRequest(request) {
       now: ascNow_,
       sha256Hex: ascSha256Hex_,
       authorizationContext: ascAuthorizationContext_(),
-      verifyOwner: ascIsOwner_
+      verifyOwner: ascIsBetaActor_
     });
     return ascPreviewResult_(result);
   } catch (error) {
@@ -323,6 +381,9 @@ function ascPreviewResult_(result) {
 // Apps Script I/O is synchronous but the reused flow is async; the settled result is stored
 // in the owner's user cache and collected by getConfirmSyncResult(requestId).
 function confirmAndSync(request) {
+  if (!ascIsBetaActor_(ascAuthorizationContext_())) {
+    return ascFailed_('ACCESS', 'BETA_ACCESS_REQUIRED', 'Invited beta access is required.');
+  }
   let envelope;
   try {
     envelope = ascDecodeFragment_(request && request.fragment);
@@ -376,10 +437,10 @@ function confirmAndSync(request) {
     authorizationPolicy: ascProductionAuthorizationPolicy_,
     resolveGitHubWriteSpec: ascProductionWriteSpec_,
     githubClient: ascCreateGitHubAppRestClient_(),
-    historyWriter: { appendHistory: appendHistory },
+    historyWriter: { appendHistory: appendHistory_ },
     now: ascNow_,
     sha256Hex: ascSha256Hex_,
-    verifyOwner: ascIsOwner_,
+    verifyOwner: ascIsBetaActor_,
     claimReplay: ascClaimReplay_,
     sourceCommit: null,
     mainUiUrl: ascMainUiUrl_()
@@ -400,6 +461,9 @@ function confirmAndSync(request) {
 }
 
 function getConfirmSyncResult(requestId) {
+  if (!ascIsBetaActor_(ascAuthorizationContext_())) {
+    return ascFailed_('ACCESS', 'BETA_ACCESS_REQUIRED', 'Invited beta access is required.');
+  }
   if (typeof requestId !== 'string' || requestId.length === 0) {
     return ascFailed_('RESULT', 'INVALID_REQUEST_ID', 'Request ID is required.');
   }

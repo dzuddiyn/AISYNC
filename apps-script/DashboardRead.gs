@@ -160,7 +160,24 @@ function ascOpenAscDb_() {
   return SpreadsheetApp.openById(ascDbSpreadsheetId_());
 }
 
+function ascDashboardReadAuthorization_() {
+  if (typeof ascAuthorizationContext_ !== 'function' || typeof ascIsBetaActor_ !== 'function') {
+    return { authorized: true, context: null }; // isolated unit-test fallback only
+  }
+  const context = ascAuthorizationContext_();
+  return { authorized: ascIsBetaActor_(context), context: context };
+}
+
+function ascDashboardReadProjectAllowed_(projectId, context) {
+  if (typeof ascBetaCanAccessProject_ !== 'function') return true; // isolated unit-test fallback only
+  return ascBetaCanAccessProject_(projectId, context);
+}
+
 function getDashboardProjects() {
+  const access = ascDashboardReadAuthorization_();
+  if (!access.authorized) {
+    return ascDbReadError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required.');
+  }
   try {
     const projects = ascDbReadTab_(ascOpenAscDb_(), 'PROJECTS');
     if (!projects.ok) {
@@ -169,6 +186,7 @@ function getDashboardProjects() {
     const groups = { DUMP: [], DECIDE: [], DESIGN: [] };
     const unrecognized = [];
     projects.rows.forEach(function (row) {
+      if (!ascDashboardReadProjectAllowed_(row.project_id, access.context)) return;
       const view = ascAttachProjectIndexFreshness_(ascProjectView_(row));
       if (ASC_UI_ENTRIES_.indexOf(row.ui_entry) >= 0) {
         groups[row.ui_entry].push(view);
@@ -190,6 +208,13 @@ function getDashboardProjects() {
 function getDashboardProject(projectId) {
   if (typeof projectId !== 'string' || projectId.length === 0) {
     return ascDbReadError_('INVALID_PROJECT_ID', 'A project_id string is required.');
+  }
+  const access = ascDashboardReadAuthorization_();
+  if (!access.authorized) {
+    return ascDbReadError_('BETA_ACCESS_REQUIRED', 'Invited beta access is required.');
+  }
+  if (!ascDashboardReadProjectAllowed_(projectId, access.context)) {
+    return ascDbReadError_('BETA_PROJECT_NOT_ALLOWED', 'This beta participant is not allowed to open this project.');
   }
   try {
     const spreadsheet = ascOpenAscDb_();

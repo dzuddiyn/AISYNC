@@ -198,8 +198,8 @@ function makeContext(overrides = {}) {
 
 {
   const ctx = makeContext({ ascIsOwner_: () => false });
-  assert.equal(ctx.getDashboardProjectContinuity('AISYNC').error.code, 'OWNER_REQUIRED');
-  assert.equal(ctx.prepareDashboardProjectHandoff({}).error.code, 'OWNER_REQUIRED');
+  assert.equal(ctx.getDashboardProjectContinuity('AISYNC').error.code, 'BETA_ACCESS_REQUIRED');
+  assert.equal(ctx.prepareDashboardProjectHandoff({}).error.code, 'BETA_ACCESS_REQUIRED');
 }
 
 {
@@ -227,10 +227,10 @@ function makeContext(overrides = {}) {
 assert.doesNotMatch(source, /token:\s*reference\.token|bootstrap[^\n]*reference\.token/);
 assert.match(source, /ttlSeconds:\s*600/);
 assert.match(source, /expectedMethodVersion/);
-assert.match(source, /ascDashboardHandoffOwner_/);
+assert.match(source, /ascDashboardHandoffActor_/);
 
 console.log('T-018A dashboard continuity handoff binding: PASS');
-console.log('owner-only project/thread -> route/provider -> scoped handoff: PASS');
+console.log('authorized beta/owner project-thread -> route/provider -> scoped handoff: PASS');
 console.log('bearer token remains server-side: PASS');
 
 {
@@ -273,7 +273,7 @@ console.log('bearer token remains server-side: PASS');
 
 {
   const ctx = makeContext({ ascIsOwner_: () => false });
-  assert.equal(ctx.createDashboardProjectThread({ project_id: 'AISYNC', title: 'Thread', current: 'context' }).error.code, 'OWNER_REQUIRED');
+  assert.equal(ctx.createDashboardProjectThread({ project_id: 'AISYNC', title: 'Thread', current: 'context' }).error.code, 'BETA_ACCESS_REQUIRED');
 }
 
 assert.doesNotMatch(source, /state:\s*['\"]ACTIVE['\"]/);
