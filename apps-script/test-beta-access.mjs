@@ -98,10 +98,13 @@ function makeWorld() {
     ascProductionRegistry_: () => ({ ok: true, registry: REGISTRY })
   };
 
-  ctx.ascIsOwner_ = context => Boolean(context) &&
-    typeof context.activeUser === 'string' &&
-    context.activeUser.length > 0 &&
-    context.activeUser === context.effectiveUser;
+  ctx.ascIsOwner_ = context => Boolean(context) && (
+    context.owner === true || (
+      typeof context.activeUser === 'string' &&
+      context.activeUser.length > 0 &&
+      context.activeUser === context.effectiveUser
+    )
+  );
 
   ctx.ascAuthorizationContext_ = () => {
     const base = {
@@ -134,13 +137,48 @@ assert.equal(MANIFEST.webapp.executeAs, 'USER_DEPLOYING');
 
 const w = makeWorld();
 
-// Owner is always authorized and remains distinguishable from beta participants.
+// Owner is authorized under the legacy owner-only identity proof.
 {
   const state = plain(w.ctx.getBetaAccessState());
   assert.equal(state.ok, true);
   assert.equal(state.access, 'OWNER');
   assert.equal(state.authorized, true);
   assert.deepEqual(state.allowed_projects, ['*']);
+}
+
+// Owner binds the current temporary-user fingerprint while legacy proof is available.
+{
+  const before = plain(w.ctx.getBetaOwnerBindingState());
+  assert.equal(before.binding_present, false);
+  assert.equal(before.recognized_as_owner, true);
+  assert.equal(before.legacy_owner_proof, true);
+
+  const bound = plain(w.ctx.bindBetaOwnerSession());
+  assert.equal(bound.ok, true);
+  assert.equal(bound.status, 'OWNER_BINDING_UPDATED');
+  assert.equal(bound.raw_identity_exposed, false);
+  assert.equal(JSON.stringify(w.store).includes('owner-temp-key'), false);
+
+  // Simulate widened ANYONE deployment: active-user email is unavailable, but the
+  // same temporary-user key must continue to identify the owner.
+  w.setUser('', 'owner-temp-key');
+  const widened = plain(w.ctx.getBetaAccessState());
+  assert.equal(widened.access, 'OWNER');
+  assert.equal(widened.authorized, true);
+  const widenedBinding = plain(w.ctx.getBetaOwnerBindingState());
+  assert.equal(widenedBinding.binding_present, true);
+  assert.equal(widenedBinding.recognized_as_owner, true);
+  assert.equal(widenedBinding.legacy_owner_proof, false);
+  assert.equal(widenedBinding.identity_source, 'BOUND_TEMPORARY_USER_KEY');
+  assert.equal(plain(w.ctx.listBetaAccessParticipants()).ok, true);
+
+  // A different temporary-user key with no legacy owner proof is not owner.
+  w.setUser('', 'other-temp-key');
+  assert.equal(plain(w.ctx.getBetaAccessState()).access, 'NOT_ALLOWLISTED');
+  assert.equal(plain(w.ctx.bindBetaOwnerSession()).error.code, 'LEGACY_OWNER_PROOF_REQUIRED');
+  assert.throws(() => w.ctx.listBetaAccessParticipants(), /BETA_ACCESS_OWNER_REQUIRED/);
+
+  w.setUser(OWNER, 'owner-temp-key');
 }
 
 // Owner creates a one-time invitation scoped to AISYNC.

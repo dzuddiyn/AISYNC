@@ -26,6 +26,13 @@
   <p class="muted">Owner-only administration. Invitation tokens are returned once and are never stored raw.</p>
 
   <section class="card">
+    <h2>Owner identity binding</h2>
+    <p class="muted">Before widening the protected deployment to invited users, bind this owner Google session from a temporary owner-only deployment. Only a SHA-256 fingerprint of the temporary user key is stored.</p>
+    <div id="owner-binding" class="muted">Checking owner binding…</div>
+    <button id="bind-owner" type="button">BIND / REFRESH OWNER SESSION</button>
+  </section>
+
+  <section class="card">
     <h2>Create invitation</h2>
     <label>Participant label<input id="label" placeholder="BETA-01"></label>
     <label>Allowed project IDs<input id="projects" placeholder="Enter exact beta project ID(s), comma-separated"></label>
@@ -44,8 +51,38 @@
 <script>
 const created = document.getElementById('created');
 const participants = document.getElementById('participants');
+const ownerBinding = document.getElementById('owner-binding');
+const bindOwner = document.getElementById('bind-owner');
 
 function esc(v){return String(v == null ? '' : v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function loadOwnerBinding(){
+  google.script.run
+    .withSuccessHandler(function(r){
+      if(!r || r.ok !== true){ownerBinding.className='error';ownerBinding.textContent='Could not read owner binding state.';return;}
+      ownerBinding.className=r.recognized_as_owner?'':'error';
+      ownerBinding.textContent='Binding present: '+(r.binding_present?'yes':'no')+
+        ' · Recognized as owner: '+(r.recognized_as_owner?'yes':'no')+
+        ' · Legacy owner proof: '+(r.legacy_owner_proof?'yes':'no')+
+        ' · Source: '+(r.identity_source||'none');
+    })
+    .withFailureHandler(function(e){ownerBinding.className='error';ownerBinding.textContent=e.message||String(e);})
+    .getBetaOwnerBindingState();
+}
+
+bindOwner.addEventListener('click',function(){
+  bindOwner.disabled=true;
+  ownerBinding.className='muted';
+  ownerBinding.textContent='Binding this owner session…';
+  google.script.run
+    .withSuccessHandler(function(r){
+      bindOwner.disabled=false;
+      if(!r || r.ok !== true){ownerBinding.className='error';ownerBinding.textContent=r&&r.error?r.error.message:'Owner binding failed.';return;}
+      loadOwnerBinding();
+    })
+    .withFailureHandler(function(e){bindOwner.disabled=false;ownerBinding.className='error';ownerBinding.textContent=e.message||String(e);})
+    .bindBetaOwnerSession();
+});
 
 function loadParticipants(){
   google.script.run
@@ -86,6 +123,7 @@ participants.addEventListener('click',function(e){
   if(!confirm('Revoke '+id+'?'))return;
   google.script.run.withSuccessHandler(loadParticipants).revokeBetaParticipant({participant_id:id});
 });
+loadOwnerBinding();
 loadParticipants();
 </script>
 </body>

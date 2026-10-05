@@ -11,6 +11,7 @@
 // - participant records can be scoped to specific project IDs.
 
 var ASC_BETA_SCHEMA_VERSION_ = '0.1';
+var ASC_BETA_OWNER_FINGERPRINT_PROPERTY_ = 'ASC_BETA_OWNER_FINGERPRINT_SHA256';
 var ASC_BETA_INVITE_PROPERTY_PREFIX_ = 'asc.beta.invite.v1.';
 var ASC_BETA_PARTICIPANT_PROPERTY_PREFIX_ = 'asc.beta.participant.v1.';
 var ASC_BETA_INVITE_DEFAULT_HOURS_ = 72;
@@ -63,6 +64,28 @@ function ascBetaTemporaryUserFingerprint_() {
   return key ? ascBetaSha256_(key) : null;
 }
 
+function ascBetaLegacyOwner_(baseContext) {
+  var base = baseContext && typeof baseContext === 'object' ? baseContext : {};
+  return Boolean(base.activeUser) && typeof base.activeUser === 'string' &&
+    base.activeUser === base.effectiveUser;
+}
+
+function ascBetaStoredOwnerFingerprint_() {
+  try {
+    var value = PropertiesService.getScriptProperties().getProperty(
+      ASC_BETA_OWNER_FINGERPRINT_PROPERTY_
+    );
+    return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value) ? value : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function ascBetaFingerprintIsBoundOwner_(fingerprint) {
+  var stored = ascBetaStoredOwnerFingerprint_();
+  return Boolean(stored) && Boolean(fingerprint) && stored === fingerprint;
+}
+
 function ascBetaParticipantPropertyName_(fingerprint) {
   return ASC_BETA_PARTICIPANT_PROPERTY_PREFIX_ + String(fingerprint || '');
 }
@@ -94,13 +117,16 @@ function ascBetaParticipantForFingerprint_(fingerprint) {
 // accepts client-provided identity material.
 function ascBetaAuthorizationContext_(baseContext) {
   var base = baseContext && typeof baseContext === 'object' ? baseContext : {};
-  var owner = Boolean(base.activeUser) && base.activeUser === base.effectiveUser;
   var fingerprint = ascBetaTemporaryUserFingerprint_();
+  var owner = ascBetaLegacyOwner_(base) || ascBetaFingerprintIsBoundOwner_(fingerprint);
   var participant = owner ? null : ascBetaParticipantForFingerprint_(fingerprint);
   return {
     activeUser: typeof base.activeUser === 'string' ? base.activeUser : '',
     effectiveUser: typeof base.effectiveUser === 'string' ? base.effectiveUser : '',
     owner: owner,
+    ownerIdentitySource: ascBetaLegacyOwner_(base)
+      ? 'LEGACY_GOOGLE_IDENTITY'
+      : (owner ? 'BOUND_TEMPORARY_USER_KEY' : null),
     betaAuthorized: owner || Boolean(participant),
     betaParticipantId: participant ? participant.participant_id : null,
     betaAllowedProjects: owner ? ['*'] : (participant ? participant.allowed_projects.slice() : []),
@@ -135,6 +161,64 @@ function ascBetaCanAccessRepository_(repository, context) {
 
 function ascBetaAccessError_(code, message) {
   return { ok: false, error: { code: code, message: message } };
+}
+
+function getBetaOwnerBindingState() {
+  var base = {
+    activeUser: Session.getActiveUser().getEmail() || '',
+    effectiveUser: Session.getEffectiveUser().getEmail() || ''
+  };
+  var context = ascBetaAuthorizationContext_(base);
+  return {
+    ok: true,
+    binding_present: ascBetaStoredOwnerFingerprint_() !== null,
+    recognized_as_owner: ascIsOwner_(context),
+    legacy_owner_proof: ascBetaLegacyOwner_(base),
+    identity_source: context.ownerIdentitySource || null,
+    raw_identity_exposed: false
+  };
+}
+
+function bindBetaOwnerSession() {
+  var base = {
+    activeUser: Session.getActiveUser().getEmail() || '',
+    effectiveUser: Session.getEffectiveUser().getEmail() || ''
+  };
+  if (!ascBetaLegacyOwner_(base)) {
+    return ascBetaAccessError_(
+      'LEGACY_OWNER_PROOF_REQUIRED',
+      'Owner binding must be performed from the temporary owner-only bootstrap deployment.'
+    );
+  }
+
+  var fingerprint = ascBetaTemporaryUserFingerprint_();
+  if (!fingerprint) {
+    return ascBetaAccessError_('OWNER_FINGERPRINT_UNAVAILABLE', 'Temporary owner identity is unavailable.');
+  }
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(ASC_BETA_LOCK_TIMEOUT_MS_)) {
+    return ascBetaAccessError_('BETA_ACCESS_LOCK_UNAVAILABLE', 'Owner binding store is busy. Try again.');
+  }
+  try {
+    var properties = PropertiesService.getScriptProperties();
+    var previous = properties.getProperty(ASC_BETA_OWNER_FINGERPRINT_PROPERTY_);
+    properties.setProperty(ASC_BETA_OWNER_FINGERPRINT_PROPERTY_, fingerprint);
+    var verify = properties.getProperty(ASC_BETA_OWNER_FINGERPRINT_PROPERTY_);
+    if (verify !== fingerprint) {
+      if (previous === null) properties.deleteProperty(ASC_BETA_OWNER_FINGERPRINT_PROPERTY_);
+      else properties.setProperty(ASC_BETA_OWNER_FINGERPRINT_PROPERTY_, previous);
+      return ascBetaAccessError_('OWNER_BINDING_STORE_FAILED', 'Owner identity binding could not be verified.');
+    }
+    return {
+      ok: true,
+      status: previous === fingerprint ? 'OWNER_BINDING_ALREADY_CURRENT' : 'OWNER_BINDING_UPDATED',
+      previous_binding_replaced: Boolean(previous) && previous !== fingerprint,
+      raw_identity_exposed: false
+    };
+  } finally {
+    try { lock.releaseLock(); } catch (error) { /* expires automatically */ }
+  }
 }
 
 function getBetaAccessState() {
