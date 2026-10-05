@@ -59,6 +59,40 @@ function ascReadGitHubActionsJson_(url) {
 }
 
 function getDashboardZassCiStatus(repository, commitSha) {
+  if (typeof ascAuthorizationContext_ === 'function' && typeof ascIsBetaActor_ === 'function') {
+    const context = ascAuthorizationContext_();
+    if (!ascIsBetaActor_(context)) {
+      return {
+        ok: false,
+        repository: typeof repository === 'string' ? repository : null,
+        commit_sha: typeof commitSha === 'string' ? commitSha : null,
+        workflow_name: 'ZASS CI',
+        job_name: 'zass-check',
+        run_id: null,
+        status: 'READ_ERROR',
+        conclusion: null,
+        run_url: null,
+        fetched_at: new Date().toISOString(),
+        error: { code: 'BETA_ACCESS_REQUIRED', message: 'Invited beta access is required.' }
+      };
+    }
+    if (typeof ascBetaCanAccessRepository_ === 'function' &&
+        !ascBetaCanAccessRepository_(repository, context)) {
+      return {
+        ok: false,
+        repository: typeof repository === 'string' ? repository : null,
+        commit_sha: typeof commitSha === 'string' ? commitSha : null,
+        workflow_name: 'ZASS CI',
+        job_name: 'zass-check',
+        run_id: null,
+        status: 'READ_ERROR',
+        conclusion: null,
+        run_url: null,
+        fetched_at: new Date().toISOString(),
+        error: { code: 'BETA_PROJECT_NOT_ALLOWED', message: 'This beta participant is not allowed to read CI for this repository.' }
+      };
+    }
+  }
   try {
     return ascRuntime_().zassCi.readZassCiStatusWithJsonReader({
       repository: repository,

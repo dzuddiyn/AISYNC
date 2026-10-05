@@ -54,7 +54,7 @@ const successEntry = {
   failure_reason: null,
   receipt_json: '{"status":"SUCCESS"}'
 };
-const persisted = sandbox.appendHistory(successEntry);
+const persisted = sandbox.appendHistory_(successEntry);
 assert.equal(persisted.ok, true);
 assert.equal(persisted.outcome, 'HISTORY_PERSISTED');
 assert.equal(persisted.rowNumber, 2);
@@ -64,17 +64,17 @@ assert.equal(
 );
 
 const failedEntry = { ...successEntry, request_id: 'req-t007-failed', status: 'FAILED', failure_reason: 'Persisted-state read failed.' };
-assert.equal(sandbox.appendHistory(failedEntry).ok, true);
+assert.equal(sandbox.appendHistory_(failedEntry).ok, true);
 assert.equal(rows[1][4], 'FAILED');
 
 const invalidEntry = { ...successEntry, status: 'PENDING' };
-const invalid = sandbox.appendHistory(invalidEntry);
+const invalid = sandbox.appendHistory_(invalidEntry);
 assert.equal(invalid.ok, false);
 assert.equal(invalid.error.code, 'INVALID_HISTORY_ENTRY');
 assert.equal(rows.length, 2);
 
 headerValues = headers.slice(0, 10);
-const headerFailure = sandbox.appendHistory(successEntry);
+const headerFailure = sandbox.appendHistory_(successEntry);
 assert.equal(headerFailure.ok, false);
 assert.equal(headerFailure.error.code, 'HISTORY_HEADER_MISMATCH');
 assert.equal(rows.length, 2);

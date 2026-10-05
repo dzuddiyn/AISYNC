@@ -159,7 +159,43 @@ function jobs(status = 'completed', conclusion = 'success') {
   assert.equal(w.calls.length, 0);
 }
 
+
+// T-020A1: signed-in but uninvited users cannot spend server-side CI reads via console/RPC.
+{
+  const w = createWorld([runs(), jobs()]);
+  w.context.ascAuthorizationContext_ = () => ({
+    activeUser: '',
+    effectiveUser: 'owner@example.test',
+    betaAuthorized: false
+  });
+  w.context.ascIsBetaActor_ = () => false;
+  w.context.ascBetaCanAccessRepository_ = () => false;
+  const result = w.context.getDashboardZassCiStatus(repository, commitSha);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'BETA_ACCESS_REQUIRED');
+  assert.equal(w.calls.length, 0);
+}
+
+// Project-scoped beta access rejects CI reads outside its allowed repository.
+{
+  const w = createWorld([runs(), jobs()]);
+  w.context.ascAuthorizationContext_ = () => ({
+    activeUser: '',
+    effectiveUser: 'owner@example.test',
+    betaAuthorized: true,
+    betaParticipantId: 'bp_ci',
+    betaAllowedProjects: ['AISYNC']
+  });
+  w.context.ascIsBetaActor_ = () => true;
+  w.context.ascBetaCanAccessRepository_ = () => false;
+  const result = w.context.getDashboardZassCiStatus(repository, commitSha);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, 'BETA_PROJECT_NOT_ALLOWED');
+  assert.equal(w.calls.length, 0);
+}
+
 console.log('T-012B Apps Script/dashboard CI read binding: PASS');
+console.log('T-020A1 beta CI access guard: PASS');
 console.log('GitHub Actions transport: GET-only');
 console.log('dashboard UI changes: none');
 console.log('real network / persistence writes: none');

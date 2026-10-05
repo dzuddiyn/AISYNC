@@ -18,7 +18,12 @@ const INDEX_HTML = read('Index.html');
     HtmlService: {
       createTemplateFromFile(name) { served.push(name); return { evaluate: () => output }; },
       XFrameOptionsMode: { ALLOWALL: 'ALLOWALL' }
-    }
+    },
+    Session: {
+      getActiveUser: () => ({ getEmail: () => 'owner@example.test' }),
+      getEffectiveUser: () => ({ getEmail: () => 'owner@example.test' })
+    },
+    ascIsBetaActor_: () => true
   };
   vm.createContext(ctx);
   vm.runInContext(CODE, ctx);
@@ -28,11 +33,11 @@ const INDEX_HTML = read('Index.html');
   ctx.doGet({ parameter: { view: 'Dashboard' } });
   ctx.doGet({ parameter: { view: 'dashboard' } });
   assert.deepStrictEqual(served, ['Index', 'Index', 'Index', 'Index', 'Dashboard']);
-  assert.match(DASH_HTML, /include\('DashboardClient'\)/);
+  assert.match(DASH_HTML, /include_\('DashboardClient'\)/);
   assert.match(CLIENT_FILE, /^\s*<script>/);
   assert.match(CLIENT_FILE, /<\/script>\s*$/);
-  assert.match(INDEX_HTML, /include\('Client'\)/, 'T-008 preview page still includes its own client');
-  assert.doesNotMatch(DASH_HTML, /include\('Client'\)/);
+  assert.match(INDEX_HTML, /include_\('Client'\)/, 'T-008 preview page still includes its own client');
+  assert.doesNotMatch(DASH_HTML, /include_\('Client'\)/);
   assert.doesNotMatch(CLIENT, /confirmAndSync|getConfirmSyncResult|SpreadsheetApp|UrlFetchApp|GITHUB_TOKEN/);
   assert.match(CLIENT, /getDashboardZassCiStatus\(repository, commitSha\)/, 'project detail requests factual commit-linked CI status');
   assert.match(CLIENT, /getDashboardProjectContinuity\(projectId\)/, 'workspace loads protected private thread summaries');

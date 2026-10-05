@@ -24,7 +24,7 @@ const HISTORY_WRITER_HEADERS = Object.freeze([
   'receipt_json'
 ]);
 
-function appendHistory(historyEntry) {
+function appendHistory_(historyEntry) {
   const validation = validateHistoryEntry_(historyEntry);
   if (!validation.valid) {
     return {

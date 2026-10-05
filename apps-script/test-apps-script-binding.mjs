@@ -14,6 +14,7 @@ const SHIMS = read('RuntimeShims.gs');
 const RUNTIME = read('AscRuntime.gs');
 const GITHUB_APP_AUTH = read('GitHubAppAuth.gs');
 const PRODUCTION_POLICY = read('ProductionWritePolicy.gs');
+const BETA_ACCESS = read('BetaAccess.gs');
 const CODE = read('Code.gs');
 const CLIENT = read('Client.html');
 
@@ -48,6 +49,7 @@ for (const [name, src] of [
   ['AscRuntime.gs', RUNTIME],
   ['GitHubAppAuth.gs', GITHUB_APP_AUTH],
   ['ProductionWritePolicy.gs', PRODUCTION_POLICY],
+  ['BetaAccess.gs', BETA_ACCESS],
   ['Code.gs', CODE],
   ['Client.html', CLIENT]
 ]) {
@@ -96,7 +98,7 @@ const Utilities = {
 const NOW = '2026-10-03T03:00:00.000Z';
 const nodeSha = (t) => createHash('sha256').update(t, 'utf8').digest('hex');
 
-function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser = OWNER } = {}) {
+function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser = OWNER, temporaryUserKey = 'temp-user-key' } = {}) {
   const github = { file: null, calls: [], commitCounter: 0, putMode, getMode: 'ok' };
   const authCalls = [];
   const cacheFaults = { remove: false, put: false, get: false };
@@ -201,7 +203,11 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
     },
     Session: {
       getActiveUser: () => ({ getEmail: () => activeUser }),
-      getEffectiveUser: () => ({ getEmail: () => OWNER })
+      getEffectiveUser: () => ({ getEmail: () => OWNER }),
+      getTemporaryActiveUserKey: () => temporaryUserKey
+    },
+    ScriptApp: {
+      getService: () => ({ getUrl: () => 'https://script.google.com/macros/s/TEST/exec' })
     },
     CacheService: {
       getUserCache: () => ({
@@ -217,6 +223,7 @@ function createWorld({ props = {}, putMode = 'ok', headerOk = true, activeUser =
   vm.runInContext(RUNTIME, context, { filename: 'AscRuntime.gs' });
   vm.runInContext(GITHUB_APP_AUTH, context, { filename: 'GitHubAppAuth.gs' });
   vm.runInContext(PRODUCTION_POLICY, context, { filename: 'ProductionWritePolicy.gs' });
+  vm.runInContext(BETA_ACCESS, context, { filename: 'BetaAccess.gs' });
   vm.runInContext(CODE, context, { filename: 'Code.gs' });
   const clock = { now: NOW };
   context.ascNow_ = () => clock.now;
@@ -264,6 +271,21 @@ const fullProps = {
   GITHUB_APP_PRIVATE_KEY: FAKE_PRIVATE_KEY,
   ASC_GITHUB_PROJECT_REGISTRY: JSON.stringify(REGISTRY)
 };
+const BETA_TEMP_KEY = 'beta-temp-user-key';
+const BETA_FINGERPRINT = nodeSha(BETA_TEMP_KEY);
+const betaProps = {
+  ...fullProps,
+  ['asc.beta.participant.v1.' + BETA_FINGERPRINT]: JSON.stringify({
+    schema_version: '0.1',
+    participant_id: 'bp_binding_test',
+    label: 'BETA-BINDING',
+    allowed_projects: ['AISYNC'],
+    invite_ids: ['bi_binding_test'],
+    enrolled_at: '2026-10-05T00:00:00.000Z',
+    expires_at: '2099-01-01T00:00:00.000Z',
+    state: 'ACTIVE'
+  })
+};
 
 async function run(world, envelope, confirmation) {
   const immediate = world.context.confirmAndSync({ fragment: encodeFragment(envelope), confirmation });
@@ -291,6 +313,37 @@ function assertNoTokenLeak(world, ...values) {
   assert.equal(b2.writeEnabled, true);
   assert.equal(b2.redirectConfigured, true);
   assert.equal(JSON.stringify(b2).includes(FAKE_TOKEN), false);
+}
+
+
+// 1b. Enrolled external beta actor can use the same protected preview/write path
+// while the Apps Script still executes with deployer authority.
+{
+  const w = createWorld({
+    props: betaProps,
+    activeUser: '',
+    temporaryUserKey: BETA_TEMP_KEY
+  });
+  const auth = JSON.parse(JSON.stringify(w.context.ascAuthorizationContext_()));
+  assert.equal(auth.owner, false);
+  assert.equal(auth.betaAuthorized, true);
+  assert.equal(auth.betaParticipantId, 'bp_binding_test');
+  assert.deepStrictEqual(auth.betaAllowedProjects, ['AISYNC']);
+
+  const p = JSON.parse(JSON.stringify(
+    w.context.previewAscRequest({ fragment: encodeFragment(envelopeWith(contractWith())) })
+  ));
+  assert.equal(p.state, 'SECURITY_VALID');
+  assert.equal(p.securityValid, true);
+  assert.equal(p.writeEnabled, true);
+
+  const { final } = await run(w, envelopeWith(contractWith()), confirmFor());
+  assert.equal(final.state === 'SYNCED' || final.state === 'SYNCED_REDIRECT_UNAVAILABLE', true);
+  assert.equal(final.receipt.status, 'SUCCESS');
+  assert.equal(final.receipt.verified, true);
+  assert.equal(w.github.calls.some((call) => call.options.method === 'put'), true);
+  assert.equal(w.rows.length, 1);
+  assertNoTokenLeak(w, p, final);
 }
 
 // 2. No persistence before explicit confirmation (T-008A gate preserved through the binding).
@@ -559,8 +612,8 @@ const preview = (w, env) => JSON.parse(JSON.stringify(w.context.previewAscReques
     ['too long', envelopeWith(contractWith(), 'R2', { issuedAt: '2026-10-03T02:59:00Z', expiresAt: '2026-10-03T03:30:00Z' }), 'LIFETIME_EXCEEDED', {}],
     ['tampered', tampered, 'INTEGRITY_MISMATCH', {}],
     ['unsealed', unsealed, 'INTEGRITY_DIGEST_INVALID', {}],
-    ['non-owner', envelopeWith(contractWith()), 'OWNER_REQUIRED', { activeUser: 'someone@example.test' }],
-    ['no active user', envelopeWith(contractWith()), 'OWNER_REQUIRED', { activeUser: '' }]
+    ['non-owner', envelopeWith(contractWith()), 'BETA_ACCESS_REQUIRED', { activeUser: 'someone@example.test' }],
+    ['no active user', envelopeWith(contractWith()), 'BETA_ACCESS_REQUIRED', { activeUser: '' }]
   ];
   for (const [label, env, code, opts] of cases) {
     const w = createWorld({ props: fullProps, ...opts });
@@ -601,12 +654,12 @@ const preview = (w, env) => JSON.parse(JSON.stringify(w.context.previewAscReques
   assert.equal(w2.github.calls.length + w2.rows.length + w2.replayKeys().length, 0);
 }
 
-// 16. Non-owner / identity change at confirm: no replay claim, zero I/O.
+// 16. Signed-in but uninvited / missing-user identity at confirm: access is denied before replay or I/O.
 for (const activeUser of ['someone@example.test', '']) {
   const w = createWorld({ props: fullProps, activeUser });
   const { final } = await run(w, envelopeWith(contractWith()), confirmFor());
-  assert.equal(final.stage, 'OWNER');
-  assert.equal(final.error.code, 'OWNER_REQUIRED');
+  assert.equal(final.stage, 'ACCESS');
+  assert.equal(final.error.code, 'BETA_ACCESS_REQUIRED');
   assert.equal(w.github.calls.length + w.rows.length + w.replayKeys().length + w.lockState.acquisitions, 0);
 }
 

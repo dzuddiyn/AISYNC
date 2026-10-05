@@ -623,3 +623,33 @@ UX findings: the Dashboard still says read-only project view even though Workspa
 Readiness evidence is recorded in proofs/t020a-human-beta-readiness.md. Existing T-015 through T-019 runtime/reliability boundaries remain accepted and are not reopened by this audit.
 
 Conclusion: T-020A is BLOCKED / NOT READY FOR HUMAN BETA. T-020 / AP-014 remains CURRENT. Implement the bounded Beta Access Gate and ordinary-user copy fixes, then rerun the exact readiness contract as a canary before counting any external beta journey.
+
+
+PF-080 | T-020A1 BETA ACCESS GATE — LOCAL PASS / LIVE PROOF PENDING
+
+Finding: T-020A readiness correctly blocked because Production v1 still used the owner-only Apps Script gate while D-031 requires invited Google-account humans behind an explicit production allowlist.
+
+Implementation direction now exists as a bounded access layer:
+- Apps Script web-app access is widened from MYSELF to ANYONE while execution remains USER_DEPLOYING, preserving access to the owner's existing server-side continuity/ASC DB/GitHub App authorities;
+- non-owner beta identity uses Session.getTemporaryActiveUserKey(), hashed with SHA-256 before persistence; raw temporary keys are never stored;
+- owner creates single-use, expiring invitations scoped to exact production project IDs;
+- invitation claim binds the current signed-in Google session fingerprint to a participant record with bounded expiry (maximum 29 days, below the temporary-key rotation window);
+- raw invitation token is returned only in the invitation URL and only its SHA-256 hash is stored;
+- participant access is project-scoped and enforced across dashboard reads, CI reads, private continuity, provider handoff/return, SAVE preparation and production GitHub write authorization;
+- ordinary preview/CONFIRM & SYNC accepts owner OR active beta actor but still uses the existing production project/path registry and GitHub App boundary;
+- privileged DR, telemetry, secret rotation and beta administration remain owner-only;
+- participant revocation deletes the allowlist record and is immediately effective;
+- expired invitation and expired participant records fail closed;
+- owner cannot accidentally consume a participant invitation;
+- server helpers that should not be browser-callable are private-suffixed where required.
+
+Local security/regression evidence:
+- T-020A1 beta access gate focused test PASS;
+- signed-in invitation -> hashed user allowlist -> project scope -> revoke PASS;
+- raw invitation/user keys not persisted or returned by admin listing PASS;
+- owner accidental-claim guard PASS;
+- expired invitation and expired participant fail closed;
+- full repository suite 33/33 test files PASS;
+- git diff --check PASS.
+
+Conclusion: T-020A1 is LOCAL PASS. Canonical SAVE/merge, protected deployment and a real non-owner Google-account enrollment/access/revocation proof remain required before the access blocker BETA-AUTH-001 can be closed.

@@ -57,9 +57,25 @@ export function authorizeProductionGitHubContract(contract, context, registry) {
   if (!registryValidation.ok) return { authorized: false, error: registryValidation.error };
   const owner = Boolean(context) && typeof context.activeUser === 'string' && context.activeUser.length > 0 &&
     context.activeUser === context.effectiveUser;
-  if (!owner) return { authorized: false, error: { code: 'OWNER_REQUIRED', message: 'Owner identity is required.' } };
+  const beta = Boolean(context) && context.betaAuthorized === true &&
+    typeof context.betaParticipantId === 'string' && context.betaParticipantId.length > 0;
+  if (!owner && !beta) {
+    return {
+      authorized: false,
+      error: { code: 'BETA_ACCESS_REQUIRED', message: 'Owner or invited beta access is required.' }
+    };
+  }
   if (!contract || typeof contract !== 'object' || Array.isArray(contract)) {
     return { authorized: false, error: { code: 'INVALID_CONTRACT', message: 'Contract is required.' } };
+  }
+  if (beta) {
+    const allowedProjects = Array.isArray(context.betaAllowedProjects) ? context.betaAllowedProjects : [];
+    if (!allowedProjects.includes(contract.Project)) {
+      return {
+        authorized: false,
+        error: { code: 'BETA_PROJECT_NOT_ALLOWED', message: 'This beta participant is not allowed to write this project.' }
+      };
+    }
   }
   const entry = registry.projects[contract.Project];
   if (!entry) return { authorized: false, error: { code: 'PROJECT_NOT_AUTHORIZED', message: 'Project is not in the production registry.' } };

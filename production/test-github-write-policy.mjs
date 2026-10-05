@@ -31,11 +31,19 @@ const contract = {
 };
 
 const owner = { activeUser: 'owner@example.test', effectiveUser: 'owner@example.test' };
+const beta = {
+  activeUser: '',
+  effectiveUser: 'owner@example.test',
+  betaAuthorized: true,
+  betaParticipantId: 'bp_test',
+  betaAllowedProjects: ['AISYNC']
+};
 
 assert.equal(validateProductionProjectRegistry(registry).ok, true);
 assert.equal(parseProductionProjectRegistryJson(JSON.stringify(registry)).ok, true);
 assert.equal(parseProductionProjectRegistryJson('{bad').error.code, 'REGISTRY_MALFORMED_JSON');
 assert.equal(authorizeProductionGitHubContract(contract, owner, registry).authorized, true);
+assert.equal(authorizeProductionGitHubContract(contract, beta, registry).authorized, true);
 
 const spec = resolveProductionGitHubWriteSpec({
   destination: 'GitHub',
@@ -65,7 +73,15 @@ for (const [label, changed, code] of [
 
 assert.equal(
   authorizeProductionGitHubContract(contract, { activeUser: 'other@example.test', effectiveUser: 'owner@example.test' }, registry).error.code,
-  'OWNER_REQUIRED'
+  'BETA_ACCESS_REQUIRED'
+);
+assert.equal(
+  authorizeProductionGitHubContract(
+    contract,
+    { ...beta, betaAllowedProjects: ['OTHER'] },
+    registry
+  ).error.code,
+  'BETA_PROJECT_NOT_ALLOWED'
 );
 
 assert.equal(validateProductionProjectRegistry({
