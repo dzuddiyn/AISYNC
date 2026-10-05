@@ -133,4 +133,4 @@ Canonical T-016 source merged through PR #13 at `cfbc379408080ee22b4eaf478354558
 
 Production reliability work is tracked in [OPERATIONS.md](./OPERATIONS.md).
 
-Current state: **T-019 IN PROGRESS**. T-019A through T-019G are LIVE PASS. T-019G proved protected deployment rollback v46 → immutable v44 and roll-forward v44 → immutable v46 with exact runtime verification, unchanged canonical GitHub, and stable development HEAD. Final operator runbook acceptance remains open.
+Current state: **T-019 PASS / T-020 CURRENT**. T-019A through T-019G are LIVE PASS and T-019H final operator runbook acceptance is PASS. Protected production is restored to v46 after the live rollback/roll-forward proof. Human Closed Beta is now the current delivery gate; Production v1 release acceptance remains queued afterward.

@@ -109,14 +109,14 @@ Pass / stop condition: the normal journey is usable without raw contracts, raw G
 Result: PASS — T-018A/B/C are canonical and protected production is v31. The owner journey passed real first-thread creation, Gemini DESIGN handoff, bounded provider return, non-mutating preview, secure owner-confirmed SAVE, factual GitHub/HISTORY receipt, truthful commit-linked CI/status reporting, saved-result continuity advance revision 1→2, and cross-provider reopen/transfer. Independent private-store verification confirmed handoff `ho_01M42Y3NBG6814SHNF374YWTZZ` and scoped reference `cr_01M42Y3RGRPMJKXXT79J223RRD` carry `source_revision: 2` plus the advanced saved checkpoint. Receiving ChatGPT then echoed exactly the same `thread_id`, `source_revision: 2`, advanced `current`, and `open: []`. Provider memory was not imported, providers received no write credentials, private continuity remained owner-only, and absent/stale CI/index state was reported factually instead of being mislabeled PASS.
 Feeds design: YES
 
-AP-013 | CURRENT
+AP-013 | PASS
 Action: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
 Dependencies: AP-009 through AP-012 — satisfied.
 Pass / stop condition: critical state can be recovered or rolled back truthfully without silent duplication/data loss and without exposing secrets.
-Current result: IN PROGRESS — T-019A through T-019G are LIVE PASS. T-019G live deployment/rollback proof repointed protected production from v46 to known-good immutable v44, verified rollback content 18/18 and unchanged canonical GitHub, then restored v46 and verified exact immutable v46 content 19/19; development HEAD remained stable 16/16. AP-013 remains CURRENT pending final operator runbook acceptance.
+Result: PASS — T-019A through T-019G are LIVE PASS and T-019H final operator runbook acceptance is PASS. The runbook has one authority-aware quick-start map, all documented operator function references resolve to source, all linked proof files exist, stale blocker wording is removed/marked historical, secret-literal scan is clean, 32/32 repository tests pass, and protected production is restored to v46. AP-013 is complete; AP-014 / T-020 Human Closed Beta becomes CURRENT.
 Feeds design: YES
 
-AP-014 | QUEUED
+AP-014 | CURRENT
 Action: Run a closed beta with invited humans. Minimum three distinct non-developer participants; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
 Dependencies: AP-009 through AP-013.
 Pass / stop condition: at least three participants complete the locked core journey without developer-side data repair or hidden manual patching of canonical/project state.
@@ -517,7 +517,7 @@ Pass interpretation: T-018's CI requirement is satisfied by truthful commit-link
 
 Boundary result: no provider received write credentials, no provider-local save was accepted as canonical persistence, PREVIEW remained non-mutating, private continuity remained owner-only, continuity advance created no extra GitHub/HISTORY write, stale revisions fail closed, and cross-provider transfer carried only scoped minimum continuity.
 
-Lifecycle result: T-018 / AP-012 PASS. AISYNC as a whole remains `DO IT`; T-019 / AP-013 becomes CURRENT. T-020 closed beta and T-021 Production v1 release acceptance remain queued before project-level `DELIVERED !!`.
+Historical checkpoint after T-018: T-018 / AP-012 PASS and T-019 / AP-013 became CURRENT while T-020/T-021 remained queued. Current tracking later in this file now records T-019 / AP-013 PASS and AP-014 / T-020 CURRENT. AISYNC remains `DO IT` until closed beta and release acceptance complete.
 
 Next gate: owner SAVE of the documentation-only T-018 closure/promote patch.
 
@@ -537,7 +537,7 @@ PF-070 | T-019A PRIVATE CONTINUITY RECOVERY — LIVE PASS
 
 Finding: canonical T-019A source merged through PR #38 at `115aafba5af21c1905c0073a4d299fe28cd93e5c` and deployed as protected Apps Script v32. The live owner-only proof restored the exact same private semantic state through a new authoritative file, proving the recovery path without changing project/thread meaning. Authority moved from `1LC5xtpMVc0TBP69b6Ael5COo5tBrBSlK` to `1Tengb02h3dbadqNP2d53vsBkVYc3UGYb`; baseline backup `14dAnxbSqF4zN55loZ_lZ6f7n66iH4KBu` and PRE_RESTORE safety backup `1EE6FUFLVYQ2NB_iU1UsAb6sKTdF2nfOB` were independently re-read as private and both contained state exactly equal to the restored authority. Schema remained 0.1, project count remained 2, and AISYNC continuity remained revision 2 with unchanged current/open semantics. Temporary proof deployment was removed, development HEAD restored/verified 16/16, and protected production remained @32.
 
-Conclusion: T-019A is LIVE PASS. T-019 / AP-013 remains CURRENT. Next reliability slice is replay/idempotency lifecycle; degraded/offline behavior, truthful telemetry, broader disaster recovery, secret rotation, deployment/rollback and final operator acceptance remain open.
+Historical checkpoint after T-019A: T-019A was LIVE PASS and T-019 / AP-013 remained CURRENT; replay/idempotency and later reliability slices were still ahead at that time. Those later slices are now completed through T-019H.
 
 
 PF-071 | T-019B REPLAY / IDEMPOTENCY LIFECYCLE — LOCAL PASS / SAVE GATE
@@ -600,3 +600,12 @@ Finding: individual releases had been deployed successfully, but T-019 still req
 Live proof started from protected production v46, repointed the same deployment to immutable v44, verified the pointer and exact v44 content 18/18, and independently confirmed canonical GitHub main was unchanged. Production was then rolled forward to immutable v46, verified against the pre-proof v46 release snapshot 19/19, while canonical GitHub again remained unchanged. Development HEAD remained independently stable at 16/16.
 
 Conclusion: deployment rollback and roll-forward are operationally proven. The deployment pointer is a separate authority from canonical Git, application data, continuity state, and credentials. T-019G is LIVE PASS; AP-013 remains CURRENT pending final operator runbook acceptance.
+
+
+PF-078 | T-019H FINAL OPERATOR RUNBOOK ACCEPTANCE — PASS
+
+Finding: after T-019A through T-019G had each passed their reliability slices, the remaining risk was operator ambiguity rather than missing runtime behavior. Historical checkpoint language could still read as if completed work were pending, and the runbook lacked one front-door decision map for choosing the correct authority-specific recovery procedure.
+
+Final acceptance added a single Operator quick start map, normalized stale checkpoint wording, and machine-audited the runbook. T-019A through T-019G each appear exactly once as top-level sections; all 7 documented operator function references resolve to current source; all linked canonical proof files exist; secret-literal scan is zero; stale-blocker scan is zero; 32/32 repository tests pass; git diff check passes; protected production is restored to v46 after live rollback/roll-forward proof; canonical Git state remains separate from deployment/data/continuity/credential authorities.
+
+Conclusion: T-019H PASS. T-019 / AP-013 is complete. AP-014 / T-020 Human Closed Beta becomes CURRENT. The project remains DO IT; T-021 release acceptance and explicit owner release acceptance are still required before DELIVERED !!.

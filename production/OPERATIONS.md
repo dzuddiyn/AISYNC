@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS / T-019F LIVE PASS / T-019G LIVE PASS**
+Status: **T-019 PASS — T-019A through T-019G LIVE PASS / T-019H FINAL RUNBOOK ACCEPTED**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -9,6 +9,22 @@ This runbook covers Production v1 reliability and recovery operations. It must p
 - Sheets remains operational/index state, not a competing canonical master.
 - Server credentials remain server-side.
 - Recovery must fail closed when the current state, schema, or write outcome cannot be established truthfully.
+
+## Operator quick start
+
+Use the incident symptom to choose the authority-specific procedure. Do not use one recovery mechanism to repair another authority.
+
+| Symptom / operator need | Use | Do not assume |
+| --- | --- | --- |
+| Private thread/continuity state is wrong or corrupted | T-019A backup/restore | Git rollback will not repair private continuity |
+| Duplicate/replayed request or uncertain retry eligibility | T-019B replay/idempotency | A repeated transport request is not automatically a safe semantic retry |
+| Front Door/server outage or lost response | T-019C degraded/offline | UNKNOWN is not FAILED and must not be blindly retried |
+| Need current production health evidence | T-019D truthful telemetry | Missing/unverified evidence is never PASS |
+| ASC DB loss/corruption, migration, or broader recovery | T-019E disaster recovery/migration safety | Do not switch DB pointers before validation/checksum proof |
+| GitHub App credential rotation/compromise | T-019F secret rotation | Do not revoke the old key before the new key is verified and rollback is available |
+| Bad Apps Script release / need release rollback | T-019G deployment rollback | Deployment rollback does not roll back Git, data, continuity, or credentials |
+
+Before any mutating recovery action: identify the current authority, record the current pointer/version/ID, choose a known-good target, verify the target independently, perform the smallest bounded mutation, then verify the post-state and retain rollback evidence.
 
 ## T-019A — Private continuity backup / restore
 
@@ -99,7 +115,7 @@ A backup whose state schema differs from the current supported schema fails clos
 
 `PRIVATE_CONTINUITY_BACKUP_UNSUPPORTED_STATE_VERSION`
 
-Migration must be an explicit later T-019 operation with its own transformer, backup, verification, and rollback proof. Never edit a backup JSON manually to bypass the version gate.
+T-019A never performs implicit schema migration. Broader migration safety and staged recovery are implemented under T-019E; schema-incompatible continuity backups still fail closed here. Never edit a backup JSON manually to bypass the version gate.
 
 ### Roll back a restore
 
@@ -136,7 +152,7 @@ Do not repair the pointer or JSON manually unless a later locked recovery proced
 
 T-019A protects against state-file corruption, bad mutation, operator mistake, and schema-incompatible restore attempts inside the owner-private Drive store.
 
-It is **not yet** account-wide disaster recovery. Backups remain within the same owner Drive environment. Broader disaster recovery, degraded/offline behavior, telemetry, secret rotation, deployment/rollback, and final operator acceptance remain T-019 work.
+T-019A by itself is not account-wide disaster recovery because its backups remain within the same owner Drive environment. Broader portable disaster recovery and migration safety are covered by T-019E; degraded/offline, telemetry, secret rotation, and deployment rollback are covered by T-019C/D/F/G respectively.
 
 ## Evidence
 
@@ -156,7 +172,7 @@ Local T-019A regression coverage proves:
 
 Fresh-clone full repository proof on canonical base `7f8cced5a2672cf4462674d7cd3450c2452e988e`: **28/28 test files PASS, git diff --check = 0**.
 
-Live Drive backup/restore proof is still pending canonical SAVE/merge/deployment.
+Live Drive backup/restore proof is complete; the canonical live evidence and protected-production result are recorded immediately below.
 
 
 ### Live production proof — PASS
@@ -497,7 +513,7 @@ Temporary proof version v43 used an owner-only harness above immutable v42. The 
 
 Canonical evidence: [`proofs/t019d-truthful-telemetry-live.md`](../proofs/t019d-truthful-telemetry-live.md).
 
-T-019D is therefore **LIVE PASS**. T-019 remains CURRENT pending broader disaster recovery, secret rotation, deployment/rollback, migration-safety closure where still required, and final operator runbook acceptance.
+T-019D is therefore **LIVE PASS**. At the T-019D checkpoint, broader disaster recovery, migration safety, secret rotation, deployment/rollback, and final runbook acceptance were still pending; those later slices are recorded below.
 
 
 ## T-019E — Broader disaster recovery / migration safety
@@ -611,7 +627,7 @@ Temporary proof v45 was undeployed, Apps Script development HEAD was restored an
 
 Canonical evidence: [`proofs/t019e-disaster-recovery-migration-live.md`](../proofs/t019e-disaster-recovery-migration-live.md).
 
-T-019E is therefore **LIVE PASS**. T-019 remains CURRENT pending secret rotation, deployment/rollback proof, and final operator runbook acceptance.
+T-019E is therefore **LIVE PASS**. At the T-019E checkpoint, secret rotation, deployment/rollback proof, and final runbook acceptance were still pending; those later slices are recorded below.
 
 
 ## T-019F — Secret rotation
@@ -684,7 +700,7 @@ Focused regression proves:
 - existing GitHub App auth tests remain PASS;
 - full repository regression passes.
 
-Canonical live evidence is recorded in [`proofs/t019f-secret-rotation-live.md`](../proofs/t019f-secret-rotation-live.md). T-019F is **LIVE PASS**. T-019 remains CURRENT pending deployment/rollback proof and final operator runbook acceptance.
+Canonical live evidence is recorded in [`proofs/t019f-secret-rotation-live.md`](../proofs/t019f-secret-rotation-live.md). T-019F is **LIVE PASS**. At the T-019F checkpoint, deployment/rollback proof and final runbook acceptance were still pending; T-019G below closes the deployment/rollback requirement.
 
 
 ## T-019G — Deployment / rollback
@@ -710,6 +726,29 @@ Deployment rollback must use a known immutable Apps Script version number, never
 
 Rolling back the deployment pointer does not roll back GitHub canonical data, ASC DB data, private continuity state, or credentials. Those authorities require their own recovery procedures documented in T-019A through T-019F.
 
-Canonical evidence: proofs/t019g-deployment-rollback-live.md.
+Canonical evidence: [`proofs/t019g-deployment-rollback-live.md`](../proofs/t019g-deployment-rollback-live.md).
 
-T-019G is **LIVE PASS**. T-019 remains CURRENT pending final operator runbook acceptance.
+T-019G is **LIVE PASS**. At the T-019G checkpoint, final operator runbook acceptance was the only remaining T-019 gate; T-019H below closes it.
+
+
+## T-019H — Final operator runbook acceptance
+
+Status: **PASS**
+
+Final acceptance verifies that the Production v1 reliability runbook is internally coherent and usable without hidden operator knowledge.
+
+Acceptance evidence:
+
+- one Operator quick start section routes incidents to the correct authority-specific T-019A–G procedure;
+- T-019A through T-019G each appear exactly once as top-level sections;
+- all 7 documented operator function references resolve to current source definitions;
+- all linked canonical proof files exist;
+- stale blocker wording from earlier checkpoints has been removed or explicitly marked historical;
+- secret-literal scan returns zero raw private-key/PAT/installation-token/Bearer values;
+- repository regression is 32/32 PASS and git diff check is clean;
+- protected production is restored to v46 T019F-secret-rotation after the T-019G rollback/roll-forward proof;
+- canonical Git state remains separate from deployment, continuity, ASC DB, and credential authorities.
+
+Canonical acceptance evidence: [`proofs/t019h-operator-runbook-acceptance.md`](../proofs/t019h-operator-runbook-acceptance.md).
+
+T-019 / AP-013 is **PASS**. The project remains in DO IT. T-020 Human Closed Beta becomes CURRENT; T-021 Production v1 Release remains queued and still requires explicit owner release acceptance before DELIVERED !!.
