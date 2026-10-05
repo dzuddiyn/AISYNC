@@ -133,4 +133,4 @@ Canonical T-016 source merged through PR #13 at `cfbc379408080ee22b4eaf478354558
 
 Production reliability work is tracked in [OPERATIONS.md](./OPERATIONS.md).
 
-Current state: **T-019 IN PROGRESS**. T-019A through T-019E are LIVE PASS. T-019F secret rotation is LOCAL PASS: GitHub App key candidates are prevalidated, promotion/verification is rollback-safe, finalization requires old-key revocation confirmation, status exposes no secret values, project freshness now uses GitHub App installation auth, and legacy `GITHUB_TOKEN` retirement is rollback-safe. T-019F SAVE/deploy/live rotation plus deployment/rollback proof and final operator acceptance remain open.
+Current state: **T-019 IN PROGRESS**. T-019A through T-019F are LIVE PASS. T-019F is protected production v46 and passed a real GitHub App key rotation with candidate validation, verified promotion, manual rollback, re-promotion, old-key revocation verification, finalization, legacy credential retirement, and final canonical GitHub read. Deployment/rollback proof and final operator acceptance remain open.

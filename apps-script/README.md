@@ -797,7 +797,7 @@ Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd4
 - Canonical implementation merged through PR #46 at `05f3a336bd41e8cf2f73ea2cb82e203328d852ca` and protected production is Apps Script v44 (`T019E-disaster-recovery-migration-safety`). Live proof `T019E-LIVE-20261004-131641-26c53994` PASS: private DR bundle validation, checksum-identical staged ASC DB creation, live pointer migration, dashboard/HISTORY target movement, rollback to the original DB, exact pre-proof DB config restoration, healthy-continuity refusal, unchanged HISTORY/continuity/GitHub, staged-copy cleanup, temporary v45 proof cleanup, and development HEAD restore 16/16 were all verified. See `proofs/t019e-disaster-recovery-migration-live.md`.
 
 
-## T-019F secret rotation — LOCAL PASS
+## T-019F secret rotation — LIVE PASS / DEPLOYED v46
 
 - GitHub App auth now supports config-specific token exchange so a staged key can be validated without changing the active key.
 - Owner-only secret rotation uses active / candidate / previous slots under the script lock.
@@ -808,4 +808,4 @@ Canonical implementation merged through PR #42 at `df6576a9d9655cf1c3b89072aacd4
 - ProjectFreshness.gs now uses the GitHub App installation token and contains no GITHUB_TOKEN dependency.
 - Legacy PAT retirement is owner-only and restores the PAT if GitHub App verification fails.
 - Focused and full repository regressions PASS locally.
-- Canonical SAVE, protected deploy, and live key rotation remain pending.
+- Canonical implementation merged through PR #48 at `a6b9921a9700b6f93a2d69ab3e0fb17407c9e424`; protected production is v46 and live rotation proof passed promote / rollback / re-promote, old-key revocation verification, finalization, legacy credential retirement, final canonical GitHub read, temporary proof cleanup, and development HEAD restore 16/16. See `proofs/t019f-secret-rotation-live.md`.
