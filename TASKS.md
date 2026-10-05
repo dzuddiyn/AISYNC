@@ -15,7 +15,7 @@ Source: AP-014, D-031
 Depends on: T-015 through T-019 — satisfied.
 Do: Run a closed beta with minimum three distinct non-developer humans; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
 Pass: minimum three distinct non-developer humans complete the core journey with factual evidence and without developer-side data repair or hidden canonical-state patching.
-Current result: NOT STARTED — T-019 reliability/operations is complete and the closed-beta gate is now unblocked.
+Current result: BLOCKED AT T-020A — Human Beta Readiness Check found BETA-AUTH-001: protected production is still `MYSELF` / owner-only, while D-031 requires invited Google-account users with an explicit production allowlist. The existing owner/effective-user authorization rule cannot become a valid multi-user allowlist merely by changing web-app access. Major UX readiness findings also remain: stale `read-only project view` wording, implementation-facing return/SAVE terminology, and ambiguous Public Front Door first-entry copy. Canonical audit: `proofs/t020a-human-beta-readiness.md`. T-020 remains CURRENT; no external beta participant should start until the Beta Access Gate is implemented and T-020A is rerun to PASS.
 
 ## Completed
 

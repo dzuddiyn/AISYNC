@@ -133,4 +133,4 @@ Canonical T-016 source merged through PR #13 at `cfbc379408080ee22b4eaf478354558
 
 Production reliability work is tracked in [OPERATIONS.md](./OPERATIONS.md).
 
-Current state: **T-019 PASS / T-020 CURRENT**. T-019A through T-019G are LIVE PASS and T-019H final operator runbook acceptance is PASS. Protected production is restored to v46 after the live rollback/roll-forward proof. Human Closed Beta is now the current delivery gate; Production v1 release acceptance remains queued afterward.
+Current state: **T-019 PASS / T-020 CURRENT — BLOCKED AT T-020A READINESS**. T-020A found that protected production is still owner-only (`MYSELF`) while D-031 requires invited Google-account beta users behind an explicit production allowlist. Major ordinary-user wording/entry issues are also recorded. No external beta journey should begin until the Beta Access Gate is implemented and T-020A is rerun to PASS. Production v1 release acceptance remains queued afterward.

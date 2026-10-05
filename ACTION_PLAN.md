@@ -116,10 +116,11 @@ Pass / stop condition: critical state can be recovered or rolled back truthfully
 Result: PASS — T-019A through T-019G are LIVE PASS and T-019H final operator runbook acceptance is PASS. The runbook has one authority-aware quick-start map, all documented operator function references resolve to source, all linked proof files exist, stale blocker wording is removed/marked historical, secret-literal scan is clean, 32/32 repository tests pass, and protected production is restored to v46. AP-013 is complete; AP-014 / T-020 Human Closed Beta becomes CURRENT.
 Feeds design: YES
 
-AP-014 | CURRENT
+AP-014 | CURRENT / BLOCKED AT READINESS
 Action: Run a closed beta with invited humans. Minimum three distinct non-developer participants; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
-Dependencies: AP-009 through AP-013.
+Dependencies: AP-009 through AP-013 — satisfied.
 Pass / stop condition: at least three participants complete the locked core journey without developer-side data repair or hidden manual patching of canonical/project state.
+Current result: T-020A Human Beta Readiness Check is BLOCKED by BETA-AUTH-001. Production remains `MYSELF` / owner-only while D-031 requires Google Account identity plus an explicit invited-user production allowlist. Major copy/usability findings also require cleanup before the first external tester. Implement the bounded Beta Access Gate, then rerun T-020A canary readiness before counting any human beta journey.
 Feeds design: YES
 
 AP-015 | QUEUED
@@ -609,3 +610,16 @@ Finding: after T-019A through T-019G had each passed their reliability slices, t
 Final acceptance added a single Operator quick start map, normalized stale checkpoint wording, and machine-audited the runbook. T-019A through T-019G each appear exactly once as top-level sections; all 7 documented operator function references resolve to current source; all linked canonical proof files exist; secret-literal scan is zero; stale-blocker scan is zero; 32/32 repository tests pass; git diff check passes; protected production is restored to v46 after live rollback/roll-forward proof; canonical Git state remains separate from deployment/data/continuity/credential authorities.
 
 Conclusion: T-019H PASS. T-019 / AP-013 is complete. AP-014 / T-020 Human Closed Beta becomes CURRENT. The project remains DO IT; T-021 release acceptance and explicit owner release acceptance are still required before DELIVERED !!.
+
+
+PF-079 | T-020A HUMAN BETA READINESS CHECK — BLOCKED
+
+Finding: T-019 closed reliability/operations successfully, but the first closed-beta readiness audit found one true access blocker and three major ordinary-user UX gaps before any external participant can be counted.
+
+BETA-AUTH-001 is a blocker: the protected Apps Script manifest still uses MYSELF / USER_DEPLOYING and the ordinary protected authorization path still assumes the owner session. D-031 instead requires invited Google-account users behind an explicit production allowlist. The current gate therefore cannot admit the minimum three distinct non-developer participants. Broadening the deployment alone is insufficient; the authorization boundary itself must distinguish invited beta humans from privileged owner-only operations while preserving owner-executed access to the private continuity store, ASC DB and GitHub App boundary.
+
+UX findings: the Dashboard still says read-only project view even though Workspace now creates private continuity and prepares SAVE; the ordinary return/SAVE journey exposes implementation-facing ASC_METHOD_RESULT / PREVIEW RETURN / PREPARE ASC SAVE / private-thread terminology; and the Public Front Door mixes pending-request sign-in recovery with new-conversation handoff on the same first screen. ROUTE OVERRIDE is a minor terminology issue; DUMP / DECIDE / DESIGN remains the locked visible routing contract.
+
+Readiness evidence is recorded in proofs/t020a-human-beta-readiness.md. Existing T-015 through T-019 runtime/reliability boundaries remain accepted and are not reopened by this audit.
+
+Conclusion: T-020A is BLOCKED / NOT READY FOR HUMAN BETA. T-020 / AP-014 remains CURRENT. Implement the bounded Beta Access Gate and ordinary-user copy fixes, then rerun the exact readiness contract as a canary before counting any external beta journey.
