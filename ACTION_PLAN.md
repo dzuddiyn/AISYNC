@@ -129,6 +129,28 @@ Dependencies: AP-014 PASS.
 Pass / stop condition: Production v1 release evidence is complete and the owner explicitly accepts the release. Only then may project lifecycle advance to DELIVERED !!.
 Feeds design: YES
 
+
+## Post-Production v1 future direction
+
+**Status:** LOCKED FUTURE WORK — NOT ACTIVE
+
+After AP-015 / T-021 reaches Production v1 release acceptance and the project is `DELIVERED !!`, the future productization direction is:
+
+```text
+ZASS CR-010 v0.4 + closure
+→ npm bootstrap CLI / ZASS Project Bootstrap Core
+→ AISYNC Create New Project → GitHub repository
+→ seed ZASS files
+→ register project
+→ continue in DESIGN
+```
+
+AISYNC must consume the shared ZASS Project Bootstrap Core rather than duplicate bootstrap semantics. GitHub remains canonical for project artifacts; AISYNC owns create-project UX/integration, registration, and progress/current-state projection.
+
+See [`docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md`](docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md).
+
+This section does **not** add a current AP/T task and must not interrupt T-020 or AP-015.
+
 ## UI data requirements
 
 Source: D-012
