@@ -128,7 +128,9 @@ function ascAuthorizationContext_() {
 // Current protected deployment remains owner-only. T-018 may broaden the human
 // allowlist without weakening the production project/path registry.
 function ascIsOwner_(context) {
-  return Boolean(context) && typeof context.activeUser === 'string' && context.activeUser.length > 0 &&
+  if (!context || typeof context !== 'object') return false;
+  if (context.owner === true) return true;
+  return typeof context.activeUser === 'string' && context.activeUser.length > 0 &&
     context.activeUser === context.effectiveUser;
 }
 
