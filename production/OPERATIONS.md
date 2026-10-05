@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS / T-019F LIVE PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS / T-019F LIVE PASS / T-019G LIVE PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -685,3 +685,31 @@ Focused regression proves:
 - full repository regression passes.
 
 Canonical live evidence is recorded in [`proofs/t019f-secret-rotation-live.md`](../proofs/t019f-secret-rotation-live.md). T-019F is **LIVE PASS**. T-019 remains CURRENT pending deployment/rollback proof and final operator runbook acceptance.
+
+
+## T-019G — Deployment / rollback
+
+Status: **LIVE PASS**
+
+T-019G proves that the protected Apps Script deployment can be moved between known immutable release versions without rebuilding source, rewriting canonical Git state, or changing development HEAD.
+
+### Live sequence
+
+1. Confirm protected production baseline at v46 (T019F-secret-rotation).
+2. Repoint the protected deployment to immutable v44 with proof label T019G-rollback-proof-v44.
+3. Pull v44 directly by version number and verify exact runtime content against the known v44 release snapshot: 18/18 files.
+4. Independently confirm canonical GitHub main is unchanged.
+5. Repoint protected production back to immutable v46 with label T019F-secret-rotation.
+6. Pull v46 directly by version number and verify exact runtime content against the pre-proof immutable v46 verification snapshot: 19/19 files.
+7. Confirm canonical GitHub main is still unchanged.
+8. Re-pull development HEAD and verify it remains equal to the saved pre-proof snapshot: 16/16 files.
+
+### Operator rule
+
+Deployment rollback must use a known immutable Apps Script version number, never a reconstructed approximation of an older release. Before moving the protected pointer, record the current production version and the intended rollback target. After every pointer change, re-read clasp deployments and pull the target by exact version number for independent verification.
+
+Rolling back the deployment pointer does not roll back GitHub canonical data, ASC DB data, private continuity state, or credentials. Those authorities require their own recovery procedures documented in T-019A through T-019F.
+
+Canonical evidence: proofs/t019g-deployment-rollback-live.md.
+
+T-019G is **LIVE PASS**. T-019 remains CURRENT pending final operator runbook acceptance.

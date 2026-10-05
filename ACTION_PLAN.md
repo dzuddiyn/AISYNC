@@ -113,7 +113,7 @@ AP-013 | CURRENT
 Action: Add Production v1 reliability/operations: degraded/offline behavior, backup/restore, migration safety, replay/idempotency lifecycle, truthful telemetry, secret rotation, deployment, rollback, and operator runbook.
 Dependencies: AP-009 through AP-012 — satisfied.
 Pass / stop condition: critical state can be recovered or rolled back truthfully without silent duplication/data loss and without exposing secrets.
-Current result: IN PROGRESS — T-019A through T-019F are LIVE PASS. T-019F canonical source merged through PR #48 at `a6b9921a9700b6f93a2d69ab3e0fb17407c9e424`, protected production is v46, and the live rotation proof passed candidate validation, promote/verify, canonical GitHub read, manual rollback, revalidation/re-promotion, old-key revocation verification, finalization, legacy credential retirement, and final canonical read with no returned credential material. Temporary proof v47 was removed and development HEAD restored/verified 16/16. AP-013 remains CURRENT pending deployment/rollback proof and final operator runbook acceptance.
+Current result: IN PROGRESS — T-019A through T-019G are LIVE PASS. T-019G live deployment/rollback proof repointed protected production from v46 to known-good immutable v44, verified rollback content 18/18 and unchanged canonical GitHub, then restored v46 and verified exact immutable v46 content 19/19; development HEAD remained stable 16/16. AP-013 remains CURRENT pending final operator runbook acceptance.
 Feeds design: YES
 
 AP-014 | QUEUED
@@ -591,3 +591,12 @@ Rotation status emits only key-presence booleans, SHA-256 fingerprints, legacy-t
 Project freshness now reuses GitHub App installation auth rather than GITHUB_TOKEN. A bounded retirement primitive removes the legacy PAT only after App authentication succeeds and restores the PAT on failure.
 
 Focused tests prove candidate validation, promotion, auto-rollback, manual rollback, revocation-gated finalize, legacy PAT retirement/rollback, duplicate/missing-candidate safety, and no-secret status output. Canonical implementation then merged through PR #48 at `a6b9921a9700b6f93a2d69ab3e0fb17407c9e424`, deployed as protected Apps Script v46, and passed live proof: a real newly generated candidate key validated, promoted, read canonical GitHub, rolled back, revalidated, and promoted again; the old GitHub-side key was then revoked and independently failed auth before finalization; previous local secret and legacy PAT were removed; the new active key still read canonical GitHub; no secret value was exposed; temporary proof v47 was removed; development HEAD restored/verified 16/16. T-019F is LIVE PASS.
+
+
+PF-077 | T-019G DEPLOYMENT / ROLLBACK — LIVE PASS
+
+Finding: individual releases had been deployed successfully, but T-019 still required proof that the protected production pointer could be rolled back to a known-good immutable release and restored again without conflating deployment state with Git/source state.
+
+Live proof started from protected production v46, repointed the same deployment to immutable v44, verified the pointer and exact v44 content 18/18, and independently confirmed canonical GitHub main was unchanged. Production was then rolled forward to immutable v46, verified against the pre-proof v46 release snapshot 19/19, while canonical GitHub again remained unchanged. Development HEAD remained independently stable at 16/16.
+
+Conclusion: deployment rollback and roll-forward are operationally proven. The deployment pointer is a separate authority from canonical Git, application data, continuity state, and credentials. T-019G is LIVE PASS; AP-013 remains CURRENT pending final operator runbook acceptance.
