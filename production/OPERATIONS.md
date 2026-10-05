@@ -1,6 +1,6 @@
 # AISYNC Production Operations Runbook
 
-Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS / T-019F LOCAL PASS**
+Status: **T-019 IN PROGRESS — T-019A LIVE PASS / T-019B LIVE PASS / T-019C LIVE PASS / T-019D LIVE PASS / T-019E LIVE PASS / T-019F LIVE PASS**
 
 This runbook covers Production v1 reliability and recovery operations. It must preserve the existing authority boundaries:
 
@@ -616,7 +616,7 @@ T-019E is therefore **LIVE PASS**. T-019 remains CURRENT pending secret rotation
 
 ## T-019F — Secret rotation
 
-Status: **LOCAL PASS / canonical SAVE + protected deploy + live rotation pending**
+Status: **LIVE PASS — canonical source merged, protected production v46, live key rotation and old-key retirement proof complete**
 
 ### Credential boundary
 
@@ -684,4 +684,4 @@ Focused regression proves:
 - existing GitHub App auth tests remain PASS;
 - full repository regression passes.
 
-T-019F remains LOCAL PASS until canonical SAVE, protected deployment, and live key rotation / old-key retirement proof complete.
+Canonical live evidence is recorded in [`proofs/t019f-secret-rotation-live.md`](../proofs/t019f-secret-rotation-live.md). T-019F is **LIVE PASS**. T-019 remains CURRENT pending deployment/rollback proof and final operator runbook acceptance.
