@@ -831,3 +831,14 @@ Cost/isolation: Companion conversational inference and Core semantic inference a
 This supersedes the earlier implication that WhatsApp/Telegram general AI chat must run directly through CrossAI Core/AI Router. Current T-020/T-021 acceptance remains unchanged.
 
 See `docs/CROSSAI_COMPANION_ARCHITECTURE.md`, `docs/CROSSAI_PRODUCT_DIRECTION.md`, `docs/CROSSAI_CHANNEL_GATEWAY.md`, and `docs/CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`.
+
+
+PF-093 refinement — ACCOUNT BINDING LOCKED
+
+CrossAI Web is the account-binding authority for Companion channels. Telegram baseline UX is locked as: CrossAI Web displays the shared Companion bot identity plus a short-lived user binding code; user opens the bot, starts the binding flow, enters the code, and the backend verifies then links `telegram_user_id ↔ crossai_user_id`. Only after successful binding may Companion resolve the user's authorized CrossAI Ideas/Decisions/Projects scope.
+
+WhatsApp should achieve the equivalent verified mapping through the best supported platform mechanism available at implementation time, potentially QR/deep-link or another explicit verification action. Exact WhatsApp API/account mechanics remain future DESIGN work.
+
+The binding code/credential is an authorization artifact, not a permanent identity/password. Final expiry, single-use/replay protection, revocation, re-binding and recovery mechanics remain implementation work. Silent or ambiguous account attachment is prohibited.
+
+See `docs/CROSSAI_COMPANION_ARCHITECTURE.md` and `docs/CROSSAI_PRODUCT_DIRECTION.md`.
