@@ -808,3 +808,26 @@ Runtime portability is preserved: Apps Script may serve beta/small deployment, w
 This is SAVED/AGREED architecture direction, not yet promoted to an implementation lock. Exact provider roster, free quota, BYOK credential mechanics, premium pricing, provider privacy policy, queue implementation, runtime migration trigger and billing remain future DESIGN decisions.
 
 See `docs/CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`.
+
+
+PF-093 | CROSSAI COMPANION + CROSSAI COMPATIBLE + CORE INTELLIGENCE — LOCKED FUTURE ARCHITECTURE DIRECTION
+
+ZASS outcome:
+
+DUMP: Ordinary CrossAI users benefit from a personal conversational AI that can discover/capture ideas, but putting general AI chat directly inside CrossAI Core creates channel/provider/inference complexity and overlaps with users who already have assistants such as Temaya.
+
+DISTILL: Separate general conversation from idea-continuity governance. Define two AI roles: Companion AI for human conversation and CrossAI Intelligence for low-volume semantic screening/governance.
+
+DECIDE: CrossAI Companion is an OPTIONAL CrossAI-compatible add-on, not Core. Companion should use a separate application/runtime/deployment from Core; an Apps Script deployment is acceptable for a small/beta phase but is not permanently required. One shared Telegram bot/service may serve many privately scoped users. One shared WhatsApp endpoint/account may serve many users subject to final WhatsApp architecture. Personalization/isolation comes from identity mapping and scoped context, not one executable bot per user.
+
+DESIGN: WhatsApp/Telegram/Web Chat → CrossAI Companion → CrossAI Compatible → CrossAI Core. Temaya, Kerani AI and third-party assistants may connect directly through CrossAI Compatible without using Companion. CrossAI Compatible is the stable integration boundary for identity binding, idea/decision candidates, confirmed SAVE, scoped context, project linking, handoff/return and factual receipts; exact API schema/auth remain future DESIGN work.
+
+Core intelligence: CrossAI Core MAY use its own AI API/model for idea detection, classification, summarization, relation/deduplication, retrieval assistance and semantic promotion suggestions. This AI is narrow control-plane/semantic intelligence, not a general chatbot. Routine screening should prefer economical models and stronger models only when justified.
+
+Governance is LOCKED as: **AI interprets. ASC governs. User decides.** AI suggestions do not silently become canonical Ideas/Decisions/Projects without confirmation or an explicitly authorized deterministic rule.
+
+Cost/isolation: Companion conversational inference and Core semantic inference are separate runtime/cost domains. Companion quota/failure must not remove access to CrossAI continuity.
+
+This supersedes the earlier implication that WhatsApp/Telegram general AI chat must run directly through CrossAI Core/AI Router. Current T-020/T-021 acceptance remains unchanged.
+
+See `docs/CROSSAI_COMPANION_ARCHITECTURE.md`, `docs/CROSSAI_PRODUCT_DIRECTION.md`, `docs/CROSSAI_CHANNEL_GATEWAY.md`, and `docs/CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`.

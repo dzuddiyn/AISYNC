@@ -43,6 +43,14 @@ See [`docs/CROSSAI_PRODUCT_DIRECTION.md`](docs/CROSSAI_PRODUCT_DIRECTION.md).
 
 ---
 
+## CrossAI Companion
+
+CrossAI Core is **not** the general chatbot. **CrossAI Companion** is an optional conversational add-on for ordinary users; Temaya, Kerani AI and other assistants may integrate directly through a **CrossAI Compatible** boundary. One shared channel bot/service can serve many privately scoped users. CrossAI Core may use narrow AI intelligence for idea screening/governance, while Companion owns general conversational inference.
+
+See [`docs/CROSSAI_COMPANION_ARCHITECTURE.md`](docs/CROSSAI_COMPANION_ARCHITECTURE.md).
+
+---
+
 ## CrossAI Channel Gateway
 
 CrossAI channels are interchangeable gateways into the same ASC continuity. **WhatsApp, Telegram and Web should normalize into one channel contract and the same ASC Core; no channel owns semantic memory.** CrossAI must not promise “free unlimited”: channel, AI-provider and runtime quotas/costs are product/runtime concerns and may change as usage scales.

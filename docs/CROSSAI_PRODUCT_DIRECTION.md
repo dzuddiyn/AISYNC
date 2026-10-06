@@ -245,33 +245,33 @@ When a channel/runtime is busy or rate-limited, CrossAI must degrade truthfully 
 
 See [`CROSSAI_CHANNEL_GATEWAY.md`](CROSSAI_CHANNEL_GATEWAY.md).
 
-## 6. Messaging channels as real AI chat
+## 6. CrossAI Companion = optional conversational add-on
 
-LOCKED direction:
+LOCKED:
 
-WhatsApp and Telegram may act as full conversational CrossAI clients backed by selectable AI APIs/models.
+> **CrossAI Core is not the chatbot. CrossAI Companion is an optional conversational add-on that is CrossAI-compatible.**
+
+Ordinary users may choose Companion for general AI conversation and low-friction idea discovery/capture. Users who already have another assistant, such as Temaya, do not need Companion.
+
+General conversational channel adapters belong to the Companion side:
 
 ```text
 WhatsApp ─┐
-Telegram ─┼→ ASC continuity + retrieval
-          ↓
-       AI Router
-   ├─ provider/model A
-   ├─ provider/model B
-   ├─ provider/model C
-   └─ future/BYOK providers
+Telegram ─┼→ CrossAI Companion → CrossAI Compatible → CrossAI Core
+Web Chat ─┘
 ```
 
-Users may change the selected intelligence while preserving the same CrossAI continuity.
+One shared Telegram bot/service may serve many users. One shared WhatsApp Companion endpoint/account may also serve many users subject to the final WhatsApp account/provider architecture. Personal experience comes from identity binding and private scope, not one executable bot per user.
 
-Example user intents:
-- “Tukar AI.”
-- “Saya nak reasoning lain.”
-- “Ask another AI.”
+CrossAI Compatible is the stable integration boundary for Companion, Temaya, Kerani AI and future third-party assistants.
 
-CrossAI supplies the relevant factual/scoped context to the selected AI rather than relying on the new provider's ambient memory.
+CrossAI Core may still use its own narrow **CrossAI Intelligence** model/API for idea screening, classification, relation/deduplication, summarization, retrieval assistance and semantic promotion suggestions. That intelligence is not the general conversational AI.
 
-Provider availability, free tiers, quotas, pricing, and supported modalities are runtime/provider concerns and must not be hard-coded as permanent product promises.
+LOCKED governance:
+
+> **AI interprets. ASC governs. User decides.**
+
+See [`CROSSAI_COMPANION_ARCHITECTURE.md`](CROSSAI_COMPANION_ARCHITECTURE.md).
 
 ## 7. CrossAI Guide / Help
 
@@ -725,3 +725,18 @@ SAVED/AGREED direction:
 - throughput/backpressure must be truthful, retry-safe and idempotent.
 
 See [`CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`](CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md).
+
+
+## 21. Companion / Core separation — locked
+
+CrossAI Companion is an optional conversational product, not the CrossAI Core semantic engine.
+
+- Companion owns general conversational AI and general chat channel adapters;
+- CrossAI Compatible is the integration boundary into Core;
+- one shared channel bot/service may serve many privately scoped users;
+- CrossAI Core may use narrow AI intelligence for screening/governance;
+- Core AI is not the general-purpose chatbot;
+- Companion failure/quota exhaustion must not remove access to CrossAI continuity;
+- Temaya, Kerani AI and future assistants may integrate without using Companion.
+
+See [`CROSSAI_COMPANION_ARCHITECTURE.md`](CROSSAI_COMPANION_ARCHITECTURE.md).

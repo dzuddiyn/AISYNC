@@ -99,7 +99,7 @@ All remain one CrossAI continuity system.
 
 LOCKED future product direction:
 
-WhatsApp is a first-class CrossAI channel target alongside Telegram and Web.
+WhatsApp remains a first-class future channel target. For general AI chat, WhatsApp/Telegram/Web Chat should normally terminate at CrossAI Companion, which then uses the CrossAI Compatible boundary to reach Core.
 
 Primary ordinary-user value:
 
@@ -248,3 +248,26 @@ Future DESIGN work must decide:
 - privacy/retention rules for transient channel payloads;
 - cross-channel thread mapping.
 
+
+
+## 13. Companion boundary refinement
+
+LOCKED refinement:
+
+General conversational messaging traffic should not make CrossAI Core itself the chatbot.
+
+```text
+WhatsApp / Telegram / Web Chat
+              ↓
+       CrossAI Companion
+              ↓
+       CrossAI Compatible
+              ↓
+         CrossAI Core
+```
+
+CrossAI Companion may be a separate runtime/deployment and may serve many users through one channel bot/account endpoint with strict per-user identity/context isolation.
+
+Non-conversational or specialist clients such as Temaya or Kerani AI may integrate directly through CrossAI Compatible without using Companion.
+
+See `CROSSAI_COMPANION_ARCHITECTURE.md`.
