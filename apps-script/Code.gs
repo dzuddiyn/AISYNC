@@ -2,6 +2,8 @@
 // ?view=dashboard = project dashboard.
 // ?view=beta-enroll = one-time closed-beta enrollment.
 // ?view=beta-access = owner-only invitation/participant administration.
+// ?view=crossai-auth = protected auth-check / return-to-public-start surface.
+// ?view=crossai-start = protected new CrossAI conversation start / return surface.
 function doGet(e) {
   const view = e && e.parameter ? e.parameter.view : undefined;
 
@@ -10,7 +12,7 @@ function doGet(e) {
     template.inviteToken = e && e.parameter && typeof e.parameter.invite === 'string'
       ? e.parameter.invite
       : '';
-    template.dashboardUrl = ScriptApp.getService().getUrl() + '?view=dashboard';
+    template.crossAiUrl = 'https://dzuddiyn.github.io/AISYNC/asc/';
     return template
       .evaluate()
       .setTitle('AISYNC — Join Closed Beta')
@@ -42,11 +44,27 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
+  if (view === 'crossai-auth') {
+    return HtmlService
+      .createTemplateFromFile('CrossAiAuth')
+      .evaluate()
+      .setTitle('CrossAI — Sign-in Ready')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
+  if (view === 'crossai-start') {
+    return HtmlService
+      .createTemplateFromFile('CrossAiStart')
+      .evaluate()
+      .setTitle('CrossAI — Start')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
   if (view === 'dashboard') {
     return HtmlService
       .createTemplateFromFile('Dashboard')
       .evaluate()
-      .setTitle('ASC — Dashboard')
+      .setTitle('ASC — Operator Dashboard')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
   return HtmlService
