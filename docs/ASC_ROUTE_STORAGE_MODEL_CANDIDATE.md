@@ -1,126 +1,130 @@
-# ASC Route Storage Model — Product Direction + Open Storage Details
+# ASC Route Storage Model — Drive-First Product Direction
 
-**Status:** PARTIALLY PROMOTED — PRODUCT DIRECTION LOCKED / DECIDE STORAGE DETAILS OPEN  
+**Status:** LOCKED PRODUCT DIRECTION  
 **Date:** 2026-10-06  
-**Source:** Project Owner idea  
-**Scope:** Future CrossAI Sync / AISYNC storage model by DUMP / DECIDE / DESIGN route  
-**Priority:** Future architecture; non-blocking for T-020 Human Closed Beta
+**Source:** Project Owner  
+**Scope:** Future CrossAI Sync durable storage by semantic route  
+**Priority:** Future architecture; non-blocking for current T-020/T-021
 
-## Core idea
+## Supersession
 
-Use a different persistence model for each top-level user intent instead of forcing every CrossAI interaction into the same GitHub/project structure.
+This document supersedes the earlier route-storage candidate that proposed:
 
-```text
-DUMP
-→ no GitHub account required
-→ conversation / continuity / history stored inside ASC
+- a consolidated GitHub DECIDE repository; and
+- one mandatory GitHub repository per DESIGN project.
 
-DECIDE
-→ one GitHub repository for the user's selection history
-→ each selection is organized by selection title/topic
-→ one user may accumulate many historical selection records
+Those GitHub-first defaults are no longer current.
 
-DESIGN
-→ each project gets its own GitHub repository
-→ project artifacts live independently in that repository
-→ ASC / CrossAI Sync reads/synchronizes the project state back for workspace/progress views
-```
+## Locked onboarding
 
-## Route rationale
+> **Login Google → allow Google Drive Access → terus guna CrossAI. GitHub hanya muncul bila memang berguna.**
 
-### AI CHAT / DUMP — ASC-native
-
-DUMP is casual/exploratory continuity. Requiring GitHub before a user can simply unload ideas would add unnecessary onboarding friction.
-
-Locked product direction:
+## Locked default storage model
 
 ```text
-AI CHAT (internal DUMP)
-→ ASC private storage
-→ no GitHub account prerequisite
-→ portable/retrievable continuity
+CrossAI
+  │
+  ├─ AI CHAT / Ideas
+  │    └─ user's Google Drive
+  │
+  ├─ Decisions / Selection History
+  │    └─ user's Google Drive
+  │
+  └─ Projects / DESIGN
+       └─ user's Google Drive
+             │
+             └─ optional [ CONNECT GITHUB ]
 ```
 
-This aligns with the existing separation between private continuity authority and Git-backed project-artifact authority.
+Google Drive is the default durable store for ordinary user-owned CrossAI content.
 
-### DECIDE — consolidated selection history
+GitHub is optional.
 
-DECIDE produces structured selection records rather than a full independent software/project repository every time.
+## AI CHAT / Ideas
 
-Candidate direction:
+Durable saved ideas live in the user's Google Drive by default. CrossAI may retain service/index/reference metadata centrally, but durable user-owned content does not require GitHub.
+
+## Decisions / Selection History
+
+Decisions and selection history live in the user's Google Drive by default.
+
+A GitHub account/repository is not required to compare options, save a decision, retain rationale, or browse prior selections.
+
+The former candidate of one consolidated GitHub Selection History repository is **SUPERSEDED as the default**. A Git representation may later be offered only as an explicit optional integration/export.
+
+## Projects / DESIGN
+
+LOCKED:
+
+> **One DESIGN project = one durable project space. GitHub is optional.**
+
+Default:
 
 ```text
-one DECIDE history repository
-    ├── selection topic A
-    ├── selection topic B
-    ├── selection topic C
-    └── ...
+Project
+→ user-owned Google Drive project space
 ```
 
-The user can therefore retain many historical choices in one Git-backed selection history rather than creating one repository per comparison.
+GitHub appears only when useful for:
 
-Exact repository ownership, naming, visibility, folder layout, and whether the repository is user-owned or service-managed remain open.
+- version control;
+- coding workflow;
+- collaboration;
+- CI;
+- public repositories;
+- technical provenance.
 
-### DESIGN — repository per project
-
-DESIGN creates durable project state and therefore maps naturally to one independent GitHub repository per project.
-
-Locked product direction:
+Optional Git-enabled mode:
 
 ```text
-Project A → GitHub repo A
-Project B → GitHub repo B
-Project C → GitHub repo C
+Project in Drive
+   ↓
+[ CONNECT GITHUB ]
+   ↓
+create or link repository
 ```
 
-Each project remains independently inspectable and maintainable outside CrossAI Sync.
-
-ASC may register/index the repository and project current state so CrossAI can display project progress without becoming a competing semantic Source of Truth.
-
-## Route model
-
-```text
-CrossAI Sync
-    │
-    ├── AI CHAT / DUMP
-    │     └── ASC-native private continuity/history
-    │
-    ├── DECIDE
-    │     └── consolidated GitHub selection-history repository
-    │           └── records grouped by selection title/topic
-    │
-    └── DESIGN
-          └── one GitHub repository per project
-                └── ZASS project artifacts
-                     ↓
-                   ASC index / project progress projection
-```
-
-## Open storage/design questions
-
-The product direction is locked, while these implementation/storage details deliberately remain open:
-
-- whether DECIDE requires the user to have a GitHub account;
-- whether CrossAI creates/owns a DECIDE history repository on behalf of a user;
-- private/public default for DECIDE and DESIGN repositories;
-- exact folder/file naming for selection topics;
-- export/migration path from DUMP into DECIDE or DESIGN;
-- when an existing DUMP becomes a persisted DECIDE/DESIGN artifact;
-- retention/deletion controls for ASC-native DUMP history;
-- repository quota/rate-limit implications;
-- multi-user/team ownership model.
+When GitHub is enabled, CrossAI must state which artifacts are Git-backed. GitHub may become canonical for those selected Git-backed artifacts; Google Drive remains the durable home/authority for ordinary non-Git content and files. CrossAI must not silently maintain two editable semantic masters for the same artifact.
 
 ## Authority guardrail
 
-This candidate must preserve the existing authority split:
+Default authority:
 
-- ASC-private storage may be authoritative for private DUMP continuity;
-- GitHub may be authoritative for Git-backed DECIDE/DESIGN artifacts;
-- ASC indexes/projections must not silently become a second semantic master;
-- moving from DUMP → DECIDE or DESIGN must be an explicit transition, not an invisible persistence change.
+```text
+ordinary durable user content
+→ user's Google Drive
+```
 
-## Canonical product-direction reference
+Optional authority:
 
-The broader user-facing direction is now locked in [`CROSSAI_PRODUCT_DIRECTION.md`](CROSSAI_PRODUCT_DIRECTION.md).
+```text
+explicitly Git-enabled artifact
+→ GitHub canonical for that Git-backed artifact
+```
 
-DECIDE repository ownership/account/privacy/layout details remain open and should be resolved during future DESIGN/productization work.
+CrossAI/ASC may maintain indexes, references, routing metadata, receipts and derived retrieval state, but those must not silently replace the selected durable authority.
+
+## Current closed-beta exception
+
+The current owner-executed Apps Script + owner-private Drive continuity implementation remains a bounded Production v1 closed-beta architecture. It does not yet implement per-user Drive OAuth and must not be represented as doing so.
+
+## Open implementation details
+
+Still open:
+
+- exact Google OAuth scopes and consent flow;
+- user Drive folder/file schema;
+- token storage and revocation;
+- multi-device/account recovery;
+- quota UX;
+- optional GitHub connect/create/link UX;
+- GitHub repository ownership/privacy defaults when enabled;
+- migration from owner-private beta continuity to user-owned durable storage;
+- exact mapping between private continuity records and durable Drive artifacts.
+
+## Canonical references
+
+See:
+
+- `docs/CROSSAI_PRODUCT_DIRECTION.md`
+- `docs/CROSSAI_MULTI_USER_OWNERSHIP.md`
