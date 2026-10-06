@@ -116,11 +116,11 @@ Pass / stop condition: critical state can be recovered or rolled back truthfully
 Result: PASS — T-019A through T-019G are LIVE PASS and T-019H final operator runbook acceptance is PASS. The runbook has one authority-aware quick-start map, all documented operator function references resolve to source, all linked proof files exist, stale blocker wording is removed/marked historical, secret-literal scan is clean, 32/32 repository tests pass, and protected production is restored to v46. AP-013 is complete; AP-014 / T-020 Human Closed Beta becomes CURRENT.
 Feeds design: YES
 
-AP-014 | CURRENT / BLOCKED AT READINESS
+AP-014 | CURRENT / READY FOR HUMAN BETA
 Action: Run a closed beta with invited humans. Minimum three distinct non-developer participants; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
 Dependencies: AP-009 through AP-013 — satisfied.
 Pass / stop condition: at least three participants complete the locked core journey without developer-side data repair or hidden manual patching of canonical/project state.
-Current result: T-020A remains BLOCKED only pending final T-020A3 canary readiness rerun. T-020A1 is LIVE PASS and BETA-AUTH-001 is CLOSED. T-020A2 Ordinary-User UX Readiness Cleanup is LIVE PASS: PR #58 merged; protected production is v51 `T020A2-ordinary-user-ux`; live Dashboard and Public Front Door inspection confirm the new ordinary-user wording; and live old-term scans return zero. BETA-UX-001 through BETA-UX-004 are CLOSED. Full regression remains 33/33 PASS. Run T-020A3 before counting any external beta journey.
+Current result: T-020A HUMAN BETA READINESS is PASS. T-020A1 access gating and T-020A2 ordinary-user UX are LIVE PASS, and T-020A3 completed an owner-operated canary through the exact tester-facing production path: Workspace → Gemini → SAVE return block → result validation → SAVE preparation → Front Door continuation → protected preview → CONFIRM & SYNC → verified receipt → reopen → continuity advance. The canary created canonical method-result commit `8dc54763e14040658b452bf20adac5d939c3d8e4`, independently read back exactly, with no hidden developer repair. Protected production remains v51 and the full repository suite remains 33/33 PASS. AP-014 now proceeds to T-020B — Human Tester #1; the canary itself does not count toward the minimum three participants.
 Feeds design: YES
 
 AP-015 | QUEUED
@@ -694,3 +694,18 @@ Verification: Dashboard UI test PASS; Front Door preserve/login/replay test PASS
 Evidence: proofs/t020a2-ordinary-user-ux-readiness.md.
 
 Conclusion: T-020A2 LIVE PASS. BETA-UX-001 through BETA-UX-004 are CLOSED. T-020A3 canary readiness recheck remains the final readiness gate.
+
+
+PF-082 | T-020A3 CANARY READINESS RECHECK — PASS
+
+Finding: after T-020A1 and T-020A2 closed the access and ordinary-user UX blockers, the remaining question was whether the owner could follow the exact future tester instructions through the complete production journey without developer knowledge or hidden state repair.
+
+The live canary used project AISYNC, an existing project conversation, Gemini, DESIGN help mode and an ordinary natural-language request. PREPARE FOR AI produced a valid handoff. When direct copy was unreliable, the visible SHOW PREPARED TEXT fallback carried the journey without backend intervention. Gemini received the handoff, returned a normal ZASSIMPLE response, then produced the required CONFIRMED_RESULT block after the user issued SAVE. AISYNC validated the return, prepared SAVE, routed through the Public Front Door, displayed the protected preview, and required explicit CONFIRM & SYNC.
+
+The terminal receipt was SAVED / VERIFIED_WRITE. Canonical record `records/METHOD-RESULT-01M47F1VDEFB0C45VJ1BZJBG7N.md` was written at commit `8dc54763e14040658b452bf20adac5d939c3d8e4` and independently read back exactly. After Return to main ASC UI, the project was reopened and USE SAVED RESULT TO CONTINUE advanced private continuity; the UI confirmed the saved result is now the current project context and the next AI conversation will use it.
+
+Truthful stale/unverified project-index guidance remained visible; no false PASS or blind-retry instruction was introduced. No Script Property, Sheets, GitHub, continuity-store, or other hidden repair was used.
+
+Evidence: `proofs/t020a3-canary-readiness.md`.
+
+Conclusion: T-020A3 PASS. T-020A HUMAN BETA READINESS = PASS. AP-014 remains CURRENT and is now READY FOR HUMAN BETA. Next counted gate: T-020B — Human Tester #1. The canary is not counted as a participant.
