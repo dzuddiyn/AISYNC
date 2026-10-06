@@ -245,18 +245,17 @@ When a channel/runtime is busy or rate-limited, CrossAI must degrade truthfully 
 
 See [`CROSSAI_CHANNEL_GATEWAY.md`](CROSSAI_CHANNEL_GATEWAY.md).
 
-## 6. Telegram as real AI chat
+## 6. Messaging channels as real AI chat
 
 LOCKED direction:
 
-Telegram may act as a full conversational CrossAI client backed by selectable AI APIs/models.
+WhatsApp and Telegram may act as full conversational CrossAI clients backed by selectable AI APIs/models.
 
 ```text
-Telegram
-   ↓
-ASC continuity + retrieval
-   ↓
-AI Router
+WhatsApp ─┐
+Telegram ─┼→ ASC continuity + retrieval
+          ↓
+       AI Router
    ├─ provider/model A
    ├─ provider/model B
    ├─ provider/model C
@@ -278,7 +277,7 @@ Provider availability, free tiers, quotas, pricing, and supported modalities are
 
 LOCKED direction:
 
-The Telegram bot may act as a CrossAI/ZASS support guide.
+Messaging-channel adapters may expose CrossAI/ZASS support-guide behavior over the same ASC knowledge and continuity.
 
 Example questions:
 - how to SAVE;
@@ -356,7 +355,7 @@ LOCKED direction:
 Handoff should support a return/reconciliation journey.
 
 ```text
-CrossAI / Telegram
+CrossAI / messaging channel
       ↓
 External AI
       ↓
@@ -563,43 +562,39 @@ The LLM is the explanation/reasoning layer, not the source of project status tru
 ## 15. Product architecture summary
 
 ```text
-                       USER
-                         │
-              ┌──────────┴──────────┐
-              ↓                     ↓
-CrossAI WhatsApp ─┐
-CrossAI Telegram ──┼───────────────┐
-CrossAI Web ───────┘               │
-                                   ▼
-                         ↓
-                simple public surface
-                 AI CHAT / HELP
-                         ↓
-                       ASC
-             identity / continuity
-             retrieval / lineage
-             routing / orchestration
-                         │
-              internal semantic router
-          ┌──────────────┼───────────────┐
-          ↓              ↓               ↓
-        DUMP           DECIDE          DESIGN
-      ZASSPILL      ZASSELECTION      ZASSIMPLE
-          │              │               │
-          ↓              ↓               ↓
-        Ideas         Decisions        Projects
-          │              │               │
-          └──────────────┼───────────────┘
-                         ↓
-                      AI Router
-                         │
-             user-selected intelligence
-                         │
-                         ↓
-                       RETURN
-                         │
-                         ↓
-                same CrossAI context
+                         USER
+                          │
+             ┌────────────┼────────────┐
+             ↓            ↓            ↓
+         WhatsApp      Telegram       Web
+             └────────────┼────────────┘
+                          ↓
+                CrossAI Channel Gateway
+                          ↓
+                    AI CHAT / HELP
+                          ↓
+                         ASC
+              identity / continuity
+              retrieval / lineage
+              routing / orchestration
+                          │
+               internal semantic router
+           ┌──────────────┼───────────────┐
+           ↓              ↓               ↓
+         DUMP           DECIDE          DESIGN
+       ZASSPILL      ZASSELECTION      ZASSIMPLE
+           │              │               │
+           ↓              ↓               ↓
+         Ideas         Decisions        Projects
+           └──────────────┼───────────────┘
+                          ↓
+                       AI Router
+                          ↓
+              user-selected intelligence
+                          ↓
+                        RETURN
+                          ↓
+                 same CrossAI context
 ```
 
 File persistence is deliberately orthogonal:
