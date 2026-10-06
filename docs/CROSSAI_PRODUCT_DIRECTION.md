@@ -109,35 +109,50 @@ Exact schema remains an implementation detail.
 
 ### DECIDE — Decisions / Selection History
 
-Direction:
-- users can browse historical decisions/selections;
-- many selection records should be able to coexist without requiring one standalone project repository per comparison;
-- the existing candidate direction is one consolidated Git-backed Selection History repository with records organized by selection title/topic.
+LOCKED storage direction:
 
-Still open before architecture lock:
-- whether a GitHub account is required;
-- repository ownership/service-management model;
-- privacy default;
-- exact file/folder layout;
-- quota/team behavior.
+- Decisions / Selection History are durably stored in the user's Google Drive by default;
+- no GitHub account or repository is required merely to use DECIDE;
+- many historical selections may coexist inside the user's CrossAI Drive space;
+- GitHub may be connected later only when the user explicitly needs Git-oriented capabilities.
 
-Therefore the **DECIDE storage implementation remains candidate**, even though Decisions/Selection History is a locked product concept.
+The previous candidate of one consolidated GitHub Selection History repository is **SUPERSEDED as the default model**. It may survive only as an optional export/integration pattern for users who deliberately choose GitHub.
 
 ### DESIGN — Projects
 
-LOCKED direction:
+LOCKED storage direction:
+
+> **One DESIGN project = one durable project space. GitHub is optional.**
+
+Default:
 
 ```text
-one project = one GitHub repository
+DESIGN project
+→ user-owned Google Drive
+→ durable project space
 ```
 
-For Git-backed DESIGN projects:
-- GitHub is the canonical project Source of Truth;
-- CrossAI registers/projects the repo state back into the product;
-- users can browse current stage/progress from CrossAI;
-- the project remains independently inspectable/maintainable outside CrossAI.
+GitHub appears only when it is useful for:
 
-Repository creation is never a silent side effect of merely entering DESIGN.
+- version control;
+- coding workflow;
+- collaboration;
+- CI;
+- public repositories;
+- technical provenance.
+
+Optional Git-enabled mode:
+
+```text
+DESIGN project
+→ Google Drive project space
+→ [ CONNECT GITHUB ]
+→ create or link GitHub repository
+```
+
+When GitHub is explicitly enabled for a project, GitHub may become canonical for the selected Git-backed artifacts while Google Drive remains the durable home for non-Git files/attachments and other ordinary user-owned content. CrossAI must keep the authority boundary explicit and must not silently maintain two editable semantic masters.
+
+The previous locked direction `one project = one GitHub repository` is **SUPERSEDED** as a universal requirement.
 
 ## 4. Explicit promotion
 
@@ -475,7 +490,7 @@ LOCKED principle:
 
 > **Generate anywhere. Save durably only where the user owns the storage.**
 
-Current preferred ecosystem direction is the user's Google Drive.
+LOCKED default durable-storage direction is the user's Google Drive.
 
 ```text
 file bytes
@@ -491,6 +506,10 @@ lineage / relationship
 ```
 
 CrossAI/ASC should prefer retaining references/metadata rather than duplicating permanent file bytes in its own storage.
+
+Locked onboarding direction:
+
+> **Login Google → allow Google Drive Access → terus guna CrossAI. GitHub hanya muncul bila memang berguna.**
 
 The exact per-user Google Drive authorization/scopes, folder model, retention, migration, and quota UX remain future design work. This section does not claim the current Production v1 runtime already has per-user Drive write authority.
 
@@ -614,7 +633,8 @@ Hard guardrail:
 The retrieval index may help locate relevant continuity, ideas, decisions, or project records. It must not silently overwrite, replace, or become the authoritative source for:
 
 - ASC private continuity;
-- GitHub-backed canonical project artifacts;
+- Google Drive-backed durable Ideas, Decisions, Projects, files, and exports by default;
+- GitHub-backed artifacts only where the user explicitly enables GitHub;
 - confirmed decisions;
 - factual SAVE/receipt state.
 
@@ -644,9 +664,8 @@ CrossAI should treat AMP-like formats as interoperability surfaces, not as the a
 ## 16. Explicitly still open
 
 This lock does not prematurely decide:
-- DECIDE GitHub account requirement;
-- DECIDE repository ownership/service-managed model;
-- DECIDE repository privacy/layout/quota/team design;
+- optional GitHub connection UX and authorization details;
+- optional GitHub repository ownership/privacy/layout defaults when enabled;
 - exact Idea Inbox record schema;
 - exact Telegram identity/group-binding implementation;
 - exact AI provider/model roster;
@@ -672,7 +691,8 @@ LOCKED future architecture direction:
 - ordinary users do **not** receive a cloned Apps Script project or per-user `.gs` deployment;
 - current owner-executed Apps Script + owner-private Drive continuity is a bounded closed-beta implementation, not the permanent multi-tenant model;
 - CrossAI may retain central service state needed for identity, authorization, routing, indexes, references, temporary handoff state, receipts, and operations;
-- durable user-owned content should increasingly live in storage the user owns and explicitly authorizes CrossAI to access, with Google Drive as the preferred first ecosystem and GitHub for Git-backed project artifacts;
+- Google Drive is the default durable store for ordinary CrossAI user content;
+- GitHub is optional and appears only when useful for version control, coding workflow, collaboration, CI, public repositories, or technical provenance;
 - delegated authorization/OAuth is preferred over per-user script cloning;
 - failure/quota/revocation must remain truthful, with no silent fallback to permanent operator-owned storage.
 
