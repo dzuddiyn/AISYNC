@@ -733,3 +733,12 @@ Evidence: `proofs/t020b2r2-crossai-user-first-entry-correction.md`.
 
 Conclusion: T-020B2 remains HOLD. Merge/deploy and owner blank-account recheck are required before any external tester may count.
 
+
+
+PF-085 | CROSSAI HIDDEN METHOD ROUTING UX — LOCKED FUTURE DIRECTION
+
+Finding: Project Owner simplified the future CrossAI ordinary-user entry surface. Telegram `/start` exposes only `💬 AI CHAT — just talk, I am here to hear.` and `❓ HELP — just ask.` The product should hide DUMP / DECIDE / DESIGN from ordinary-user entry/navigation and let ASC infer/use those as internal semantic routes. Human-facing browse concepts remain Ideas / Decisions / Projects. Internal mappings stay DUMP → ZASSPILL, DECIDE → ZASSELECTION, DESIGN → ZASSIMPLE and may still appear in diagnostics/advanced/developer surfaces.
+
+This is a future product UX direction and does not retroactively change current T-020/T-021 acceptance evidence or the existing Production v1 routing contract until separately promoted into implementation work.
+
+See `docs/CROSSAI_PRODUCT_DIRECTION.md`.
