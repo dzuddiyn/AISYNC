@@ -189,13 +189,13 @@ function setPendingState(pending) {
   const continueButton = document.getElementById('continue');
 
   if (pending.fragment) {
-    status.textContent = 'Pending ASC request detected.';
+    status.textContent = 'A pending SAVE request is ready to continue.';
     status.className = '';
     continueButton.disabled = false;
     return;
   }
 
-  status.textContent = 'Pending ASC request not detected.';
+  status.textContent = 'No pending SAVE request was found. Use the new-conversation section below if you are starting something new.';
   status.className = 'warning';
   continueButton.disabled = true;
 }
@@ -342,9 +342,9 @@ async function handleCopyHandoff() {
       typeof navigator !== 'undefined' ? navigator.clipboard : null,
       preparedHandoff.bootstrap
     );
-    setHandoffStatus('Handoff copied. Paste it into the provider chat.');
+    setHandoffStatus('Prepared text copied. Paste it into the AI chat.');
   } catch (error) {
-    setHandoffStatus('Copy failed. The handoff remains visible for manual copying.');
+    setHandoffStatus('Copy failed. The prepared text remains visible under Technical handoff details for manual copying.');
   }
 }
 
@@ -354,14 +354,14 @@ function handleOpenProvider() {
   }
 
   openProvider(preparedHandoff.preview.provider, window.open);
-  setHandoffStatus('Paste the copied handoff into the provider chat.');
+  setHandoffStatus('Paste the copied text into the AI chat.');
 }
 
 function handleSignIn() {
   window.open(getProtectedSignInUrl(), '_blank', 'noopener');
 
   const status = document.getElementById('status');
-  status.textContent = 'Sign-in opened in a new tab. Complete Google sign-in, return here, then press CONTINUE.';
+  status.textContent = 'Sign-in opened in a new tab. Complete Google sign-in, return here, then choose CONTINUE SAVE REQUEST.';
   status.className = '';
 }
 
@@ -374,7 +374,7 @@ function handleContinue() {
       fragment
     );
   } catch (error) {
-    setFrontDoorError('The pending ASC request could not be replayed: ' + error.message);
+    setFrontDoorError('The pending SAVE request could not be continued: ' + error.message);
   }
 }
 
@@ -392,7 +392,7 @@ function bootFrontDoor() {
       routeOverride: elements.routeOverride.value
     });
   } catch (error) {
-    setFrontDoorError('The front door could not read the pending ASC request: ' + error.message);
+    setFrontDoorError('AISYNC could not read the pending SAVE request: ' + error.message);
   }
 }
 

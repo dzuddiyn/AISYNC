@@ -120,7 +120,7 @@ AP-014 | CURRENT / BLOCKED AT READINESS
 Action: Run a closed beta with invited humans. Minimum three distinct non-developer participants; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
 Dependencies: AP-009 through AP-013 — satisfied.
 Pass / stop condition: at least three participants complete the locked core journey without developer-side data repair or hidden manual patching of canonical/project state.
-Current result: T-020A remains BLOCKED by ordinary-user UX readiness, but BETA-AUTH-001 is CLOSED through T-020A1 LIVE PASS. The final Beta Access Gate is protected production v50 `T020A1-beta-access-gate-final`; owner identity binding, real non-owner invitation enrollment scoped to `AISYNC`, protected AISYNC Workspace access, owner revocation, and immediate post-revoke denial were proven live without hidden repair. Focused security tests cover direct forbidden-project and privileged-owner negative paths; full regression is 33/33 PASS. Remaining work is the T-020A ordinary-user copy/entry cleanup followed by the exact canary readiness rerun before counting any external beta journey.
+Current result: T-020A remains BLOCKED pending final canary readiness rerun. T-020A1 is LIVE PASS and BETA-AUTH-001 is CLOSED. T-020A2 Ordinary-User UX Readiness Cleanup is LOCAL PASS / live deployment proof pending: Dashboard primary language now uses project conversation / AI provider / help mode / PREPARE FOR AI / CHECK AI RESULT / PREPARE SAVE / REVIEW & SAVE / USE SAVED RESULT TO CONTINUE; the Public Front Door visibly separates pending SAVE continuation from new AI conversation; and `ROUTE OVERRIDE` is removed from the primary UI while DUMP / DECIDE / DESIGN remain explicit. Full regression is 33/33 PASS, diff check passes, and old-UX scans return zero. After canonical merge + live Dashboard/Front Door verification, run T-020A3 before counting any external beta journey.
 Feeds design: YES
 
 AP-015 | QUEUED
@@ -677,3 +677,20 @@ Local security/regression evidence:
 Live closure: canonical implementation is merged; owner temporary-user identity was bound through a temporary owner-only v49 bootstrap; protected production is immutable v50 `T020A1-beta-access-gate-final`; and a real non-owner Google-account canary enrolled from a single-use invitation scoped only to `AISYNC`, opened the protected AISYNC project Workspace, then lost access immediately after owner revocation without browser restart or hidden state repair. The raw invite token and tester email are omitted from proof. Direct forbidden-project and privileged-owner negative paths remain covered by focused security tests. Canonical live evidence: `proofs/t020a1-beta-access-gate-live.md`.
 
 Conclusion: T-020A1 is LIVE PASS. BETA-AUTH-001 is CLOSED. T-020A overall remains BLOCKED only by the ordinary-user UX readiness findings recorded in `proofs/t020a-human-beta-readiness.md`.
+
+
+PF-081 | T-020A2 ORDINARY-USER UX READINESS CLEANUP — LOCAL PASS / LIVE PROOF PENDING
+
+Finding: after T-020A1 closed the access blocker, the remaining readiness risk was ordinary-user comprehension rather than authority or persistence behavior.
+
+The Dashboard primary path now describes the user journey as project conversation → AI provider → help mode → PREPARE FOR AI → CHECK AI RESULT → PREPARE SAVE → REVIEW & SAVE → USE SAVED RESULT TO CONTINUE. The stale read-only label and implementation-facing thread/return/SAVE button language are removed from the primary flow. Technical handoff metadata remains available through progressive disclosure rather than being required for first use.
+
+The Public Front Door now separates two intents: Continue a SAVE request versus Start a new AI conversation. The new-conversation section uses natural-language input, AI provider selection, and an optional human-readable help-mode control while preserving visible DUMP / DECIDE / DESIGN semantics. ROUTE OVERRIDE is no longer exposed as the user label.
+
+Boundaries are unchanged: routing methods, scoped handoff content, provider-return validation, CONFIRM & SYNC, GitHub registry/App auth, private continuity, Beta Access Gate, replay/idempotency, receipts/HISTORY, DR/telemetry/secret rotation/operator controls are untouched.
+
+Local verification: Dashboard UI test PASS; Front Door preserve/login/replay test PASS; full repository suite 33/33 PASS; git diff check PASS; old Dashboard UX scan 0; old Front Door UX scan 0; required first-use cues missing 0.
+
+Evidence: proofs/t020a2-ordinary-user-ux-readiness.md.
+
+Conclusion: T-020A2 LOCAL PASS. Canonical merge and live Dashboard/Public Front Door verification remain before T-020A2 LIVE PASS. After that, T-020A3 canary readiness recheck remains the final readiness gate.

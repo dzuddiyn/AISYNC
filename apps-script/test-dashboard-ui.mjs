@@ -34,6 +34,9 @@ const INDEX_HTML = read('Index.html');
   ctx.doGet({ parameter: { view: 'dashboard' } });
   assert.deepStrictEqual(served, ['Index', 'Index', 'Index', 'Index', 'Dashboard']);
   assert.match(DASH_HTML, /include_\('DashboardClient'\)/);
+  assert.match(DASH_HTML, /project workspace/);
+  assert.match(DASH_HTML, /Open a project, continue your work with an AI/);
+  assert.doesNotMatch(DASH_HTML, /read-only project view/);
   assert.match(CLIENT_FILE, /^\s*<script>/);
   assert.match(CLIENT_FILE, /<\/script>\s*$/);
   assert.match(INDEX_HTML, /include_\('Client'\)/, 'T-008 preview page still includes its own client');
@@ -146,13 +149,15 @@ const project = (o) => ({
   assert.match(workspace, /Save \/ sync health/);
   assert.match(workspace, /No qualifying SAVE receipt is indexed/);
   assert.match(workspace, /Continue this project/);
-  assert.match(workspace, /Loading private threads/);
+  assert.match(workspace, /Loading project conversations/);
   assert.match(workspace, /Choose AI provider/);
   assert.match(workspace, /DUMP — just talk/);
   assert.match(workspace, /DECIDE — help me choose/);
   assert.match(workspace, /DESIGN — help me build/);
-  assert.match(workspace, /PREPARE HANDOFF/);
-  assert.match(workspace, /Provider-held memory\/profile is not imported/);
+  assert.match(workspace, /PREPARE FOR AI/);
+  assert.match(workspace, /Help mode/);
+  assert.match(workspace, /Memory held by the AI provider is not imported/);
+  assert.doesNotMatch(workspace, /private thread|PREPARE HANDOFF|ASC_METHOD_RESULT|PREVIEW RETURN|PREPARE ASC SAVE|ADVANCE THREAD FROM SAVED RESULT/);
   assert.match(workspace, /Open ASC Front Door/);
   assert.match(workspace, /🚀 Current Task/);
   assert.match(workspace, /UI &lt;flow&gt;/);
@@ -190,8 +195,8 @@ const project = (o) => ({
   assert.match(continuation, /value="Gemini" selected/);
   assert.match(continuation, /value="DECIDE" selected/);
   assert.match(continuation, /Banding &lt;dua&gt; pilihan\./);
-  assert.match(continuation, /COPY HANDOFF/);
-  assert.match(continuation, /SHOW HANDOFF TEXT/);
+  assert.match(continuation, /COPY FOR AI/);
+  assert.match(continuation, /SHOW PREPARED TEXT/);
   assert.match(continuation, /OPEN GEMINI/);
   assert.doesNotMatch(continuation, /PRIVATE BOOTSTRAP MUST NOT RENDER/);
   assert.doesNotMatch(continuation, /continuity_reference:/);
@@ -590,19 +595,19 @@ console.log('T-009B/C dashboard UI + routing test: PASS');
     null,
     null
   );
-  assert.match(firstThread, /No private thread available/);
-  assert.match(firstThread, /Thread title/);
+  assert.match(firstThread, /No saved project conversation yet/);
+  assert.match(firstThread, /Conversation title/);
   assert.match(firstThread, /AISYNC working thread/);
-  assert.match(firstThread, /START PRIVATE THREAD/);
-  assert.match(firstThread, /does not write GitHub or Sheets/);
-  assert.doesNotMatch(firstThread, /PREPARE HANDOFF/);
+  assert.match(firstThread, /START PROJECT CONVERSATION/);
+  assert.match(firstThread, /does not publish or SAVE the project/);
+  assert.doesNotMatch(firstThread, /PREPARE FOR AI/);
 }
 
 {
   const emptyReturn = sb.renderProviderReturn('', null, null);
   assert.match(emptyReturn, /Return from AI/);
-  assert.match(emptyReturn, /PREVIEW RETURN/);
-  assert.doesNotMatch(emptyReturn, /PREPARE ASC SAVE|OPEN ASC SAVE/);
+  assert.match(emptyReturn, /CHECK AI RESULT/);
+  assert.doesNotMatch(emptyReturn, /PREPARE SAVE|REVIEW & SAVE/);
 
   const previewReturn = sb.renderProviderReturn(
     'ASC_METHOD_RESULT_BEGIN ...',
@@ -616,9 +621,9 @@ console.log('T-009B/C dashboard UI + routing test: PASS');
     },
     null
   );
-  assert.match(previewReturn, /PREPARE ASC SAVE/);
+  assert.match(previewReturn, /PREPARE SAVE/);
   assert.match(previewReturn, /Checkpoint &lt;verified&gt;/);
-  assert.doesNotMatch(previewReturn, /OPEN ASC SAVE/);
+  assert.doesNotMatch(previewReturn, /REVIEW & SAVE/);
 }
 
 {
@@ -637,8 +642,8 @@ console.log('T-009B/C dashboard UI + routing test: PASS');
       save_link: 'INTERNAL_LINK_VALUE'
     }
   );
-  assert.match(preparedReturn, /OPEN ASC SAVE/);
-  assert.match(preparedReturn, /Nothing is persisted yet/);
+  assert.match(preparedReturn, /REVIEW & SAVE/);
+  assert.match(preparedReturn, /Nothing has been saved yet/);
   assert.doesNotMatch(preparedReturn, /INTERNAL_LINK_VALUE/);
 }
 
@@ -661,12 +666,12 @@ assert.match(CLIENT, /prepareDashboardMethodReturnSave\(/);
     }]
   }, null);
   assert.match(pending, /Saved result ready to continue/);
-  assert.match(pending, /source revision 1/);
+  assert.match(pending, /This SAVE is verified, but your project conversation has not moved to it yet/);
   assert.match(pending, /Saved checkpoint &lt;ready&gt;/);
   assert.match(pending, /METHOD-RESULT-01M42TNZ3WXJFWFS39EWY581SY/);
-  assert.match(pending, /ADVANCE THREAD FROM SAVED RESULT/);
+  assert.match(pending, /USE SAVED RESULT TO CONTINUE/);
   assert.match(pending, /data-handoff-id="ho_01M42TNZ3WXJFWFS39EWY581SY"/);
-  assert.match(pending, /does not create another GitHub\/Sheets write/);
+  assert.match(pending, /does not perform another SAVE/);
 }
 
 {
@@ -679,11 +684,11 @@ assert.match(CLIENT, /prepareDashboardMethodReturnSave\(/);
       current: 'Saved checkpoint now current.'
     }
   );
-  assert.match(advanced, /Saved result applied to private continuity/);
-  assert.match(advanced, /revision 2/);
+  assert.match(advanced, /Saved result is now the current project context/);
+  assert.match(advanced, /project conversation moved to the verified saved result/);
   assert.match(advanced, /Saved checkpoint now current\./);
-  assert.match(advanced, /next handoff will use this newer thread revision/);
-  assert.doesNotMatch(advanced, /ADVANCE THREAD FROM SAVED RESULT/);
+  assert.match(advanced, /next AI conversation will use this newer project context/);
+  assert.doesNotMatch(advanced, /USE SAVED RESULT TO CONTINUE/);
 }
 
 assert.match(CLIENT, /advanceDashboardSavedMethodResult\(/);
@@ -710,7 +715,7 @@ assert.match(CLIENT, /advance-saved-result/);
   }, null);
   assert.match(multiple, /More than one verified saved result is waiting/);
   assert.match(multiple, /ASC will not choose for you/);
-  assert.equal((multiple.match(/ADVANCE THREAD FROM SAVED RESULT/g) || []).length, 2);
+  assert.equal((multiple.match(/USE SAVED RESULT TO CONTINUE/g) || []).length, 2);
   assert.match(multiple, /First saved result/);
   assert.match(multiple, /Second saved result/);
 }
