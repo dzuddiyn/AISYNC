@@ -171,7 +171,9 @@ DECIDE         DESIGN
  ↓              ↓
 selection     project
                 ↓
-          GitHub repository
+     Google Drive project space
+                ↓
+       optional GitHub connection
 ```
 
 Promotion must be explicit.
@@ -191,9 +193,9 @@ Carrying:
 [ CREATE PROJECT ]
 ```
 
-Only after explicit confirmation may CrossAI create/register a GitHub-backed project through the future Project Bootstrap flow.
+After explicit confirmation, CrossAI creates the durable project space in the user's Google Drive. GitHub is not required. If the user later needs version control, coding workflow, collaboration, CI, a public repository, or technical provenance, CrossAI may offer an explicit `CONNECT GITHUB` step.
 
-Lineage should remain traceable from source idea/decision into the resulting project.
+Lineage should remain traceable from source idea/decision into the resulting project regardless of whether GitHub is enabled.
 
 ## 5. CrossAI Telegram = alternate client, not another backend
 
