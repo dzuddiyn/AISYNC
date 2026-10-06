@@ -709,3 +709,12 @@ Truthful stale/unverified project-index guidance remained visible; no false PASS
 Evidence: `proofs/t020a3-canary-readiness.md`.
 
 Conclusion: T-020A3 PASS. T-020A HUMAN BETA READINESS = PASS. AP-014 remains CURRENT and is now READY FOR HUMAN BETA. Next counted gate: T-020B — Human Tester #1. The canary is not counted as a participant.
+
+
+PF-083 | ASC ROUTE-SPECIFIC STORAGE MODEL — CANDIDATE
+
+Finding: Project Owner proposed a future route-specific persistence model: DUMP requires no GitHub account and remains ASC-native; DECIDE keeps many selection-history records in one GitHub repository organized by selection title/topic; DESIGN gives each project its own GitHub repository and ASC projects the canonical state back into the CrossAI workspace/progress view.
+
+This is intentionally a candidate only. It does not change current T-020/T-021 behavior, confirmed D-032/D-033 authority boundaries, or the existing production project registry. Open questions include GitHub account/ownership behavior for DECIDE, repository privacy/defaults, DUMP retention/export, and promotion transitions between routes.
+
+See `docs/ASC_ROUTE_STORAGE_MODEL_CANDIDATE.md`.
