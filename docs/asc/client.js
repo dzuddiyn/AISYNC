@@ -176,17 +176,24 @@ function handleGo() {
   const authAttempted = localStorage.getItem(CROSSAI_AUTH_ATTEMPTED_KEY) === '1';
 
   if (!authAttempted) {
-    localStorage.setItem(CROSSAI_AUTH_ATTEMPTED_KEY, '1');
     const popup = openAuthGate(window.open);
     if (popup) {
+      localStorage.setItem(CROSSAI_AUTH_ATTEMPTED_KEY, '1');
       setStartStatus('Complete Google sign-in in the new tab, then return here and press GO again. Your text is preserved.', '');
     } else {
+      localStorage.removeItem(CROSSAI_AUTH_ATTEMPTED_KEY);
       setStartStatus('Your browser blocked the sign-in tab. Your text is preserved; allow pop-ups and press GO again.', 'error');
     }
     return;
   }
 
-  window.location.href = buildCrossAiStartUrl(valid.state, startId);
+  const startUrl = buildCrossAiStartUrl(valid.state, startId);
+  const startWindow = window.open(startUrl, '_blank', 'noopener');
+  if (startWindow) {
+    setStartStatus('CrossAI is starting this conversation in the new tab.', 'ok');
+  } else {
+    window.location.href = startUrl;
+  }
 }
 
 function renderPendingSave(pending) {
