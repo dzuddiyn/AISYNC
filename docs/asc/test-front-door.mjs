@@ -103,7 +103,7 @@ assert.deepEqual(signInCall, {
 assert.equal(ui.continueButton.disabled, false);
 assert.equal(
   ui.status.textContent,
-  'Sign-in opened in a new tab. Complete Google sign-in, return here, then choose CONTINUE SAVE REQUEST.'
+  'Access check opened in a new tab. If that tab says NO REQUEST, that is expected: return here and choose CONTINUE SAVE REQUEST to replay the pending project SAVE.'
 );
 
 const replayUrl = sandbox.buildProtectedReplayUrl(signInUrl, restored.fragment);
