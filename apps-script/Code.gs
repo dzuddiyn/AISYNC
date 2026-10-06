@@ -15,7 +15,7 @@ function doGet(e) {
     template.crossAiUrl = 'https://dzuddiyn.github.io/AISYNC/asc/';
     return template
       .evaluate()
-      .setTitle('AISYNC — Join Closed Beta')
+      .setTitle('CrossAI — Join Closed Beta')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
@@ -26,7 +26,7 @@ function doGet(e) {
       return HtmlService
         .createTemplateFromFile('BetaAccessRequired')
         .evaluate()
-        .setTitle('AISYNC — Access Required')
+        .setTitle('CrossAI — Access Required')
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
     }
     return HtmlService
