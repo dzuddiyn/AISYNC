@@ -13,6 +13,20 @@ It is designed as common infrastructure that can be reused by ZASS Full, ZASSIMP
 ---
 
 
+
+## Product branding
+
+**Public product:** **CrossAI Sync**  
+**User shorthand:** **CrossAI**  
+**Engine / internal architecture:** **AISYNC**  
+**Internal engineering shorthand:** **ASC**
+
+The repository remains `AISYNC`; the public web product is branded **CrossAI Sync**. User-facing UI should prefer CrossAI Sync/CrossAI, while AISYNC/ASC remain technical names for the engine and internal architecture.
+
+See [`docs/PRODUCT_BRANDING.md`](docs/PRODUCT_BRANDING.md).
+
+---
+
 ## ZASSIMPLE project workflow
 
 AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
