@@ -288,11 +288,11 @@ function handoffValueText(value) {
 }
 
 function renderThreadOptions(continuityResult, selectedThreadId) {
-  if (!continuityResult) return '<option value="">Loading private threads…</option>';
-  if (continuityResult.ok !== true) return '<option value="">Private threads unavailable</option>';
+  if (!continuityResult) return '<option value="">Loading project conversations…</option>';
+  if (continuityResult.ok !== true) return '<option value="">Project conversations unavailable</option>';
   const threads = Array.isArray(continuityResult.threads) ? continuityResult.threads : [];
-  if (!threads.length) return '<option value="">No private thread available</option>';
-  const prefix = threads.length > 1 ? '<option value="">Choose a thread</option>' : '';
+  if (!threads.length) return '<option value="">No saved project conversation yet</option>';
+  const prefix = threads.length > 1 ? '<option value="">Choose a conversation</option>' : '';
   return prefix + threads.map(function (thread) {
     const title = handoffValueText(thread.title).trim() || 'Untitled thread';
     const current = handoffValueText(thread.current).trim();
@@ -303,8 +303,8 @@ function renderThreadOptions(continuityResult, selectedThreadId) {
 }
 
 function renderProviderReturn(returnText, preview, saveResult) {
-  let previewHtml = '<p class="muted">Paste the ASC_METHOD_RESULT block returned by the AI after you issue SAVE. ASC will validate it before any persistence request is created.</p>';
-  let actions = '<button type="button" data-handoff-action="preview-return">PREVIEW RETURN</button>';
+  let previewHtml = '<p class="muted">Paste the complete result returned by the AI after you ask it to SAVE. AISYNC will check it before preparing a SAVE.</p>';
+  let actions = '<button type="button" data-handoff-action="preview-return">CHECK AI RESULT</button>';
 
   if (preview && preview.ok === true) {
     previewHtml += '<div class="return-preview">' +
@@ -314,7 +314,7 @@ function renderProviderReturn(returnText, preview, saveResult) {
       '<div><span class="pulse-label">Confirmed outcome</span>' + escapeHtml(preview.confirmed_outcome) + '</div>' +
       '<div><span class="pulse-label">Still open</span>' + escapeHtml(handoffValueText(preview.still_open)) + '</div>' +
       '</div>';
-    actions += '<button type="button" data-handoff-action="prepare-save">PREPARE ASC SAVE</button>';
+    actions += '<button type="button" data-handoff-action="prepare-save">PREPARE SAVE</button>';
   } else if (preview && preview.ok === false) {
     previewHtml += '<p class="error">RETURN REJECTED (' +
       escapeHtml(preview.error && preview.error.code || 'UNKNOWN') + ') — ' +
@@ -322,8 +322,8 @@ function renderProviderReturn(returnText, preview, saveResult) {
   }
 
   if (saveResult && saveResult.ok === true) {
-    previewHtml += '<p class="muted">ASC SAVE request prepared. Nothing is persisted yet. Open it, review the protected preview, then CONFIRM & SYNC.</p>';
-    actions += '<button type="button" data-handoff-action="open-save">OPEN ASC SAVE</button>';
+    previewHtml += '<p class="muted">Your SAVE is ready for review. Nothing has been saved yet. Open it, check the preview, then use CONFIRM & SYNC.</p>';
+    actions += '<button type="button" data-handoff-action="open-save">REVIEW & SAVE</button>';
   } else if (saveResult && saveResult.ok === false) {
     previewHtml += '<p class="error">SAVE PREPARE FAILED (' +
       escapeHtml(saveResult.error && saveResult.error.code || 'UNKNOWN') + ') — ' +
@@ -333,7 +333,7 @@ function renderProviderReturn(returnText, preview, saveResult) {
   return '<div class="provider-return">' +
     '<strong>Return from AI</strong>' +
     previewHtml +
-    '<label>Provider result<textarea id="project-provider-return" maxlength="12000" placeholder="Paste ASC_METHOD_RESULT_BEGIN … ASC_METHOD_RESULT_END here.">' +
+    '<label>AI result<textarea id="project-provider-return" maxlength="12000" placeholder="Paste the complete result returned by the AI here.">' +
       escapeHtml(returnText || '') + '</textarea></label>' +
     '<div class="handoff-actions">' + actions + '</div>' +
   '</div>';
@@ -346,10 +346,10 @@ function renderPendingSavedResult(continuityResult, advanceResult) {
     : [];
   if (advanceResult && advanceResult.ok === true) {
     return '<section class="card saved-result-advance">' +
-      '<strong>Saved result applied to private continuity</strong>' +
-      '<p>Thread advanced to revision ' + escapeHtml(advanceResult.revision) + '.</p>' +
+      '<strong>Saved result is now the current project context</strong>' +
+      '<p>Your project conversation moved to the verified saved result.</p>' +
       '<div><span class="pulse-label">Current</span>' + escapeHtml(advanceResult.current) + '</div>' +
-      '<p class="muted">The next handoff will use this newer thread revision.</p>' +
+      '<p class="muted">The next AI conversation will use this newer project context.</p>' +
     '</section>';
   }
 
@@ -370,15 +370,14 @@ function renderPendingSavedResult(continuityResult, advanceResult) {
       : '') +
     pending.map(function (item) {
       return '<article class="saved-result-item">' +
-        '<p>The GitHub SAVE is verified, but private continuity is still at source revision ' +
-          escapeHtml(item.source_revision) + '.</p>' +
+        '<p>This SAVE is verified, but your project conversation has not moved to it yet.</p>' +
         '<div><span class="pulse-label">Confirmed outcome</span>' + escapeHtml(item.confirmed_outcome) + '</div>' +
         '<div><span class="pulse-label">Saved artifact</span>' + escapeHtml(item.record_id) + '</div>' +
         '<button type="button" data-handoff-action="advance-saved-result" data-handoff-id="' +
-          escapeHtml(item.handoff_id) + '">ADVANCE THREAD FROM SAVED RESULT</button>' +
+          escapeHtml(item.handoff_id) + '">USE SAVED RESULT TO CONTINUE</button>' +
       '</article>';
     }).join('') +
-    '<p class="muted">This updates only the owner-private thread checkpoint. It does not create another GitHub/Sheets write.</p>' +
+    '<p class="muted">This only updates the project\'s private continuity checkpoint. It does not perform another SAVE.</p>' +
   '</section>';
 }
 
@@ -401,27 +400,26 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
   }).join('');
 
   let status = noThreads
-    ? '<p id="project-handoff-status" class="muted">No private thread exists yet. START PRIVATE THREAD saves only the title and current context below in the owner-only continuity store; it does not write GitHub or Sheets.</p>'
-    : '<p id="project-handoff-status" class="muted">Nothing is saved by preparing or opening a handoff.</p>';
+    ? '<p id="project-handoff-status" class="muted">No saved project conversation exists yet. START PROJECT CONVERSATION creates a private continuity checkpoint for this project; it does not publish or SAVE the project.</p>'
+    : '<p id="project-handoff-status" class="muted">Preparing or opening an AI conversation does not SAVE the project.</p>';
   let actions = noThreads
-    ? '<button type="button" data-handoff-action="start-thread">START PRIVATE THREAD</button>'
-    : '<button type="button" data-handoff-action="prepare">PREPARE HANDOFF</button>';
+    ? '<button type="button" data-handoff-action="start-thread">START PROJECT CONVERSATION</button>'
+    : '<button type="button" data-handoff-action="prepare">PREPARE FOR AI</button>';
   if (threadCreateResult && threadCreateResult.ok === true) {
-    status = '<p id="project-handoff-status" class="muted">Private thread created at revision ' +
-      escapeHtml(threadCreateResult.revision) + '. It is now ready for a scoped handoff.</p>';
+    status = '<p id="project-handoff-status" class="muted">Project conversation started. It is ready to continue with an AI.</p>';
   } else if (threadCreateResult && threadCreateResult.ok === false) {
     status = '<p id="project-handoff-status" class="error">FAILED (' + escapeHtml(threadCreateResult.error && threadCreateResult.error.code || 'UNKNOWN') +
-      ') — ' + escapeHtml(threadCreateResult.error && threadCreateResult.error.message || 'Private thread could not be created.') + '</p>';
+      ') — ' + escapeHtml(threadCreateResult.error && threadCreateResult.error.message || 'Project conversation could not be started.') + '</p>';
   }
   const firstThreadFields = noThreads
-    ? '<label>Thread title<input id="project-thread-title" maxlength="200" placeholder="Name this private thread" value="' + escapeHtml(form.threadTitle) + '"></label>'
+    ? '<label>Conversation title<input id="project-thread-title" maxlength="200" placeholder="Name this project conversation" value="' + escapeHtml(form.threadTitle) + '"></label>'
     : '';
 
   if (handoffResult && handoffResult.ok === true) {
-    status = '<p id="project-handoff-status" class="muted">Handoff ready for ' + escapeHtml(handoffResult.provider) +
-      '. Copy it, then open the provider.</p>';
-    actions += '<button type="button" data-handoff-action="copy">COPY HANDOFF</button>' +
-      '<button type="button" data-handoff-action="show">SHOW HANDOFF TEXT</button>' +
+    status = '<p id="project-handoff-status" class="muted">Ready for ' + escapeHtml(handoffResult.provider) +
+      '. Copy the prepared text, then open the AI.</p>';
+    actions += '<button type="button" data-handoff-action="copy">COPY FOR AI</button>' +
+      '<button type="button" data-handoff-action="show">SHOW PREPARED TEXT</button>' +
       '<button type="button" data-handoff-action="open">OPEN ' + escapeHtml(handoffResult.provider).toUpperCase() + '</button>';
   } else if (handoffResult && handoffResult.ok === false) {
     status = '<p id="project-handoff-status" class="error">FAILED (' + escapeHtml(handoffResult.error && handoffResult.error.code || 'UNKNOWN') +
@@ -434,17 +432,17 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
 
   return '<section class="card workspace-conversation">' +
     '<strong>Continue this project</strong>' +
-    '<p>Choose the private thread, AI provider and route, then say what changed or what you want to do next.</p>' +
-    '<p class="muted">ASC transfers only the minimum continuity for the selected thread. Provider-held memory/profile is not imported.</p>' +
+    '<p>Choose a project conversation, AI provider and help mode, then say what changed or what you want to do next.</p>' +
+    '<p class="muted">AISYNC sends only the minimum context needed for the selected project conversation. Memory held by the AI provider is not imported.</p>' +
     '<div class="handoff-grid">' +
-      '<label>Thread<select id="project-thread">' + renderThreadOptions(continuityResult, form.threadId) + '</select></label>' +
+      '<label>Conversation<select id="project-thread">' + renderThreadOptions(continuityResult, form.threadId) + '</select></label>' +
       firstThreadFields +
       '<label>AI provider<select id="project-provider">' + providerOptions + '</select></label>' +
-      '<label>Route<select id="project-route">' + routeOptions + '</select></label>' +
+      '<label>Help mode<select id="project-route">' + routeOptions + '</select></label>' +
     '</div>' +
     '<label>What next?<textarea id="project-draft" maxlength="4000" placeholder="Tell the AI what changed, what you are unsure about, or what you want to do next.">' + escapeHtml(form.draft) + '</textarea></label>' +
     status + '<div class="handoff-actions">' + actions + '</div>' +
-    '<div id="project-handoff-manual" class="handoff-manual" hidden><p class="muted">Manual fallback: copy this handoff text into the selected provider.</p><pre id="project-handoff-manual-text"></pre></div>' +
+    '<div id="project-handoff-manual" class="handoff-manual" hidden><p class="muted">If copy does not work, manually copy this prepared text into the selected AI.</p><pre id="project-handoff-manual-text"></pre></div>' +
     returnSection +
     '<p class="muted">Need a new conversation instead? <a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open ASC Front Door</a>.</p>' +
   '</section>';
@@ -987,7 +985,7 @@ function startProjectThread() {
   if (!project) return;
   dashboardState.threadCreateResult = null;
   dashboardState.handoffResult = null;
-  setProjectHandoffStatus('Starting owner-only private thread…', false);
+  setProjectHandoffStatus('Starting a private project conversation…', false);
   google.script.run
     .withSuccessHandler(function (result) {
       dashboardState.threadCreateResult = result;
@@ -1001,7 +999,7 @@ function startProjectThread() {
     .withFailureHandler(function () {
       dashboardState.threadCreateResult = {
         ok: false,
-        error: { code: 'SERVER_CALL_FAILED', message: 'The private project thread could not be created.' }
+        error: { code: 'SERVER_CALL_FAILED', message: 'The project conversation could not be started.' }
       };
       showProject();
     })
@@ -1019,7 +1017,7 @@ function prepareProjectHandoff() {
   dashboardState.providerReturnText = '';
   dashboardState.methodReturnPreview = null;
   dashboardState.methodReturnSave = null;
-  setProjectHandoffStatus('Preparing scoped project handoff…', false);
+  setProjectHandoffStatus('Preparing the conversation for your selected AI…', false);
   google.script.run
     .withSuccessHandler(function (result) {
       dashboardState.handoffResult = result;
@@ -1028,7 +1026,7 @@ function prepareProjectHandoff() {
     .withFailureHandler(function () {
       dashboardState.handoffResult = {
         ok: false,
-        error: { code: 'SERVER_CALL_FAILED', message: 'The protected project handoff could not be prepared.' }
+        error: { code: 'SERVER_CALL_FAILED', message: 'The AI conversation could not be prepared.' }
       };
       showProject();
     })
@@ -1045,11 +1043,11 @@ function copyPreparedProjectHandoff() {
   const result = dashboardState.handoffResult;
   if (!result || result.ok !== true || typeof result.bootstrap !== 'string') return;
   if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
-    setProjectHandoffStatus('Copy is unavailable in this browser. Use SHOW HANDOFF TEXT for the manual fallback.', true);
+    setProjectHandoffStatus('Copy is unavailable in this browser. Use SHOW PREPARED TEXT and copy it manually.', true);
     return;
   }
   navigator.clipboard.writeText(result.bootstrap).then(function () {
-    setProjectHandoffStatus('Handoff copied. Open the selected provider and paste it into the chat.', false);
+    setProjectHandoffStatus('Prepared text copied. Open the selected AI and paste it into the chat.', false);
   }).catch(function () {
     setProjectHandoffStatus('Copy failed. Nothing was saved or changed.', true);
   });
@@ -1063,14 +1061,14 @@ function showPreparedProjectHandoffText() {
   if (!wrap || !text) return;
   text.textContent = result.bootstrap;
   wrap.hidden = false;
-  setProjectHandoffStatus('Manual handoff text is shown below. Copy it into the selected provider.', false);
+  setProjectHandoffStatus('Prepared text is shown below. Copy it into the selected AI.', false);
 }
 
 function openPreparedProjectHandoff() {
   const result = dashboardState.handoffResult;
   if (!result || result.ok !== true || typeof result.provider_url !== 'string') return;
   window.open(result.provider_url, '_blank', 'noopener');
-  setProjectHandoffStatus('Provider opened. Paste the copied handoff into the chat.', false);
+  setProjectHandoffStatus('AI opened. Paste the copied text into the chat.', false);
 }
 
 function previewProjectMethodReturn() {
@@ -1078,7 +1076,7 @@ function previewProjectMethodReturn() {
   if (!project) return;
   dashboardState.methodReturnPreview = null;
   dashboardState.methodReturnSave = null;
-  setProjectHandoffStatus('Validating provider return against the protected handoff…', false);
+  setProjectHandoffStatus('Checking the AI result before SAVE…', false);
   google.script.run
     .withSuccessHandler(function (result) {
       dashboardState.methodReturnPreview = result;
@@ -1087,7 +1085,7 @@ function previewProjectMethodReturn() {
     .withFailureHandler(function () {
       dashboardState.methodReturnPreview = {
         ok: false,
-        error: { code: 'SERVER_CALL_FAILED', message: 'Provider return could not be validated.' }
+        error: { code: 'SERVER_CALL_FAILED', message: 'The AI result could not be checked.' }
       };
       showProject();
     })
@@ -1101,7 +1099,7 @@ function prepareProjectMethodReturnSave() {
   const project = dashboardState.projectResult && dashboardState.projectResult.project;
   if (!project || !dashboardState.methodReturnPreview || dashboardState.methodReturnPreview.ok !== true) return;
   dashboardState.methodReturnSave = null;
-  setProjectHandoffStatus('Preparing secure ASC SAVE request…', false);
+  setProjectHandoffStatus('Preparing SAVE for review…', false);
   google.script.run
     .withSuccessHandler(function (result) {
       dashboardState.methodReturnSave = result;
@@ -1110,7 +1108,7 @@ function prepareProjectMethodReturnSave() {
     .withFailureHandler(function () {
       dashboardState.methodReturnSave = {
         ok: false,
-        error: { code: 'SERVER_CALL_FAILED', message: 'ASC SAVE could not be prepared.' }
+        error: { code: 'SERVER_CALL_FAILED', message: 'SAVE could not be prepared for review.' }
       };
       showProject();
     })
@@ -1124,14 +1122,14 @@ function openProjectMethodReturnSave() {
   const result = dashboardState.methodReturnSave;
   if (!result || result.ok !== true || typeof result.save_link !== 'string') return;
   window.open(result.save_link, '_blank', 'noopener');
-  setProjectHandoffStatus('ASC SAVE opened. Review the protected preview, then CONFIRM & SYNC.', false);
+  setProjectHandoffStatus('SAVE review opened. Check the preview, then use CONFIRM & SYNC when you are ready.', false);
 }
 
 function advanceSavedMethodResult(handoffId) {
   const project = dashboardState.projectResult && dashboardState.projectResult.project;
   if (!project || typeof handoffId !== 'string' || !handoffId) return;
   dashboardState.continuityAdvanceResult = null;
-  setProjectHandoffStatus('Verifying SAVED receipt and advancing the private thread…', false);
+  setProjectHandoffStatus('Checking the verified SAVE and continuing this project…', false);
   google.script.run
     .withSuccessHandler(function (result) {
       dashboardState.continuityAdvanceResult = result;
@@ -1148,7 +1146,7 @@ function advanceSavedMethodResult(handoffId) {
     .withFailureHandler(function () {
       dashboardState.continuityAdvanceResult = {
         ok: false,
-        error: { code: 'SERVER_CALL_FAILED', message: 'Saved result could not advance private continuity.' }
+        error: { code: 'SERVER_CALL_FAILED', message: 'The saved result could not be used to continue this project.' }
       };
       showProject();
     })
@@ -1292,7 +1290,7 @@ function handleDashboardFieldChange(event) {
     dashboardState.providerReturnText = event.target.value;
     dashboardState.methodReturnPreview = null;
     dashboardState.methodReturnSave = null;
-    setProjectHandoffStatus('Provider return changed. Preview it again before preparing ASC SAVE.', false);
+    setProjectHandoffStatus('AI result changed. Check it again before preparing SAVE.', false);
     return;
   }
   if (captureProjectHandoffField(event.target)) {
@@ -1303,8 +1301,8 @@ function handleDashboardFieldChange(event) {
     const noThreads = Array.isArray(threads) && threads.length === 0;
     setProjectHandoffStatus(
       noThreads
-        ? 'First-thread inputs changed. START PRIVATE THREAD when the title and current context are ready.'
-        : 'Handoff inputs changed. Prepare a new handoff before copying or opening.',
+        ? 'Conversation details changed. START PROJECT CONVERSATION when the title and current context are ready.'
+        : 'Conversation details changed. PREPARE FOR AI again before copying or opening.',
       false
     );
   }

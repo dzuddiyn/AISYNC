@@ -3,6 +3,20 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 
 const clientCode = fs.readFileSync(new URL('./client.js', import.meta.url), 'utf8');
+const frontDoorHtml = fs.readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+
+assert.match(frontDoorHtml, /Continue a SAVE request/);
+assert.match(frontDoorHtml, /Start a new AI conversation/);
+assert.match(frontDoorHtml, /SIGN IN TO CONTINUE/);
+assert.match(frontDoorHtml, /CONTINUE SAVE REQUEST/);
+assert.match(frontDoorHtml, /HOW SHOULD THE AI HELP/);
+assert.match(frontDoorHtml, /Automatic suggestion/);
+assert.match(frontDoorHtml, /DUMP — talk it out/);
+assert.match(frontDoorHtml, /DECIDE — compare and choose/);
+assert.match(frontDoorHtml, /DESIGN — structure and build/);
+assert.match(frontDoorHtml, /PREPARE FOR AI/);
+assert.match(frontDoorHtml, /Technical handoff details/);
+assert.doesNotMatch(frontDoorHtml, /ROUTE OVERRIDE|USER DRAFT|PREPARE HANDOFF|COPY HANDOFF|OPEN PROVIDER/);
 
 class FakeStorage {
   constructor() { this.map = new Map(); }
@@ -83,7 +97,7 @@ assert.deepEqual(signInCall, {
 assert.equal(ui.continueButton.disabled, false);
 assert.equal(
   ui.status.textContent,
-  'Sign-in opened in a new tab. Complete Google sign-in, return here, then press CONTINUE.'
+  'Sign-in opened in a new tab. Complete Google sign-in, return here, then choose CONTINUE SAVE REQUEST.'
 );
 
 const replayUrl = sandbox.buildProtectedReplayUrl(signInUrl, restored.fragment);
