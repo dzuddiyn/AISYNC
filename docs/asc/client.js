@@ -186,17 +186,20 @@ function isPreparedHandoffCurrent(prepared, state) {
 
 function setPendingState(pending) {
   const status = document.getElementById('status');
+  const signInButton = document.getElementById('signIn');
   const continueButton = document.getElementById('continue');
 
   if (pending.fragment) {
-    status.textContent = 'A pending SAVE request is ready to continue.';
+    status.textContent = 'A pending project SAVE request is ready. Sign in/check access if needed, return here, then continue the saved request.';
     status.className = '';
+    signInButton.disabled = false;
     continueButton.disabled = false;
     return;
   }
 
-  status.textContent = 'No pending SAVE request was found. Use the new-conversation section below if you are starting something new.';
+  status.textContent = 'No pending project SAVE request. Start from a project Workspace if you want CrossAI to remember the conversation or move it to another AI.';
   status.className = 'warning';
+  signInButton.disabled = true;
   continueButton.disabled = true;
 }
 
@@ -204,6 +207,7 @@ function setFrontDoorError(message) {
   const status = document.getElementById('status');
   status.textContent = message;
   status.className = 'warning';
+  document.getElementById('signIn').disabled = true;
   document.getElementById('continue').disabled = true;
 }
 
@@ -361,7 +365,7 @@ function handleSignIn() {
   window.open(getProtectedSignInUrl(), '_blank', 'noopener');
 
   const status = document.getElementById('status');
-  status.textContent = 'Sign-in opened in a new tab. Complete Google sign-in, return here, then choose CONTINUE SAVE REQUEST.';
+  status.textContent = 'Access check opened in a new tab. If that tab says NO REQUEST, that is expected: return here and choose CONTINUE SAVE REQUEST to replay the pending project SAVE.';
   status.className = '';
 }
 

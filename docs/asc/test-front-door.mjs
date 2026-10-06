@@ -6,9 +6,15 @@ const clientCode = fs.readFileSync(new URL('./client.js', import.meta.url), 'utf
 const frontDoorHtml = fs.readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 
 assert.match(frontDoorHtml, /Continue a SAVE request/);
-assert.match(frontDoorHtml, /Start a new AI conversation/);
+assert.match(frontDoorHtml, /Start a standalone AI conversation/);
+assert.match(frontDoorHtml, /not linked to a CrossAI project/);
+assert.match(frontDoorHtml, /OPEN PROJECT DASHBOARD/);
+assert.match(frontDoorHtml, /id="signIn" type="button" disabled/);
 assert.match(frontDoorHtml, /SIGN IN TO CONTINUE/);
 assert.match(frontDoorHtml, /CONTINUE SAVE REQUEST/);
+assert.match(clientCode, /signInButton\.disabled = true/);
+assert.match(clientCode, /No pending project SAVE request/);
+assert.match(clientCode, /NO REQUEST.*expected/s);
 assert.match(frontDoorHtml, /HOW SHOULD THE AI HELP/);
 assert.match(frontDoorHtml, /Automatic suggestion/);
 assert.match(frontDoorHtml, /DUMP — talk it out/);
@@ -97,7 +103,7 @@ assert.deepEqual(signInCall, {
 assert.equal(ui.continueButton.disabled, false);
 assert.equal(
   ui.status.textContent,
-  'Sign-in opened in a new tab. Complete Google sign-in, return here, then choose CONTINUE SAVE REQUEST.'
+  'Access check opened in a new tab. If that tab says NO REQUEST, that is expected: return here and choose CONTINUE SAVE REQUEST to replay the pending project SAVE.'
 );
 
 const replayUrl = sandbox.buildProtectedReplayUrl(signInUrl, restored.fragment);

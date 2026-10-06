@@ -288,7 +288,10 @@ assert.doesNotMatch(source, /state:\s*['\"]ACTIVE['\"]/);
     draft: 'Continue this checkpoint.'
   });
   assert.equal(handoff.ok, true);
-  assert.match(handoff.bootstrap, /SAVE \/ return-to-ASC instruction:/);
+  assert.match(handoff.bootstrap, /CrossAI checkpoint \/ transfer instruction:/);
+  assert.match(handoff.bootstrap, /SAVE TO CROSSAI/);
+  assert.match(handoff.bootstrap, /MOVE TO ANOTHER AI/);
+  assert.match(handoff.bootstrap, /standalone portable packet/i);
   assert.match(handoff.bootstrap, /ASC_METHOD_RESULT_BEGIN/);
   assert.match(handoff.bootstrap, /ASC_METHOD_RESULT_END/);
   assert.match(handoff.bootstrap, /CONFIRM & SYNC/);

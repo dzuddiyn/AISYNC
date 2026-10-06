@@ -128,12 +128,38 @@ function renderProjectItem(project) {
     '</button>';
 }
 
-function renderRouteIntro(active) {
+function linkedProjectCandidates(result) {
+  const seen = {};
+  const linked = [];
+  DASHBOARD_ENTRIES.forEach(function (entry) {
+    const rows = result && result.groups && Array.isArray(result.groups[entry]) ? result.groups[entry] : [];
+    rows.forEach(function (project) {
+      const id = String(project && project.project_id || '');
+      if (!id || seen[id]) return;
+      seen[id] = true;
+      linked.push(project);
+    });
+  });
+  return linked;
+}
+
+function renderRouteIntro(active, linkedProjects) {
   if (active !== 'DUMP') return '';
+  const projects = Array.isArray(linkedProjects) ? linkedProjects : [];
+  const linked = projects.length
+    ? '<p><strong>Continue a saved project conversation</strong></p>' +
+      '<div class="linked-projects">' + projects.map(function (project) {
+        return '<button type="button" class="project" data-project-id="' + escapeHtml(project.project_id) + '">' +
+          '<strong>' + textOrNotProvided(project.project_name) + '</strong>' +
+          '<div class="muted">Open Workspace → choose DUMP, DECIDE or DESIGN → continue with an AI.</div>' +
+        '</button>';
+      }).join('') + '</div>'
+    : '<p class="muted">No saved project is available in this beta account yet.</p>';
   return '<section class="card route-intro">' +
     '<strong>DUMP → ZASSPILL</strong>' +
-    '<p class="muted">Start with natural conversation. ASC routes the handoff; ZASSPILL owns the method semantics.</p>' +
-    '<p><a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open ASC Front Door</a></p>' +
+    '<p>For a conversation CrossAI should remember, start from a project Workspace. The Workspace creates the linked conversation, return/SAVE path and cross-AI continuity.</p>' +
+    linked +
+    '<p class="muted">Need a quick standalone chat only? <a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open standalone AI Front Door</a>. Standalone chats are not linked to a project, do not appear in Dashboard after refresh, and do not have project SAVE/continuity.</p>' +
     '</section>';
 }
 
@@ -141,7 +167,7 @@ function renderProjectList(result, entry) {
   if (!result || result.ok !== true) return renderError(result);
   const active = DASHBOARD_ENTRIES.indexOf(entry) >= 0 ? entry : 'DUMP';
   const projects = (result.groups && result.groups[active]) || [];
-  let html = renderEntryTabs(active) + renderRouteIntro(active);
+  let html = renderEntryTabs(active) + renderRouteIntro(active, linkedProjectCandidates(result));
   html += projects.length
     ? projects.map(renderProjectItem).join('')
     : '<p class="muted">No ' + active + ' projects in ASC DB.</p>';
@@ -417,7 +443,7 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
 
   if (handoffResult && handoffResult.ok === true) {
     status = '<p id="project-handoff-status" class="muted">Ready for ' + escapeHtml(handoffResult.provider) +
-      '. Copy the prepared text, then open the AI.</p>';
+      '. Copy the prepared text, then open the AI. When you want CrossAI to remember the latest checkpoint, say <strong>SAVE TO CROSSAI</strong>. To move to another AI with the latest context, say <strong>MOVE TO ANOTHER AI</strong>; the AI will return a checkpoint for CrossAI first.</p>';
     actions += '<button type="button" data-handoff-action="copy">COPY FOR AI</button>' +
       '<button type="button" data-handoff-action="show">SHOW PREPARED TEXT</button>' +
       '<button type="button" data-handoff-action="open">OPEN ' + escapeHtml(handoffResult.provider).toUpperCase() + '</button>';
@@ -444,7 +470,7 @@ function renderProjectContinuation(project, continuityResult, handoffForm, hando
     status + '<div class="handoff-actions">' + actions + '</div>' +
     '<div id="project-handoff-manual" class="handoff-manual" hidden><p class="muted">If copy does not work, manually copy this prepared text into the selected AI.</p><pre id="project-handoff-manual-text"></pre></div>' +
     returnSection +
-    '<p class="muted">Need a new conversation instead? <a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open ASC Front Door</a>.</p>' +
+    '<p class="muted">Need a disposable standalone chat that should not be saved to this project? <a href="' + ASC_FRONT_DOOR_URL + '" target="_blank" rel="noopener">Open standalone AI Front Door</a>.</p>' +
   '</section>';
 }
 

@@ -116,17 +116,19 @@
 
     <section class="route-state" aria-labelledby="continue-heading">
       <h2 id="continue-heading">Continue a SAVE request</h2>
-      <p class="muted">Use this only if AISYNC sent you here to sign in before completing a SAVE.</p>
+      <p class="muted">This section does not create a SAVE. Use it only when a project Workspace already sent you here with a pending SAVE request.</p>
       <p id="status">Checking for a pending AISYNC request...</p>
       <div class="actions">
-        <button id="signIn" type="button">SIGN IN TO CONTINUE</button>
+        <button id="signIn" type="button" disabled>SIGN IN TO CONTINUE</button>
         <button id="continue" type="button" disabled>CONTINUE SAVE REQUEST</button>
       </div>
     </section>
 
     <section class="route-state" aria-labelledby="new-heading">
-      <h2 id="new-heading">Start a new AI conversation</h2>
-      <p class="muted">Use this when you are starting something new. Tell AISYNC what you want to do, choose an AI, and optionally choose how you want help.</p>
+      <h2 id="new-heading">Start a standalone AI conversation</h2>
+      <p class="muted"><strong>Standalone means not linked to a CrossAI project.</strong> This conversation will not appear in the project Dashboard after refresh and does not have the project SAVE/continuity return path.</p>
+      <p class="muted">For a conversation you want CrossAI to remember or move between AIs, start from a project Workspace instead: <a href="https://script.google.com/macros/s/AKfycbwueOtAmw_QKpWGfHHuX-dss4TSpyhnRGLj4Y6LcEW3KR2f4tAROR8ECjlCVP1JuEm07w/exec?view=dashboard">OPEN PROJECT DASHBOARD</a>.</p>
+      <p class="muted">Use this standalone section only for a quick conversation that does not need project persistence.</p>
 
       <label for="draft">WHAT DO YOU WANT TO DO?</label>
       <textarea id="draft" placeholder="Write naturally. For example: compare two options, design a system, or just talk through an idea."></textarea>

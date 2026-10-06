@@ -289,15 +289,19 @@ function ascDashboardMethodResultInstruction_(handoff, route) {
   };
   return [
     '',
-    'SAVE / return-to-ASC instruction:',
-    'If the user issues SAVE, do NOT claim local/provider/repository persistence.',
+    'CrossAI checkpoint / transfer instruction:',
+    'This is a project-linked CrossAI conversation. Do not replace the linked return flow with a standalone portable packet unless the user explicitly asks to export a standalone packet.',
+    'User command SAVE TO CROSSAI (legacy alias: SAVE) means: checkpoint the current useful state for CrossAI persistence.',
+    'User command MOVE TO ANOTHER AI means: checkpoint the current useful state for CrossAI first so the user can save/confirm it and then choose another provider from the Workspace.',
+    'For either command above, do NOT claim local/provider/repository persistence.',
     'Return exactly one result block in this shape:',
     ASC_METHOD_RESULT_BEGIN_,
     JSON.stringify(template),
     ASC_METHOD_RESULT_END_,
-    'Use CONFIRMED_RESULT only for the checkpoint the user explicitly asks to SAVE. Do not invent artifact_refs.',
-    'Then tell the user to return to ASC Workspace and paste the block into Return from AI.',
-    'Persistence is not complete until ASC preview + CONFIRM & SYNC succeeds.'
+    'Use CONFIRMED_RESULT only for the checkpoint the user explicitly asked CrossAI to preserve or transfer. Do not invent artifact_refs.',
+    'Then tell the user: Return to CrossAI Workspace, paste this result, CHECK AI RESULT, PREPARE SAVE, REVIEW & SAVE, and complete CONFIRM & SYNC.',
+    'Persistence is not complete until CrossAI preview + CONFIRM & SYNC succeeds.',
+    'After verified SAVE and continuity advance, the user can choose another AI provider from the Workspace and continue from the newer checkpoint.'
   ].join('\n');
 }
 
