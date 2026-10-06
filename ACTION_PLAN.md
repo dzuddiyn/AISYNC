@@ -711,13 +711,15 @@ Evidence: `proofs/t020a3-canary-readiness.md`.
 Conclusion: T-020A3 PASS. T-020A HUMAN BETA READINESS = PASS. AP-014 remains CURRENT and is now READY FOR HUMAN BETA. Next counted gate: T-020B — Human Tester #1. The canary is not counted as a participant.
 
 
-PF-083 | ASC ROUTE-SPECIFIC STORAGE MODEL — CANDIDATE
+PF-083 | ASC ROUTE-SPECIFIC STORAGE MODEL — PARTIALLY PROMOTED / OPEN DETAILS
 
-Finding: Project Owner proposed a future route-specific persistence model: DUMP requires no GitHub account and remains ASC-native; DECIDE keeps many selection-history records in one GitHub repository organized by selection title/topic; DESIGN gives each project its own GitHub repository and ASC projects the canonical state back into the CrossAI workspace/progress view.
+Finding: Project Owner promoted the broader CrossAI route/storage product direction on 2026-10-06. User-facing AI CHAT maps internally to DUMP/ZASSPILL and remains low-friction/ASC-native without a GitHub prerequisite merely to chat or retain an idea. DESIGN is locked directionally as one GitHub repository per project, with CrossAI projecting factual project state back into the product. Explicit promotion between idea → DECIDE/DESIGN is required.
 
-This is intentionally a candidate only. It does not change current T-020/T-021 behavior, confirmed D-032/D-033 authority boundaries, or the existing production project registry. Open questions include GitHub account/ownership behavior for DECIDE, repository privacy/defaults, DUMP retention/export, and promotion transitions between routes.
+DECIDE remains the open storage-design portion: the product concept is Selection History and the candidate implementation is one consolidated Git-backed selection-history repository organized by selection title/topic, but GitHub account requirement, repository ownership/service-management, privacy, layout, quota and team behavior are not yet locked.
 
-See `docs/ASC_ROUTE_STORAGE_MODEL_CANDIDATE.md`.
+The broader locked direction also includes Web + Telegram over the same ASC core, Telegram AI CHAT, selectable AI routing, scoped cross-AI handoff/return, factual support/retrieval, group context-space behavior, and user-owned durable file-storage direction. It remains non-blocking for current T-020/T-021.
+
+See `docs/CROSSAI_PRODUCT_DIRECTION.md` and `docs/ASC_ROUTE_STORAGE_MODEL_CANDIDATE.md`.
 
 PF-084 | CROSSAI USER-FIRST ENTRY CORRECTION — LOCAL PASS / DEPLOYMENT PENDING
 
