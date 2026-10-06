@@ -1,44 +1,15 @@
 const ASC_PENDING_KEY = 'asc.github-pages.pending.fragment.v0.1';
-const PROTECTED_ASC_PREVIEW_URL = 'https://script.google.com/macros/s/AKfycbwueOtAmw_QKpWGfHHuX-dss4TSpyhnRGLj4Y6LcEW3KR2f4tAROR8ECjlCVP1JuEm07w/exec';
-const FRONT_DOOR_DRAFT_KEY = 'asc.front-door.draft.v0.1';
-const FRONT_DOOR_PROVIDER_KEY = 'asc.front-door.provider.v0.1';
-const FRONT_DOOR_ROUTE_OVERRIDE_KEY = 'asc.front-door.route-override.v0.1';
+const PROTECTED_ASC_BASE_URL = 'https://script.google.com/macros/s/AKfycbwueOtAmw_QKpWGfHHuX-dss4TSpyhnRGLj4Y6LcEW3KR2f4tAROR8ECjlCVP1JuEm07w/exec';
+const CROSSAI_AUTH_URL = PROTECTED_ASC_BASE_URL + '?view=crossai-auth';
+const CROSSAI_START_URL = PROTECTED_ASC_BASE_URL + '?view=crossai-start';
+
+const CROSSAI_DRAFT_KEY = 'crossai.start.draft.v0.1';
+const CROSSAI_PROVIDER_KEY = 'crossai.start.provider.v0.1';
+const CROSSAI_AUTH_ATTEMPTED_KEY = 'crossai.auth.attempted.v0.1';
+const CROSSAI_START_ID_KEY = 'crossai.start.id.v0.1';
+const CROSSAI_START_FINGERPRINT_KEY = 'crossai.start.fingerprint.v0.1';
+
 const SUPPORTED_PROVIDERS = Object.freeze(['ChatGPT', 'Gemini', 'Copilot']);
-const ROUTE_CONFIGS = Object.freeze({
-  DUMP: Object.freeze({
-    route: 'DUMP',
-    method: 'ZASSPILL',
-    methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zasspill/my/'
-  }),
-  DECIDE: Object.freeze({
-    route: 'DECIDE',
-    method: 'ZASSELECTION',
-    methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zasselection/my/'
-  }),
-  DESIGN: Object.freeze({
-    route: 'DESIGN',
-    method: 'ZASSIMPLE',
-    methodGatewayUrl: 'https://dzuddiyn.github.io/AISYNC/method/zassimple/my/'
-  })
-});
-const PROVIDER_CONFIGS = Object.freeze({
-  ChatGPT: Object.freeze({
-    provider: 'ChatGPT',
-    url: 'https://chatgpt.com/',
-    handoffMode: 'copy_open'
-  }),
-  Gemini: Object.freeze({
-    provider: 'Gemini',
-    url: 'https://gemini.google.com/app',
-    handoffMode: 'copy_open'
-  }),
-  Copilot: Object.freeze({
-    provider: 'Copilot',
-    url: 'https://copilot.microsoft.com/',
-    handoffMode: 'copy_open'
-  })
-});
-let preparedHandoff = null;
 
 function getAscFragment(hashValue) {
   const hash = String(hashValue || '').replace(/^#/, '');
@@ -48,32 +19,21 @@ function getAscFragment(hashValue) {
 }
 
 function preservePendingRequest(locationLike, storage) {
-  const current = getAscFragment(locationLike.hash);
-
+  const current = getAscFragment(locationLike && locationLike.hash);
   if (current) {
     storage.setItem(ASC_PENDING_KEY, current);
     return { fragment: current, source: 'url' };
   }
-
   const saved = storage.getItem(ASC_PENDING_KEY);
   const restored = getAscFragment(saved);
-
-  if (restored) {
-    return { fragment: restored, source: 'session' };
-  }
-
-  return { fragment: null, source: 'none' };
-}
-
-function getProtectedSignInUrl() {
-  return PROTECTED_ASC_PREVIEW_URL;
+  return restored
+    ? { fragment: restored, source: 'session' }
+    : { fragment: null, source: 'none' };
 }
 
 function buildProtectedReplayUrl(baseUrl, fragment) {
   const normalized = getAscFragment(fragment);
-  if (!normalized) {
-    throw new Error('ASC pending fragment is missing.');
-  }
+  if (!normalized) throw new Error('CrossAI pending SAVE payload is missing.');
   return String(baseUrl).replace(/#.*$/, '') + normalized;
 }
 
@@ -81,335 +41,214 @@ function getSupportedProviders() {
   return SUPPORTED_PROVIDERS.slice();
 }
 
-function getProviderConfig(provider) {
-  return PROVIDER_CONFIGS[String(provider || '')] || null;
-}
-
-function getRouteConfig(route) {
-  const normalized = String(route || '').toUpperCase();
-  return ROUTE_CONFIGS[normalized] || null;
-}
-
-function suggestRoute(draft) {
-  const text = String(draft || '').toLowerCase();
-
-  if (/bandingkan|banding|compare|comparison|choice|choose|pilih|pilihan|antara|\bvs\b/.test(text)) {
-    return 'DECIDE';
-  }
-
-  if (/bina|buat|cipta|reka|design|build|create|architecture|architect|sistem/.test(text)) {
-    return 'DESIGN';
-  }
-
-  return 'DUMP';
-}
-
-function getActiveRoute(suggested, override) {
-  return getRouteConfig(override) ? String(override).toUpperCase() : suggested;
-}
-
-function canPrepareHandoff(state) {
-  return Boolean(
-    String(state && state.draft || '').trim() &&
-    SUPPORTED_PROVIDERS.includes(state && state.provider) &&
-    getRouteConfig(state && state.route)
-  );
-}
-
-function createHandoffPreview(state) {
-  if (!canPrepareHandoff(state)) {
-    return null;
-  }
-
-  const routeConfig = getRouteConfig(state.route);
+function normalizeStartState(state) {
   return {
-    provider: state.provider,
-    route: routeConfig.route,
-    method: routeConfig.method,
-    methodGatewayUrl: routeConfig.methodGatewayUrl,
-    draft: String(state.draft).trim()
+    draft: String(state && state.draft || ''),
+    provider: SUPPORTED_PROVIDERS.includes(state && state.provider) ? state.provider : ''
   };
 }
 
-function buildReceiverBootstrap(preview) {
-  return [
-    'Target route: ' + preview.route,
-    'Target method: ' + preview.method,
-    'Public Method Gateway URL: ' + preview.methodGatewayUrl,
-    'User draft:',
-    preview.draft,
-    '',
-    'Receiver instruction:',
-    'Read the method from this exact Method Gateway URL.',
-    'If you cannot fetch the exact URL, report the failure and do not substitute repository search, raw GitHub, or another source as method authority.',
-    'Continue the user request under the stated route using the stated method.'
-  ].join('\n');
+function readStartState(storage) {
+  return normalizeStartState({
+    draft: storage.getItem(CROSSAI_DRAFT_KEY) || '',
+    provider: storage.getItem(CROSSAI_PROVIDER_KEY) || ''
+  });
 }
 
-function createPreparedHandoff(state) {
-  const preview = createHandoffPreview(state);
-  const providerConfig = getProviderConfig(state && state.provider);
+function writeStartState(storage, state) {
+  const normalized = normalizeStartState(state);
+  storage.setItem(CROSSAI_DRAFT_KEY, normalized.draft);
+  if (normalized.provider) storage.setItem(CROSSAI_PROVIDER_KEY, normalized.provider);
+  else storage.removeItem(CROSSAI_PROVIDER_KEY);
+  return normalized;
+}
 
-  if (!preview || !providerConfig) {
-    return null;
+function clearNewConversationState(storage) {
+  storage.removeItem(CROSSAI_DRAFT_KEY);
+  storage.removeItem(CROSSAI_PROVIDER_KEY);
+  storage.removeItem(CROSSAI_START_ID_KEY);
+  storage.removeItem(CROSSAI_START_FINGERPRINT_KEY);
+}
+
+function validateStartState(state) {
+  const normalized = normalizeStartState(state);
+  if (!normalized.draft.trim()) return { ok: false, code: 'DRAFT_REQUIRED', message: 'Write something first.' };
+  if (!normalized.provider) return { ok: false, code: 'PROVIDER_REQUIRED', message: 'Choose an AI provider first.' };
+  return { ok: true, state: { draft: normalized.draft.trim(), provider: normalized.provider } };
+}
+
+function startFingerprint(state) {
+  return String(state.draft || '').trim() + '\u0000' + String(state.provider || '');
+}
+
+function defaultStartId() {
+  if (typeof crypto !== 'undefined' && crypto && typeof crypto.randomUUID === 'function') {
+    return 'cs_' + crypto.randomUUID().replace(/-/g, '');
   }
+  return 'cs_' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
 
+function ensureStartId(storage, state, idFactory) {
+  const fingerprint = startFingerprint(state);
+  const existingFingerprint = storage.getItem(CROSSAI_START_FINGERPRINT_KEY);
+  const existingId = storage.getItem(CROSSAI_START_ID_KEY);
+  if (existingFingerprint === fingerprint && existingId) return existingId;
+  const id = (typeof idFactory === 'function' ? idFactory() : defaultStartId());
+  storage.setItem(CROSSAI_START_FINGERPRINT_KEY, fingerprint);
+  storage.setItem(CROSSAI_START_ID_KEY, id);
+  return id;
+}
+
+function utf8ToBase64Url(text) {
+  const bytes = new TextEncoder().encode(String(text));
+  let binary = '';
+  bytes.forEach(function (byte) { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function encodeStartPayload(state, startId) {
+  const valid = validateStartState(state);
+  if (!valid.ok) throw new Error(valid.code);
+  return utf8ToBase64Url(JSON.stringify({
+    start_id: String(startId || ''),
+    draft: valid.state.draft,
+    provider: valid.state.provider
+  }));
+}
+
+function buildCrossAiStartUrl(state, startId) {
+  return CROSSAI_START_URL + '#start=' + encodeStartPayload(state, startId);
+}
+
+function setStartStatus(message, kind) {
+  const element = document.getElementById('startStatus');
+  element.textContent = message || '';
+  element.className = 'status' + (kind ? ' ' + kind : '');
+}
+
+function currentDomState() {
   return {
-    preview: preview,
-    providerConfig: providerConfig,
-    bootstrap: buildReceiverBootstrap(preview)
+    draft: document.getElementById('draft').value,
+    provider: document.querySelector('.provider[aria-pressed="true"]')
+      ? document.querySelector('.provider[aria-pressed="true"]').dataset.provider
+      : ''
   };
 }
 
-function openProvider(provider, openWindow) {
-  const config = getProviderConfig(provider);
+function renderProviderSelection(provider) {
+  document.querySelectorAll('.provider').forEach(function (button) {
+    button.setAttribute('aria-pressed', button.dataset.provider === provider ? 'true' : 'false');
+  });
+}
 
-  if (!config) {
-    return false;
+function saveCurrentDomState() {
+  return writeStartState(localStorage, currentDomState());
+}
+
+function handleProviderClick(event) {
+  const provider = event.currentTarget.dataset.provider;
+  renderProviderSelection(provider);
+  saveCurrentDomState();
+  ensureStartId(localStorage, currentDomState());
+  setStartStatus('', '');
+}
+
+function handleDraftInput() {
+  saveCurrentDomState();
+  ensureStartId(localStorage, currentDomState());
+  setStartStatus('', '');
+}
+
+function openAuthGate(openWindow) {
+  const opener = typeof openWindow === 'function' ? openWindow : window.open;
+  return opener(CROSSAI_AUTH_URL, '_blank', 'noopener');
+}
+
+function handleGo() {
+  const saved = saveCurrentDomState();
+  const valid = validateStartState(saved);
+  if (!valid.ok) {
+    setStartStatus(valid.message, 'error');
+    return;
   }
 
-  openWindow(config.url, '_blank', 'noopener');
+  const startId = ensureStartId(localStorage, valid.state);
+  const authAttempted = localStorage.getItem(CROSSAI_AUTH_ATTEMPTED_KEY) === '1';
+
+  if (!authAttempted) {
+    const popup = openAuthGate(window.open);
+    if (popup) {
+      localStorage.setItem(CROSSAI_AUTH_ATTEMPTED_KEY, '1');
+      setStartStatus('Complete Google sign-in in the new tab, then return here and press GO again. Your text is preserved.', '');
+    } else {
+      localStorage.removeItem(CROSSAI_AUTH_ATTEMPTED_KEY);
+      setStartStatus('Your browser blocked the sign-in tab. Your text is preserved; allow pop-ups and press GO again.', 'error');
+    }
+    return;
+  }
+
+  const startUrl = buildCrossAiStartUrl(valid.state, startId);
+  const startWindow = window.open(startUrl, '_blank', 'noopener');
+  if (startWindow) {
+    setStartStatus('CrossAI is starting this conversation in the new tab.', 'ok');
+  } else {
+    window.location.href = startUrl;
+  }
+}
+
+function renderPendingSave(pending) {
+  const box = document.getElementById('saveRecovery');
+  if (!pending || !pending.fragment) {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  document.getElementById('saveStatus').textContent = 'A saved CrossAI request is waiting for confirmation.';
+}
+
+function handleSaveSignIn() {
+  window.open(PROTECTED_ASC_BASE_URL, '_blank', 'noopener');
+  document.getElementById('saveStatus').textContent = 'Complete sign-in, return here, then press CONTINUE SAVE.';
+}
+
+function handleSaveContinue() {
+  const fragment = sessionStorage.getItem(ASC_PENDING_KEY);
+  try {
+    window.location.href = buildProtectedReplayUrl(PROTECTED_ASC_BASE_URL, fragment);
+  } catch (error) {
+    document.getElementById('saveStatus').textContent = error.message;
+  }
+}
+
+function handleAuthReadyMessage(event) {
+  if (!event || !event.data || event.data.type !== 'crossai-auth-ready') return false;
+  localStorage.setItem(CROSSAI_AUTH_ATTEMPTED_KEY, '1');
+  setStartStatus('Sign-in ready. Press GO again to start this CrossAI conversation.', 'ok');
   return true;
 }
 
-function isPreparedHandoffCurrent(prepared, state) {
-  if (!prepared) {
-    return false;
+function bootCrossAi() {
+  const params = new URLSearchParams(window.location.search || '');
+  if (params.get('new') === '1') {
+    clearNewConversationState(localStorage);
+    history.replaceState(null, '', window.location.pathname);
   }
 
-  return prepared.preview.draft === String(state.draft || '').trim() &&
-    prepared.preview.provider === state.provider &&
-    prepared.preview.route === state.route &&
-    prepared.preview.method === getRouteConfig(state.route).method &&
-    prepared.preview.methodGatewayUrl === getRouteConfig(state.route).methodGatewayUrl;
-}
+  const state = readStartState(localStorage);
+  document.getElementById('draft').value = state.draft;
+  renderProviderSelection(state.provider);
+  renderPendingSave(preservePendingRequest(window.location, sessionStorage));
 
-function setPendingState(pending) {
-  const status = document.getElementById('status');
-  const signInButton = document.getElementById('signIn');
-  const continueButton = document.getElementById('continue');
-
-  if (pending.fragment) {
-    status.textContent = 'A pending project SAVE request is ready. Sign in/check access if needed, return here, then continue the saved request.';
-    status.className = '';
-    signInButton.disabled = false;
-    continueButton.disabled = false;
-    return;
-  }
-
-  status.textContent = 'No pending project SAVE request. Start from a project Workspace if you want CrossAI to remember the conversation or move it to another AI.';
-  status.className = 'warning';
-  signInButton.disabled = true;
-  continueButton.disabled = true;
-}
-
-function setFrontDoorError(message) {
-  const status = document.getElementById('status');
-  status.textContent = message;
-  status.className = 'warning';
-  document.getElementById('signIn').disabled = true;
-  document.getElementById('continue').disabled = true;
-}
-
-function readRoutingState(storage) {
-  return {
-    draft: storage.getItem(FRONT_DOOR_DRAFT_KEY) || '',
-    provider: storage.getItem(FRONT_DOOR_PROVIDER_KEY) || '',
-    routeOverride: storage.getItem(FRONT_DOOR_ROUTE_OVERRIDE_KEY) || ''
-  };
-}
-
-function writeRoutingState(storage, state) {
-  storage.setItem(FRONT_DOOR_DRAFT_KEY, state.draft);
-  storage.setItem(FRONT_DOOR_PROVIDER_KEY, state.provider);
-
-  if (state.routeOverride) {
-    storage.setItem(FRONT_DOOR_ROUTE_OVERRIDE_KEY, state.routeOverride);
-  } else {
-    storage.removeItem(FRONT_DOOR_ROUTE_OVERRIDE_KEY);
-  }
-}
-
-function getRoutingElements() {
-  return {
-    draft: document.getElementById('draft'),
-    provider: document.getElementById('provider'),
-    routeOverride: document.getElementById('routeOverride'),
-    suggestedRoute: document.getElementById('suggestedRoute'),
-    activeRoute: document.getElementById('activeRoute'),
-    prepareHandoff: document.getElementById('prepareHandoff'),
-    handoffPreview: document.getElementById('handoffPreview'),
-    previewProvider: document.getElementById('previewProvider'),
-    previewRoute: document.getElementById('previewRoute'),
-    previewMethod: document.getElementById('previewMethod'),
-    previewGateway: document.getElementById('previewGateway'),
-    previewDraft: document.getElementById('previewDraft'),
-    receiverBootstrap: document.getElementById('receiverBootstrap'),
-    handoffStatus: document.getElementById('handoffStatus'),
-    copyHandoff: document.getElementById('copyHandoff'),
-    openProvider: document.getElementById('openProvider')
-  };
-}
-
-function renderRoutingState(state) {
-  const elements = getRoutingElements();
-  const suggested = suggestRoute(state.draft);
-  const active = getActiveRoute(suggested, state.routeOverride);
-  const nextState = {
-    draft: state.draft,
-    provider: state.provider,
-    routeOverride: getRouteConfig(state.routeOverride) ? state.routeOverride : ''
-  };
-
-  elements.suggestedRoute.textContent = suggested;
-  elements.activeRoute.textContent = active;
-  elements.prepareHandoff.disabled = !canPrepareHandoff({
-    draft: nextState.draft,
-    provider: nextState.provider,
-    route: active
+  document.querySelectorAll('.provider').forEach(function (button) {
+    button.addEventListener('click', handleProviderClick);
   });
-  return { state: nextState, suggested, active };
-}
-
-function renderHandoffPreview(preview) {
-  const elements = getRoutingElements();
-  elements.previewProvider.textContent = preview.provider;
-  elements.previewRoute.textContent = preview.route;
-  elements.previewMethod.textContent = preview.method;
-  elements.previewGateway.textContent = preview.methodGatewayUrl;
-  elements.previewGateway.href = preview.methodGatewayUrl;
-  elements.previewDraft.textContent = preview.draft;
-  elements.receiverBootstrap.textContent = preparedHandoff.bootstrap;
-  elements.handoffStatus.textContent = '';
-  elements.copyHandoff.disabled = false;
-  elements.openProvider.disabled = false;
-  elements.handoffPreview.hidden = false;
-}
-
-function invalidatePreparedHandoff() {
-  preparedHandoff = null;
-  const elements = getRoutingElements();
-  elements.copyHandoff.disabled = true;
-  elements.openProvider.disabled = true;
-  elements.handoffPreview.hidden = true;
-}
-
-function handleRoutingChange() {
-  const elements = getRoutingElements();
-  const state = {
-    draft: elements.draft.value,
-    provider: elements.provider.value,
-    routeOverride: elements.routeOverride.value
-  };
-  invalidatePreparedHandoff();
-  writeRoutingState(sessionStorage, state);
-  renderRoutingState(state);
-}
-
-function handlePrepareHandoff() {
-  const elements = getRoutingElements();
-  const rendered = renderRoutingState({
-    draft: elements.draft.value,
-    provider: elements.provider.value,
-    routeOverride: elements.routeOverride.value
-  });
-  preparedHandoff = createPreparedHandoff({
-    draft: rendered.state.draft,
-    provider: rendered.state.provider,
-    route: rendered.active
-  });
-
-  if (preparedHandoff) {
-    renderHandoffPreview(preparedHandoff.preview);
-  }
-}
-
-function setHandoffStatus(message) {
-  getRoutingElements().handoffStatus.textContent = message;
-}
-
-function copyHandoffText(clipboard, bootstrap) {
-  if (!clipboard || typeof clipboard.writeText !== 'function') {
-    return Promise.reject(new Error('Clipboard is unavailable.'));
-  }
-
-  return clipboard.writeText(bootstrap);
-}
-
-async function handleCopyHandoff() {
-  if (!preparedHandoff) {
-    return;
-  }
-
-  try {
-    await copyHandoffText(
-      typeof navigator !== 'undefined' ? navigator.clipboard : null,
-      preparedHandoff.bootstrap
-    );
-    setHandoffStatus('Prepared text copied. Paste it into the AI chat.');
-  } catch (error) {
-    setHandoffStatus('Copy failed. The prepared text remains visible under Technical handoff details for manual copying.');
-  }
-}
-
-function handleOpenProvider() {
-  if (!preparedHandoff) {
-    return;
-  }
-
-  openProvider(preparedHandoff.preview.provider, window.open);
-  setHandoffStatus('Paste the copied text into the AI chat.');
-}
-
-function handleSignIn() {
-  window.open(getProtectedSignInUrl(), '_blank', 'noopener');
-
-  const status = document.getElementById('status');
-  status.textContent = 'Access check opened in a new tab. If that tab says NO REQUEST, that is expected: return here and choose CONTINUE SAVE REQUEST to replay the pending project SAVE.';
-  status.className = '';
-}
-
-function handleContinue() {
-  const fragment = sessionStorage.getItem(ASC_PENDING_KEY);
-
-  try {
-    window.location.href = buildProtectedReplayUrl(
-      PROTECTED_ASC_PREVIEW_URL,
-      fragment
-    );
-  } catch (error) {
-    setFrontDoorError('The pending SAVE request could not be continued: ' + error.message);
-  }
-}
-
-function bootFrontDoor() {
-  try {
-    setPendingState(preservePendingRequest(window.location, sessionStorage));
-    const elements = getRoutingElements();
-    const state = readRoutingState(sessionStorage);
-    elements.draft.value = state.draft;
-    elements.provider.value = SUPPORTED_PROVIDERS.includes(state.provider) ? state.provider : '';
-    elements.routeOverride.value = getRouteConfig(state.routeOverride) ? state.routeOverride : '';
-    renderRoutingState({
-      draft: elements.draft.value,
-      provider: elements.provider.value,
-      routeOverride: elements.routeOverride.value
-    });
-  } catch (error) {
-    setFrontDoorError('AISYNC could not read the pending SAVE request: ' + error.message);
-  }
+  document.getElementById('draft').addEventListener('input', handleDraftInput);
+  document.getElementById('go').addEventListener('click', handleGo);
+  document.getElementById('saveSignIn').addEventListener('click', handleSaveSignIn);
+  document.getElementById('saveContinue').addEventListener('click', handleSaveContinue);
+  window.addEventListener('message', handleAuthReadyMessage);
 }
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('signIn').addEventListener('click', handleSignIn);
-    document.getElementById('continue').addEventListener('click', handleContinue);
-    document.getElementById('draft').addEventListener('input', handleRoutingChange);
-    document.getElementById('provider').addEventListener('change', handleRoutingChange);
-    document.getElementById('routeOverride').addEventListener('change', handleRoutingChange);
-    document.getElementById('prepareHandoff').addEventListener('click', handlePrepareHandoff);
-    document.getElementById('copyHandoff').addEventListener('click', handleCopyHandoff);
-    document.getElementById('openProvider').addEventListener('click', handleOpenProvider);
-    bootFrontDoor();
-  });
+  window.addEventListener('DOMContentLoaded', bootCrossAi);
 }

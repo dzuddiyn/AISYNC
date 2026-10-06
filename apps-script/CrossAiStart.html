@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CrossAI — Start</title>
+  <style>
+    :root{font-family:Inter,Arial,sans-serif;color:#f5f7fb;background:#071014}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 75% 15%,#15343f 0,#08151b 36%,#050b0e 72%)}
+    main{max-width:760px;margin:0 auto;padding:40px 20px 64px}
+    .brand{font-weight:800;letter-spacing:.03em;color:#cde3ec}
+    .card{margin-top:18px;border:1px solid rgba(255,255,255,.12);background:rgba(8,18,23,.86);border-radius:16px;padding:22px}
+    h1,h2{margin-top:0}.muted{color:#a9bdc5;line-height:1.5}.ok{color:#87e7b3}.error{color:#ff7676}
+    button,a.button{font:inherit;font-weight:700;border-radius:10px;padding:11px 15px;border:1px solid rgba(255,255,255,.16);background:#1598ff;color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+    button.secondary,a.secondary{background:rgba(255,255,255,.08)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    textarea{width:100%;min-height:150px;background:#061014;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px;font:inherit;resize:vertical}
+    pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#050b0e;border-radius:10px;padding:14px;color:#c9dbe2}
+    #routeChoice[hidden],#ready[hidden],#returnCard[hidden],#manual[hidden]{display:none}
+  </style>
+</head>
+<body>
+<main>
+  <div class="brand">CrossAI</div>
+
+  <section id="loading" class="card">
+    <h1>Starting your conversation…</h1>
+    <p id="loadingStatus" class="muted">Reading your saved draft and routing it privately.</p>
+  </section>
+
+  <section id="routeChoice" class="card" hidden>
+    <h2>What do you want to do?</h2>
+    <p class="muted">Your message could mean more than one thing. Choose the closest intent; CrossAI will save the chat under that route.</p>
+    <div class="actions">
+      <button type="button" data-route="DUMP" class="secondary">Just talk / casual</button>
+      <button type="button" data-route="DECIDE" class="secondary">Choose / compare</button>
+      <button type="button" data-route="DESIGN" class="secondary">Build / design</button>
+    </div>
+  </section>
+
+  <section id="ready" class="card" hidden>
+    <h1>Conversation saved</h1>
+    <p class="ok">CrossAI created this chat before sending it to the AI.</p>
+    <p>Mode: <strong id="routeLabel"></strong><br>AI: <strong id="providerLabel"></strong></p>
+    <div class="actions">
+      <button id="copyOpen" type="button">COPY & OPEN AI</button>
+      <a class="button secondary" href="https://dzuddiyn.github.io/AISYNC/asc/?new=1" target="_top">NEW CHAT</a>
+    </div>
+    <p id="handoffStatus" class="muted"></p>
+    <details id="manual" hidden>
+      <summary>Manual handoff text</summary>
+      <pre id="bootstrapText"></pre>
+    </details>
+  </section>
+
+  <section id="returnCard" class="card" hidden>
+    <h2>Return from AI</h2>
+    <p class="muted">When the AI gives a CrossAI checkpoint after <strong>SAVE TO CROSSAI</strong> or <strong>MOVE TO ANOTHER AI</strong>, paste the full result here.</p>
+    <textarea id="returnText" placeholder="Paste the ASC_METHOD_RESULT block here…"></textarea>
+    <div class="actions">
+      <button id="saveCheckpoint" type="button">SAVE CHECKPOINT</button>
+    </div>
+    <p id="saveStatus" class="muted"></p>
+  </section>
+</main>
+<script>
+(function(){
+  let startPayload = null;
+  let prepared = null;
+
+  function decodeBase64UrlUtf8(value) {
+    const padded = String(value).replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(value.length/4)*4,'=');
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, function(ch){ return ch.charCodeAt(0); });
+    return new TextDecoder().decode(bytes);
+  }
+
+  function parseStartHash(hash) {
+    const raw = String(hash || '').replace(/^#/,'');
+    if (!raw.startsWith('start=')) throw new Error('Missing CrossAI start payload.');
+    return JSON.parse(decodeBase64UrlUtf8(raw.slice(6)));
+  }
+
+  function showError(message) {
+    document.getElementById('loading').hidden = false;
+    const p = document.getElementById('loadingStatus');
+    p.textContent = message;
+    p.className = 'error';
+  }
+
+  function callPrepare(route) {
+    const input = Object.assign({}, startPayload);
+    if (route) input.route = route;
+    document.getElementById('loading').hidden = false;
+    document.getElementById('loadingStatus').textContent = 'Saving the new CrossAI chat and preparing your AI…';
+    google.script.run
+      .withSuccessHandler(renderPrepare)
+      .withFailureHandler(function(error){ showError(error && error.message ? error.message : String(error)); })
+      .prepareCrossAiConversation(input);
+  }
+
+  function renderPrepare(response) {
+    if (!response || response.ok !== true) {
+      showError(response && response.error ? response.error.message : 'CrossAI could not start this conversation.');
+      return;
+    }
+    if (response.status === 'NEEDS_ROUTE_CHOICE') {
+      document.getElementById('loading').hidden = true;
+      document.getElementById('routeChoice').hidden = false;
+      return;
+    }
+
+    prepared = response;
+    document.getElementById('loading').hidden = true;
+    document.getElementById('routeChoice').hidden = true;
+    document.getElementById('ready').hidden = false;
+    document.getElementById('returnCard').hidden = false;
+    document.getElementById('routeLabel').textContent = response.route_label || response.route;
+    document.getElementById('providerLabel').textContent = response.provider;
+    document.getElementById('bootstrapText').textContent = response.bootstrap;
+  }
+
+  async function copyAndOpen() {
+    if (!prepared) return;
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(prepared.bootstrap);
+      copied = true;
+    } catch (error) {
+      document.getElementById('manual').hidden = false;
+    }
+    window.open(prepared.provider_url, '_blank', 'noopener');
+    document.getElementById('handoffStatus').textContent = copied
+      ? 'Handoff copied. Paste it into the AI chat.'
+      : 'AI opened. Copy the handoff manually from “Manual handoff text”.';
+  }
+
+  function saveCheckpoint() {
+    const text = document.getElementById('returnText').value;
+    const status = document.getElementById('saveStatus');
+    if (!text.trim()) {
+      status.textContent = 'Paste the AI checkpoint first.';
+      status.className = 'error';
+      return;
+    }
+    status.textContent = 'Saving CrossAI continuity…';
+    status.className = 'muted';
+    google.script.run
+      .withSuccessHandler(function(response){
+        if (!response || response.ok !== true) {
+          status.textContent = response && response.error ? response.error.message : 'Checkpoint save failed.';
+          status.className = 'error';
+          return;
+        }
+        status.textContent = 'Saved. CrossAI continuity is now at revision ' + response.revision + '.';
+        status.className = 'ok';
+      })
+      .withFailureHandler(function(error){
+        status.textContent = error && error.message ? error.message : String(error);
+        status.className = 'error';
+      })
+      .saveCrossAiCheckpoint({return_text:text});
+  }
+
+  document.querySelectorAll('[data-route]').forEach(function(button){
+    button.addEventListener('click', function(){ callPrepare(button.dataset.route); });
+  });
+  document.getElementById('copyOpen').addEventListener('click', copyAndOpen);
+  document.getElementById('saveCheckpoint').addEventListener('click', saveCheckpoint);
+
+  function bootFromLocation(location) {
+    try {
+      startPayload = parseStartHash(location && location.hash);
+      callPrepare('');
+    } catch (error) {
+      showError(error.message);
+    }
+  }
+
+  if (window.google && google.script && google.script.url &&
+      typeof google.script.url.getLocation === 'function') {
+    google.script.url.getLocation(bootFromLocation);
+  } else {
+    bootFromLocation(window.location);
+  }
+})();
+</script>
+</body>
+</html>

@@ -718,3 +718,16 @@ Finding: Project Owner proposed a future route-specific persistence model: DUMP 
 This is intentionally a candidate only. It does not change current T-020/T-021 behavior, confirmed D-032/D-033 authority boundaries, or the existing production project registry. Open questions include GitHub account/ownership behavior for DECIDE, repository privacy/defaults, DUMP retention/export, and promotion transitions between routes.
 
 See `docs/ASC_ROUTE_STORAGE_MODEL_CANDIDATE.md`.
+
+PF-084 | CROSSAI USER-FIRST ENTRY CORRECTION — LOCAL PASS / DEPLOYMENT PENDING
+
+Finding: owner review of v52 proved the beta implementation had drifted from LOCKED D-020/D-021/D-022 by making the existing AISYNC project Workspace the practical blank-account entry. The correct product boundary is CrossAI user-facing, AISYNC/ASC internal. A new beta user should type naturally on a public CrossAI landing, choose only an AI provider, pass Google/beta auth with the draft preserved, then let the protected runtime route DUMP/DECIDE/DESIGN and create a new private CrossAI conversation before provider handoff. Conflicting DECIDE+DESIGN signals ask the user on the protected next page.
+
+Implementation now exists on the T-020B2R2 correction branch: enrollment returns to public CrossAI; public start performs no pre-login method routing; protected `crossai-auth` and `crossai-start` surfaces handle auth return, route choice, private-thread creation, scoped handoff, and private continuity checkpoint SAVE/MOVE. Existing operator Dashboard/project-linked SAVE behavior remains intact and is no longer treated as the blank-account product landing.
+
+Focused verification PASS: CrossAI public front door, protected start runtime, protected route binding, existing Dashboard continuity regression, beta access security regression, and git diff check.
+
+Evidence: `proofs/t020b2r2-crossai-user-first-entry-correction.md`.
+
+Conclusion: T-020B2 remains HOLD. Merge/deploy and owner blank-account recheck are required before any external tester may count.
+
