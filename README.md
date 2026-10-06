@@ -29,7 +29,7 @@ See [`docs/PRODUCT_BRANDING.md`](docs/PRODUCT_BRANDING.md).
 
 ## CrossAI future product direction
 
-The future product direction is LOCKED around CrossAI as a continuity/orchestration layer: user-facing **AI CHAT / DECIDE / DESIGN**, Web + Telegram clients over the same ASC core, selectable AI intelligence, scoped cross-AI handoff/return, Telegram group context spaces, factual retrieval, explicit idea→decision/project promotion, and user-owned durable file storage direction.
+The future product direction is LOCKED around CrossAI as a continuity/orchestration layer: ordinary users get a simple **AI CHAT / HELP** entry surface while **DUMP / DECIDE / DESIGN remain internal semantic routes**; Web + Telegram use the same ASC core, with selectable AI intelligence, scoped cross-AI handoff/return, Telegram group context spaces, factual retrieval, explicit idea→decision/project promotion, and user-owned durable file storage direction.
 
 Core principles:
 
