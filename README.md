@@ -27,6 +27,22 @@ See [`docs/PRODUCT_BRANDING.md`](docs/PRODUCT_BRANDING.md).
 
 ---
 
+## CrossAI future product direction
+
+The future product direction is LOCKED around CrossAI as a continuity/orchestration layer: user-facing **AI CHAT / DECIDE / DESIGN**, Web + Telegram clients over the same ASC core, selectable AI intelligence, scoped cross-AI handoff/return, Telegram group context spaces, factual retrieval, explicit idea→decision/project promotion, and user-owned durable file storage direction.
+
+Core principles:
+
+> **“Saya punya kerja ada di CrossAI. AI mana saya nak gunakan, saya pilih.”**
+>
+> **CrossAI owns the continuity. The user chooses the intelligence.**
+>
+> **CrossAI is a continuity and orchestration platform, not another AI provider.**
+
+See [`docs/CROSSAI_PRODUCT_DIRECTION.md`](docs/CROSSAI_PRODUCT_DIRECTION.md).
+
+---
+
 ## ZASSIMPLE project workflow
 
 AISYNC is currently developed with **ZASSIMPLE v0.3.0**.

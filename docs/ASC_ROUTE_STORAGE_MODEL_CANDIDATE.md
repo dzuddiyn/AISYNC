@@ -1,6 +1,6 @@
-# ASC Route Storage Model — Candidate
+# ASC Route Storage Model — Product Direction + Open Storage Details
 
-**Status:** CANDIDATE — NOT LOCKED  
+**Status:** PARTIALLY PROMOTED — PRODUCT DIRECTION LOCKED / DECIDE STORAGE DETAILS OPEN  
 **Date:** 2026-10-06  
 **Source:** Project Owner idea  
 **Scope:** Future CrossAI Sync / AISYNC storage model by DUMP / DECIDE / DESIGN route  
@@ -26,16 +26,16 @@ DESIGN
 → ASC / CrossAI Sync reads/synchronizes the project state back for workspace/progress views
 ```
 
-## Candidate rationale
+## Route rationale
 
-### DUMP — ASC-native
+### AI CHAT / DUMP — ASC-native
 
 DUMP is casual/exploratory continuity. Requiring GitHub before a user can simply unload ideas would add unnecessary onboarding friction.
 
-Candidate direction:
+Locked product direction:
 
 ```text
-DUMP
+AI CHAT (internal DUMP)
 → ASC private storage
 → no GitHub account prerequisite
 → portable/retrievable continuity
@@ -65,7 +65,7 @@ Exact repository ownership, naming, visibility, folder layout, and whether the r
 
 DESIGN creates durable project state and therefore maps naturally to one independent GitHub repository per project.
 
-Candidate direction:
+Locked product direction:
 
 ```text
 Project A → GitHub repo A
@@ -77,12 +77,12 @@ Each project remains independently inspectable and maintainable outside CrossAI 
 
 ASC may register/index the repository and project current state so CrossAI can display project progress without becoming a competing semantic Source of Truth.
 
-## Candidate route model
+## Route model
 
 ```text
 CrossAI Sync
     │
-    ├── DUMP
+    ├── AI CHAT / DUMP
     │     └── ASC-native private continuity/history
     │
     ├── DECIDE
@@ -96,9 +96,9 @@ CrossAI Sync
                    ASC index / project progress projection
 ```
 
-## Open questions before promotion
+## Open storage/design questions
 
-This candidate deliberately does not yet decide:
+The product direction is locked, while these implementation/storage details deliberately remain open:
 
 - whether DECIDE requires the user to have a GitHub account;
 - whether CrossAI creates/owns a DECIDE history repository on behalf of a user;
@@ -119,8 +119,8 @@ This candidate must preserve the existing authority split:
 - ASC indexes/projections must not silently become a second semantic master;
 - moving from DUMP → DECIDE or DESIGN must be an explicit transition, not an invisible persistence change.
 
-## Promotion trigger
+## Canonical product-direction reference
 
-Revisit after Production v1 / T-021 or during the locked Project Bootstrap work.
+The broader user-facing direction is now locked in [`CROSSAI_PRODUCT_DIRECTION.md`](CROSSAI_PRODUCT_DIRECTION.md).
 
-Promote only after deciding GitHub account/ownership behavior and validating that the three-route storage model simplifies onboarding without weakening portability, privacy, or authority clarity.
+DECIDE repository ownership/account/privacy/layout details remain open and should be resolved during future DESIGN/productization work.
