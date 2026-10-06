@@ -795,3 +795,16 @@ Scale/cost guardrail: CrossAI must not promise “free unlimited”. Messaging-c
 This remains future product architecture and does not change current T-020/T-021 acceptance.
 
 See `docs/CROSSAI_CHANNEL_GATEWAY.md` and `docs/CROSSAI_PRODUCT_DIRECTION.md`.
+
+
+PF-092 | RUNTIME / AI INFERENCE COST MODEL — SAVED ARCHITECTURE IDEA
+
+Finding: Project Owner agreed to preserve the separation between channel/messaging cost, runtime/gateway cost, AI inference cost and durable-storage cost. AI inference sits after ASC at the AI Router layer. Candidate service modes are free-first/economical AI, BYOK/user-authorized provider, CrossAI-paid premium inference, and external-AI handoff/return. Deterministic save/move/tag/retrieve operations should avoid AI calls where possible.
+
+Multimodal processing is separately metered from transport/storage: an image or PDF may be saved to the user's Google Drive without vision inference, while OCR/vision/comparison/long-context analysis invokes a capable AI and may consume higher quota/cost. Throughput is treated as concurrent load/rate-limit pressure, not merely monthly user count.
+
+Runtime portability is preserved: Apps Script may serve beta/small deployment, while a future scalable runtime such as Cloud Run may replace the gateway/runtime without changing ASC continuity, the normalized channel contract, AI Router semantics, Drive-first durable storage or optional GitHub behavior.
+
+This is SAVED/AGREED architecture direction, not yet promoted to an implementation lock. Exact provider roster, free quota, BYOK credential mechanics, premium pricing, provider privacy policy, queue implementation, runtime migration trigger and billing remain future DESIGN decisions.
+
+See `docs/CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`.
