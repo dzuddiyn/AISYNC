@@ -39,22 +39,40 @@ LOCKED product boundary:
 
 CrossAI may route work to capable AI providers. It does not need to rebuild every reasoning, vision, image, document, search, or generation capability itself.
 
-## 3. Three user worlds
+## 3. Human-facing surfaces vs internal method routing
 
-The public product exposes three conceptual destinations:
+LOCKED UX principle:
+
+> **Hide method mechanics from ordinary users. Let CrossAI route them internally.**
+
+Ordinary users should not need to choose or understand `DUMP / DECIDE / DESIGN` at the main entry surface.
+
+Public concepts are expressed in human language:
 
 ```text
-AI CHAT / Ideas     → internal DUMP / ZASSPILL route
-DECIDE / Decisions → ZASSELECTION
-DESIGN / Projects  → ZASSIMPLE / project workflow
+💬 AI CHAT      → talk naturally
+💭 Ideas        → saved ideas
+⚖ Decisions    → saved selections/decisions
+🏗 Projects     → project work and progress
+❓ HELP         → ask CrossAI for help
 ```
 
-### AI CHAT — human-facing replacement for DUMP
+Internal semantic routing remains available behind the product surface:
+
+```text
+AI CHAT / idea-like intent      → DUMP → ZASSPILL
+decision/comparison intent      → DECIDE → ZASSELECTION
+project/design/build intent     → DESIGN → ZASSIMPLE
+```
+
+CrossAI may infer the internal route from the user's natural request and may ask a plain-language clarification when intent is genuinely ambiguous. The internal method names may appear in diagnostics, developer documentation, advanced review, or other technical surfaces, but are not required ordinary-user navigation labels.
+
+### AI CHAT — human-facing conversational entry
 
 LOCKED UX rule:
 
-- ordinary users see **💬 AI CHAT**, not DUMP, as the main conversational entry label;
-- internally the route may remain canonical `DUMP → ZASSPILL`;
+- ordinary users see **💬 AI CHAT**, not DUMP, as the conversational entry;
+- internally the route may remain canonical `DUMP → ZASSPILL` when that is the correct semantic route;
 - documentation/diagnostics may expose the internal route when useful.
 
 AI CHAT is the low-friction place to think, talk, explore, and capture ideas.
@@ -187,15 +205,18 @@ LOCKED user-facing menu direction:
 ```text
 Welcome to CrossAI
 
-What do you want to do?
-
 [ 💬 AI CHAT ]
-[ ⚖️ DECIDE ]
-[ 🏗 DESIGN ]
+just talk, I am here to hear.
+
 [ ❓ HELP ]
+just ask.
 ```
 
-`💬 AI CHAT` is the human-facing entry for the internal DUMP route.
+The Telegram start surface deliberately hides `DUMP / DECIDE / DESIGN`.
+
+`💬 AI CHAT` starts a natural conversation. ASC determines the appropriate internal semantic route from the conversation when needed.
+
+`❓ HELP` is the direct support/guide entry. The user can simply ask a question without learning CrossAI/AISYNC/ZASS internals first.
 
 ### Browse view
 
@@ -481,15 +502,22 @@ The LLM is the explanation/reasoning layer, not the source of project status tru
               │                     │
               └──────────┬──────────┘
                          ↓
+                simple public surface
+                 AI CHAT / HELP
+                         ↓
                        ASC
              identity / continuity
              retrieval / lineage
              routing / orchestration
                          │
+              internal semantic router
           ┌──────────────┼───────────────┐
           ↓              ↓               ↓
- AI CHAT / DUMP        DECIDE          DESIGN
- ASC-native Ideas   Selection History   Project repo
+        DUMP           DECIDE          DESIGN
+      ZASSPILL      ZASSELECTION      ZASSIMPLE
+          │              │               │
+          ↓              ↓               ↓
+        Ideas         Decisions        Projects
           │              │               │
           └──────────────┼───────────────┘
                          ↓
