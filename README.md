@@ -2,7 +2,7 @@
 
 > Shared transport and persistence infrastructure for meaningful AI/project records.
 
-**Status:** DESIGN CONFIRMED — DO IT in progress; T-016 PASS, T-017 CURRENT  
+**Status:** PRODUCTION v1 DELIVERY TRACK — T-019 PASS / T-020 CURRENT; T-020B2 HOLD pending CrossAI user-first correction deploy/recheck  
 **Method used to develop this project:** ZASSIMPLE v0.3.0  
 **Repository:** AISYNC
 
@@ -43,6 +43,14 @@ See [`docs/CROSSAI_PRODUCT_DIRECTION.md`](docs/CROSSAI_PRODUCT_DIRECTION.md).
 
 ---
 
+## Multi-user ownership direction
+
+CrossAI's future multi-user model is **central application/runtime, user-owned durable content**. Ordinary users do **not** receive or maintain their own Apps Script deployment. CrossAI/AISYNC code remains centrally maintained, while durable user-owned content should move to storage the user owns (for example Google Drive and user/project GitHub repositories) through delegated authorization/OAuth where appropriate. CrossAI may retain service state such as identity, access control, routing metadata, indexes, and temporary handoff state, but it should not become the permanent warehouse for user-owned durable content.
+
+See [`docs/CROSSAI_MULTI_USER_OWNERSHIP.md`](docs/CROSSAI_MULTI_USER_OWNERSHIP.md).
+
+---
+
 ## ZASSIMPLE project workflow
 
 AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
@@ -51,7 +59,7 @@ AISYNC is currently developed with **ZASSIMPLE v0.3.0**.
 DUMP → DISTILL → DECIDE → DESIGN → DO IT → DELIVERED !!
 ```
 
-Current stage: **DO IT** — DESIGN is confirmed, T-016 Production Write Path is PASS, and T-017 private continuity + retrieval remains the current AISYNC delivery task. ZASS SYSTEM Gates 2–3 are production-integrated compatibility/product-surface work; Gate 4 factual SAVE/sync UX reuses T-016 and does not replace T-017.
+Current stage: **DO IT** — T-015 through T-019 are PASS. **T-020 Human Closed Beta is CURRENT**. T-020A Human Beta Readiness and T-020B1 Session Preparation are PASS; T-020B2 is HOLD while the CrossAI user-first entry correction (T-020B2R2) awaits merge/deploy/owner recheck. No external beta participant has been counted yet. **T-021 Production v1 Release remains QUEUED** until T-020 passes.
 
 The project keeps the user-facing flow light while preserving lineage from decisions into hidden action planning, design/technical architecture, executable tasks, verification, and delivery.
 

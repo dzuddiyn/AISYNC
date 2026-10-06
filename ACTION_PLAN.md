@@ -757,3 +757,14 @@ PF-088 | AMP INTERCHANGE COMPATIBILITY — CANDIDATE
 Finding: AMP-style AI conversation/memory interchange is worth monitoring as a future export/import compatibility surface. CrossAI may provide Markdown, neutral JSON, and AMP-compatible adapters if useful/mature. AMP is not architecture authority and does not replace ZASSPILL, ASC continuity contracts, lineage, privacy boundaries, or SAVE truth.
 
 See `docs/CROSSAI_PRODUCT_DIRECTION.md`.
+
+
+PF-089 | CROSSAI MULTI-USER OWNERSHIP MODEL — LOCKED FUTURE ARCHITECTURE DIRECTION
+
+Finding: CrossAI must scale as a centrally maintained application/runtime, not by giving every user a cloned Apps Script project, personal `.gs` deployment, Script Properties set, or mandatory per-user ASC Sheet. The current owner-executed Apps Script runtime and owner-private Drive continuity store remain a bounded Production v1 closed-beta implementation, not the permanent multi-tenant ownership model.
+
+Locked direction: CrossAI may retain central service state required for identity, authorization, routing, derived indexes, references, temporary handoff/return state, receipts and operations. Durable user-owned content should increasingly live in storage the user owns and explicitly authorizes CrossAI to access. Google Drive is the preferred first user-owned storage ecosystem through delegated authorization/OAuth; Git-backed DESIGN artifacts continue toward user/team-authorized GitHub repositories. CrossAI must preserve truthful failure/quota/revocation behavior and must not silently fall back to permanent operator-owned storage.
+
+Exact OAuth scopes/token lifecycle, hosted backend, central database, Drive layout, encryption/key model, team tenancy and migration mechanics remain future DESIGN decisions.
+
+See `docs/CROSSAI_MULTI_USER_OWNERSHIP.md`.

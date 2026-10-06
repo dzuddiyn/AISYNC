@@ -662,3 +662,18 @@ These are future DESIGN decisions.
 This future product direction must not interrupt or falsify the current Production v1 delivery state.
 
 Current T-020/T-021 work remains governed by its existing acceptance contracts. Future Telegram, multi-AI routing, route-specific storage expansion, and per-user Drive storage are separate productization work unless explicitly promoted later.
+
+
+## 18. Multi-user ownership model
+
+LOCKED future architecture direction:
+
+- CrossAI remains a centrally maintained application/runtime;
+- ordinary users do **not** receive a cloned Apps Script project or per-user `.gs` deployment;
+- current owner-executed Apps Script + owner-private Drive continuity is a bounded closed-beta implementation, not the permanent multi-tenant model;
+- CrossAI may retain central service state needed for identity, authorization, routing, indexes, references, temporary handoff state, receipts, and operations;
+- durable user-owned content should increasingly live in storage the user owns and explicitly authorizes CrossAI to access, with Google Drive as the preferred first ecosystem and GitHub for Git-backed project artifacts;
+- delegated authorization/OAuth is preferred over per-user script cloning;
+- failure/quota/revocation must remain truthful, with no silent fallback to permanent operator-owned storage.
+
+See [`CROSSAI_MULTI_USER_OWNERSHIP.md`](CROSSAI_MULTI_USER_OWNERSHIP.md) for the canonical direction and open implementation questions.
