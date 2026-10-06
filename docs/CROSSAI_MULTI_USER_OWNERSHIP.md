@@ -36,8 +36,8 @@ CrossAI central application/runtime
   ├─ service metadata / indexes
   ├─ temporary handoff state
   └─ delegated access to user-owned durable stores
-          ├─ Google Drive
-          └─ GitHub repositories where applicable
+          └─ Google Drive by default
+                 └─ optional GitHub connection when useful
 ```
 
 ## 2. Current closed-beta implementation is transitional
@@ -100,40 +100,84 @@ CrossAI central service
         └─ delegated authorization / OAuth
                  ↓
         user-owned durable storage
-          ├─ Google Drive
-          └─ GitHub repository/repositories where applicable
+          └─ Google Drive by default
+                 └─ optional GitHub repository/repositories when explicitly enabled
 ```
 
 Examples of user-owned durable content include:
 
+- Ideas;
+- Decisions / Selection History;
+- DESIGN project spaces;
 - uploaded/generated files intended for durable retention;
 - portable exports;
-- Git-backed DESIGN/project artifacts;
 - future portable continuity snapshots or other content explicitly designated user-owned.
 
-## 5. Google-first user-owned storage direction
+GitHub is not required for these ordinary durable-content categories.
+
+## 5. Google Drive default + onboarding
 
 LOCKED direction:
 
-Google remains the preferred first identity/storage ecosystem for this architecture. Where CrossAI writes durable content into a user's Google Drive, it should do so through explicit delegated authorization/OAuth with appropriate scopes rather than by copying the CrossAI Apps Script project into that user's account.
+> **Login Google → allow Google Drive Access → terus guna CrossAI. GitHub hanya muncul bila memang berguna.**
+
+Google Drive is the default durable store for ordinary CrossAI user content.
+
+Default durable categories include:
+
+- Ideas;
+- Decisions / Selection History;
+- Projects / DESIGN spaces;
+- files and attachments;
+- generated outputs intended for retention;
+- portable exports.
+
+CrossAI should access the user's Drive through explicit delegated authorization/OAuth with appropriate scopes rather than by copying the CrossAI Apps Script project into that user's account.
 
 The exact OAuth client architecture, scopes, consent flow, folder layout, token storage, revocation flow, and migration mechanics remain future DESIGN work.
 
-## 6. GitHub ownership direction
+## 6. GitHub is optional
 
-For Git-backed project artifacts, the existing rule remains:
+LOCKED:
 
-> **One DESIGN project → one GitHub repository.**
+GitHub is **not** a default onboarding requirement and is **not** mandatory for DECIDE or DESIGN.
 
-Future multi-user productization should favor repositories owned by or explicitly authorized for the user/team, with CrossAI acting through a bounded GitHub App / delegated authorization boundary.
+GitHub should appear only when the user explicitly needs:
 
-Exact repository ownership defaults for DECIDE/Selection History remain open as already recorded in PF-083.
+- version control;
+- coding workflow;
+- collaboration;
+- CI;
+- a public repository;
+- technical provenance.
+
+Default:
+
+```text
+CrossAI content
+→ user's Google Drive
+```
+
+Optional:
+
+```text
+CrossAI project
+→ [ CONNECT GITHUB ]
+→ create or link repository
+```
+
+When GitHub is enabled for a specific project, GitHub may become canonical for the selected Git-backed artifacts. Google Drive remains the durable home for non-Git files and other ordinary user content. CrossAI must make this authority split explicit and must not create two competing editable masters.
+
+The previous universal rule **One DESIGN project → one GitHub repository** is SUPERSEDED.
+
+The previous candidate of a consolidated GitHub Selection History repository for DECIDE is also SUPERSEDED as the default; it may exist later only as an optional Git integration/export pattern.
 
 ## 7. Failure and quota truthfulness
 
 The existing truthfulness principle remains mandatory:
 
-- if user-owned Drive/GitHub authorization is missing, expired, revoked, quota-blocked, or otherwise unable to persist the requested durable content, CrossAI must report that state accurately;
+- if required Google Drive authorization is missing, expired, revoked, quota-blocked, or otherwise unable to persist default durable content, CrossAI must report that state accurately;
+- if an optional GitHub connection is enabled and its authorization fails, CrossAI must report the Git-backed artifact state accurately;
 - CrossAI must not silently claim durable SAVE success;
 - CrossAI must not automatically fall back to permanent operator-owned storage merely because the user's store is unavailable.
 
@@ -192,6 +236,7 @@ This architecture direction does not yet choose:
 - organization/team tenancy model;
 - data residency/region model;
 - exact migration date from the closed-beta owner-private continuity store;
-- whether every continuity record, only portable snapshots, or another bounded subset becomes user-owned durable storage.
+- whether every continuity record, only portable snapshots, or another bounded subset becomes user-owned durable storage;
+- exact optional GitHub connect/create/link UX and authority mapping.
 
 Those remain future DESIGN decisions.
