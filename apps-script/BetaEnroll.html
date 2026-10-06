@@ -56,8 +56,7 @@ join.addEventListener('click', function () {
         return;
       }
       result.className = '';
-      result.textContent = 'Joined as ' + response.label + '. Access is limited to: ' +
-        response.allowed_projects.join(', ') + '. Access expires: ' + response.expires_at + '.';
+      result.textContent = 'CrossAI beta access is ready. Access expires: ' + response.expires_at + '.';
       continueWrap.hidden = false;
       join.hidden = true;
     })
