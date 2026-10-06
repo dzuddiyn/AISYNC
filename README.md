@@ -45,7 +45,11 @@ See [`docs/CROSSAI_PRODUCT_DIRECTION.md`](docs/CROSSAI_PRODUCT_DIRECTION.md).
 
 ## Multi-user ownership direction
 
-CrossAI's future multi-user model is **central application/runtime, user-owned durable content**. Ordinary users do **not** receive or maintain their own Apps Script deployment. CrossAI/AISYNC code remains centrally maintained, while durable user-owned content should move to storage the user owns (for example Google Drive and user/project GitHub repositories) through delegated authorization/OAuth where appropriate. CrossAI may retain service state such as identity, access control, routing metadata, indexes, and temporary handoff state, but it should not become the permanent warehouse for user-owned durable content.
+CrossAI's future multi-user model is **central application/runtime, user-owned durable content**. Ordinary users do **not** receive or maintain their own Apps Script deployment. **Google Drive is the default durable store. GitHub is optional and appears only when it is useful for version control, coding workflow, collaboration, CI, public repositories, or technical provenance.** CrossAI may retain service state such as identity, access control, routing metadata, indexes, references, and temporary handoff state, but it should not become the permanent warehouse for user-owned durable content.
+
+Locked onboarding direction:
+
+> **Login Google → allow Google Drive Access → terus guna CrossAI. GitHub hanya muncul bila memang berguna.**
 
 See [`docs/CROSSAI_MULTI_USER_OWNERSHIP.md`](docs/CROSSAI_MULTI_USER_OWNERSHIP.md).
 

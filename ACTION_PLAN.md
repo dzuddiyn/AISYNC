@@ -711,7 +711,7 @@ Evidence: `proofs/t020a3-canary-readiness.md`.
 Conclusion: T-020A3 PASS. T-020A HUMAN BETA READINESS = PASS. AP-014 remains CURRENT and is now READY FOR HUMAN BETA. Next counted gate: T-020B — Human Tester #1. The canary is not counted as a participant.
 
 
-PF-083 | ASC ROUTE-SPECIFIC STORAGE MODEL — PARTIALLY PROMOTED / OPEN DETAILS
+PF-083 | ASC ROUTE-SPECIFIC STORAGE MODEL — SUPERSEDED BY PF-090
 
 Finding: Project Owner promoted the broader CrossAI route/storage product direction on 2026-10-06. User-facing AI CHAT maps internally to DUMP/ZASSPILL and remains low-friction/ASC-native without a GitHub prerequisite merely to chat or retain an idea. DESIGN is locked directionally as one GitHub repository per project, with CrossAI projecting factual project state back into the product. Explicit promotion between idea → DECIDE/DESIGN is required.
 
@@ -768,3 +768,16 @@ Locked direction: CrossAI may retain central service state required for identity
 Exact OAuth scopes/token lifecycle, hosted backend, central database, Drive layout, encryption/key model, team tenancy and migration mechanics remain future DESIGN decisions.
 
 See `docs/CROSSAI_MULTI_USER_OWNERSHIP.md`.
+
+
+PF-090 | GOOGLE DRIVE DEFAULT / GITHUB OPTIONAL — LOCKED FUTURE ARCHITECTURE DIRECTION
+
+Finding: Project Owner superseded the earlier GitHub-first storage assumptions. Future CrossAI onboarding is locked as: **Login Google → allow Google Drive Access → terus guna CrossAI. GitHub hanya muncul bila memang berguna.** Google Drive becomes the default durable store for ordinary user-owned CrossAI content, including Ideas, Decisions/Selection History, DESIGN project spaces, files/attachments, generated retained outputs and exports.
+
+GitHub is optional and should appear only when the user needs version control, coding workflow, collaboration, CI, public repositories or technical provenance. The earlier universal rule `one DESIGN project = one GitHub repository` and the earlier default candidate of a consolidated GitHub DECIDE repository are SUPERSEDED. One DESIGN project now means one durable project space; by default that space is in the user's Google Drive.
+
+If GitHub is explicitly enabled for a project, GitHub may become canonical only for the selected Git-backed artifacts while Drive remains the durable home/authority for non-Git content. CrossAI must never silently create competing editable semantic masters.
+
+This is a future product/architecture direction. Current Production v1 closed-beta owner-executed Apps Script + owner-private Drive continuity remains a bounded transitional implementation and does not yet claim per-user Drive OAuth.
+
+See `docs/CROSSAI_PRODUCT_DIRECTION.md`, `docs/CROSSAI_MULTI_USER_OWNERSHIP.md`, and `docs/ASC_ROUTE_STORAGE_MODEL_CANDIDATE.md`.
