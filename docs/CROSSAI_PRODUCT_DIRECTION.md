@@ -193,7 +193,21 @@ Carrying:
 [ CREATE PROJECT ]
 ```
 
-After explicit confirmation, CrossAI creates the durable project space in the user's Google Drive. GitHub is not required. If the user later needs version control, coding workflow, collaboration, CI, a public repository, or technical provenance, CrossAI may offer an explicit `CONNECT GITHUB` step.
+After explicit confirmation, CrossAI creates the durable project space in the user's Google Drive. GitHub is not required.
+
+LOCKED refinement:
+
+> **Every DESIGN project starts with a user-owned Google Drive project space. CrossAI should offer GitHub creation or linking when the project begins or when Git-oriented capabilities become useful. GitHub remains optional.**
+
+Recommended project-start UX:
+
+```text
+[ CREATE NEW REPO ]
+[ LINK EXISTING REPO ]
+[ NOT NOW ]
+```
+
+The GitHub offer is therefore proactive at DESIGN/project start, while remaining optional. If the user skips it, CrossAI may offer it again later when version control, coding workflow, collaboration, CI, a public repository, or technical provenance becomes useful.
 
 Lineage should remain traceable from source idea/decision into the resulting project regardless of whether GitHub is enabled.
 
