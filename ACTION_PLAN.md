@@ -120,7 +120,7 @@ AP-014 | CURRENT / BLOCKED AT READINESS
 Action: Run a closed beta with invited humans. Minimum three distinct non-developer participants; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
 Dependencies: AP-009 through AP-013 — satisfied.
 Pass / stop condition: at least three participants complete the locked core journey without developer-side data repair or hidden manual patching of canonical/project state.
-Current result: T-020A Human Beta Readiness Check is BLOCKED by BETA-AUTH-001. Production remains `MYSELF` / owner-only while D-031 requires Google Account identity plus an explicit invited-user production allowlist. Major copy/usability findings also require cleanup before the first external tester. Implement the bounded Beta Access Gate, then rerun T-020A canary readiness before counting any human beta journey.
+Current result: T-020A remains BLOCKED by ordinary-user UX readiness, but BETA-AUTH-001 is CLOSED through T-020A1 LIVE PASS. The final Beta Access Gate is protected production v50 `T020A1-beta-access-gate-final`; owner identity binding, real non-owner invitation enrollment scoped to `AISYNC`, protected AISYNC Workspace access, owner revocation, and immediate post-revoke denial were proven live without hidden repair. Focused security tests cover direct forbidden-project and privileged-owner negative paths; full regression is 33/33 PASS. Remaining work is the T-020A ordinary-user copy/entry cleanup followed by the exact canary readiness rerun before counting any external beta journey.
 Feeds design: YES
 
 AP-015 | QUEUED
@@ -647,7 +647,7 @@ Readiness evidence is recorded in proofs/t020a-human-beta-readiness.md. Existing
 Conclusion: T-020A is BLOCKED / NOT READY FOR HUMAN BETA. T-020 / AP-014 remains CURRENT. Implement the bounded Beta Access Gate and ordinary-user copy fixes, then rerun the exact readiness contract as a canary before counting any external beta journey.
 
 
-PF-080 | T-020A1 BETA ACCESS GATE — LOCAL PASS / LIVE PROOF PENDING
+PF-080 | T-020A1 BETA ACCESS GATE — LIVE PASS
 
 Finding: T-020A readiness correctly blocked because Production v1 still used the owner-only Apps Script gate while D-031 requires invited Google-account humans behind an explicit production allowlist.
 
@@ -674,4 +674,6 @@ Local security/regression evidence:
 - full repository suite 33/33 test files PASS;
 - git diff --check PASS.
 
-Conclusion: T-020A1 is LOCAL PASS. Canonical SAVE/merge, protected deployment and a real non-owner Google-account enrollment/access/revocation proof remain required before the access blocker BETA-AUTH-001 can be closed.
+Live closure: canonical implementation is merged; owner temporary-user identity was bound through a temporary owner-only v49 bootstrap; protected production is immutable v50 `T020A1-beta-access-gate-final`; and a real non-owner Google-account canary enrolled from a single-use invitation scoped only to `AISYNC`, opened the protected AISYNC project Workspace, then lost access immediately after owner revocation without browser restart or hidden state repair. The raw invite token and tester email are omitted from proof. Direct forbidden-project and privileged-owner negative paths remain covered by focused security tests. Canonical live evidence: `proofs/t020a1-beta-access-gate-live.md`.
+
+Conclusion: T-020A1 is LIVE PASS. BETA-AUTH-001 is CLOSED. T-020A overall remains BLOCKED only by the ordinary-user UX readiness findings recorded in `proofs/t020a-human-beta-readiness.md`.

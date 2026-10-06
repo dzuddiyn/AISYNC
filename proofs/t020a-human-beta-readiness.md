@@ -185,3 +185,12 @@ PASS only if the owner can follow the tester instructions without relying on dev
 Primary blocker: `BETA-AUTH-001`.
 
 T-020 / AP-014 remains CURRENT, but the first external human beta journey must not begin until the Beta Access Gate is implemented and T-020A is rerun to PASS.
+
+
+## Post-audit update — 2026-10-06
+
+BETA-AUTH-001 is now **CLOSED** by T-020A1 Beta Access Gate LIVE PASS.
+
+Canonical live evidence: `proofs/t020a1-beta-access-gate-live.md`.
+
+T-020A itself remains **BLOCKED / NOT READY FOR COUNTED HUMAN BETA** because BETA-UX-001 through BETA-UX-004 still require ordinary-user wording/entry remediation followed by the same canary readiness rerun.

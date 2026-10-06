@@ -8,18 +8,19 @@ Status:
 
 T-004 creates the first Apps Script Web App surface for ASC.
 
-The deployment model is owner-only Google Account access:
+Historical T-004 proof deployment used owner-only Google Account access (`MYSELF`, `USER_DEPLOYING`). Production v1 closed beta now uses the T-020A1 Beta Access Gate:
 
-- web app access: `MYSELF`
-- execution identity: `USER_DEPLOYING`
-- Google provides the sign-in/access gate before ASC HTML is served
-- ASC does not implement a second password/login database
+- web app access: `ANYONE` for signed-in Google users;
+- execution identity remains `USER_DEPLOYING` so existing owner-side ASC DB, private continuity and GitHub App authorities stay server-side;
+- ordinary access is granted only through an owner-issued, expiring, project-scoped invitation bound to a hashed temporary active-user key;
+- privileged DR, telemetry, secret rotation and beta administration remain owner-only;
+- ASC still does not implement a second password/login database.
 
-This matches the Apps Script web-app manifest model documented by Google.
+The protected production deployment is v50 `T020A1-beta-access-gate-final`; live non-owner enrollment and immediate revocation are recorded in `proofs/t020a1-beta-access-gate-live.md`.
 
 ## Files
 
-- `appsscript.json` — V8 runtime + owner-only web-app configuration
+- `appsscript.json` — V8 runtime + signed-in closed-beta web-app configuration
 - `Code.gs` — `doGet()`, template include helper, bootstrap state, T-008B `confirmAndSync` / `getConfirmSyncResult`
 - `Index.html` — ASC preview + CONFIRM & SYNC shell
 - `Client.html` — pending-fragment preservation + decode + preview + confirm/receipt/success-return logic
