@@ -742,3 +742,18 @@ Finding: Project Owner simplified the future CrossAI ordinary-user entry surface
 This is a future product UX direction and does not retroactively change current T-020/T-021 acceptance evidence or the existing Production v1 routing contract until separately promoted into implementation work.
 
 See `docs/CROSSAI_PRODUCT_DIRECTION.md`.
+
+
+PF-086 | TELEGRAM PRIVATE THREADED CONTEXT SPACES — LOCKED FUTURE DIRECTION
+
+Finding: For a single user, Telegram private threaded topics are preferred over creating a creator+bot group merely to separate personal contexts, where Telegram capabilities/final implementation permit it. Each topic may map to a scoped CrossAI context space under the same ASC authority. Existing Telegram Group behavior remains locked for shared/group use. Technical nuance remains open: creator+bot-only ordinary-message response versus multi-human `@bot`-only response must be implemented deliberately in the bot/ASC layer and must not assume Telegram Privacy Mode alone can dynamically enforce participant-count behavior.
+
+PF-087 | TOPIC / TEMPORAL RETRIEVAL INDEX — ARCHITECTURE CANDIDATE
+
+Finding: Future CrossAI retrieval may combine LLM topic-change detection, temporal markers/indexing, full-text search, embeddings/vector similarity, and topic summaries. Candidate technologies include PostgreSQL + pgvector, Qdrant, or equivalent. Hard guardrail: this is derived retrieval infrastructure only and must never become semantic authority over ASC private continuity, GitHub canonical project artifacts, confirmed decisions, or factual SAVE/receipt state. Topic-change detection may produce assistant signals such as asking whether to save a shifted subject as a separate idea; the human decides before ASC records a new semantic boundary.
+
+PF-088 | AMP INTERCHANGE COMPATIBILITY — CANDIDATE
+
+Finding: AMP-style AI conversation/memory interchange is worth monitoring as a future export/import compatibility surface. CrossAI may provide Markdown, neutral JSON, and AMP-compatible adapters if useful/mature. AMP is not architecture authority and does not replace ZASSPILL, ASC continuity contracts, lineage, privacy boundaries, or SAVE truth.
+
+See `docs/CROSSAI_PRODUCT_DIRECTION.md`.
