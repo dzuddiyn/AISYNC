@@ -6,9 +6,15 @@ const clientCode = fs.readFileSync(new URL('./client.js', import.meta.url), 'utf
 const frontDoorHtml = fs.readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 
 assert.match(frontDoorHtml, /Continue a SAVE request/);
-assert.match(frontDoorHtml, /Start a new AI conversation/);
+assert.match(frontDoorHtml, /Start a standalone AI conversation/);
+assert.match(frontDoorHtml, /not linked to a CrossAI project/);
+assert.match(frontDoorHtml, /OPEN PROJECT DASHBOARD/);
+assert.match(frontDoorHtml, /id="signIn" type="button" disabled/);
 assert.match(frontDoorHtml, /SIGN IN TO CONTINUE/);
 assert.match(frontDoorHtml, /CONTINUE SAVE REQUEST/);
+assert.match(frontDoorClient, /signInButton\.disabled = true/);
+assert.match(frontDoorClient, /No pending project SAVE request/);
+assert.match(frontDoorClient, /NO REQUEST.*expected/s);
 assert.match(frontDoorHtml, /HOW SHOULD THE AI HELP/);
 assert.match(frontDoorHtml, /Automatic suggestion/);
 assert.match(frontDoorHtml, /DUMP — talk it out/);
