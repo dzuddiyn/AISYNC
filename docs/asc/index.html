@@ -3,182 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ASC Public Front Door</title>
+  <title>CrossAI</title>
   <style>
-    :root {
-      font-family: Georgia, 'Times New Roman', serif;
-      color: #1f2a2e;
-      background: #edf2ed;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #edf2ed, #d7e4e0);
-    }
-
-    main {
-      width: min(32rem, calc(100% - 2rem));
-      padding: 2rem;
-      background: #fff;
-      border: 1px solid #b7c9c1;
-      box-shadow: 0 1rem 3rem rgba(31, 42, 46, 0.12);
-    }
-
-    h1 { margin-top: 0; }
-
-    .muted { color: #52615c; font-size: 0.95rem; line-height: 1.5; }
-
-    #status {
-      padding: 0.9rem;
-      border-left: 4px solid #34745f;
-      background: #edf6f1;
-    }
-
-    #status.warning {
-      border-color: #a45b2b;
-      background: #fff2e8;
-    }
-
-    .actions {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-top: 1.5rem;
-    }
-
-    button {
-      border: 0;
-      padding: 0.75rem 1rem;
-      font: inherit;
-      color: #fff;
-      background: #1f5c4a;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.45;
-    }
-
-    label {
-      display: block;
-      margin-top: 1.25rem;
-      font-weight: 700;
-    }
-
-    textarea,
-    select {
-      box-sizing: border-box;
-      width: 100%;
-      margin-top: 0.5rem;
-      padding: 0.75rem;
-      border: 1px solid #aebfba;
-      font: inherit;
-      color: inherit;
-      background: #fff;
-    }
-
-    textarea {
-      min-height: 7rem;
-      resize: vertical;
-    }
-
-    .route-state,
-    .handoff-preview {
-      margin-top: 1.25rem;
-      padding: 1rem;
-      border: 1px solid #b7c9c1;
-      background: #f7faf8;
-    }
-
-    .route-state p,
-    .handoff-preview p {
-      margin: 0.4rem 0;
-    }
-
-    .handoff-preview pre {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      font: inherit;
-    }
-
-    .handoff-preview a {
-      overflow-wrap: anywhere;
-    }
+    :root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f5f7fb;background:#071014}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 70% 18%,#15343f 0,#0a171d 28%,#050b0e 68%);color:#f5f7fb}
+    .shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+    aside{border-right:1px solid rgba(255,255,255,.08);padding:24px 18px;background:rgba(3,8,11,.72)}
+    .brand{font-weight:800;letter-spacing:.02em;font-size:1.15rem;margin-bottom:28px}
+    .nav-label{font-size:.86rem;font-weight:700;margin:22px 0 8px;color:#dce8ec}
+    .nav-line{height:42px;border-left:1px solid rgba(255,255,255,.38);margin-left:8px}
+    main{display:flex;align-items:center;justify-content:center;padding:32px}
+    .hero{width:min(760px,100%);text-align:center}
+    h1{font-size:clamp(2.2rem,5vw,4rem);margin:0 0 8px;letter-spacing:.02em}
+    .tagline{color:#c2d0d6;margin:0 auto 28px;max-width:520px;line-height:1.5}
+    textarea{width:100%;min-height:180px;resize:vertical;border-radius:18px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.34);color:#fff;padding:20px;font:inherit;font-size:1.05rem;outline:none}
+    textarea:focus{border-color:#38a7ff;box-shadow:0 0 0 3px rgba(56,167,255,.13)}
+    .providers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+    .provider{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);color:#f5f7fb;border-radius:10px;padding:12px 10px;font:inherit;font-weight:700;cursor:pointer}
+    .provider[aria-pressed="true"]{border-color:#38a7ff;background:rgba(56,167,255,.18)}
+    .go{width:86px;height:86px;border-radius:50%;border:0;background:#1598ff;color:#fff;font-size:2.6rem;font-weight:800;cursor:pointer;box-shadow:0 10px 28px rgba(21,152,255,.28)}
+    .go:hover{transform:translateY(-1px)}
+    .status{min-height:28px;margin:14px auto 0;max-width:620px;color:#c7d6dc;line-height:1.45}
+    .status.error{color:#ff6b6b}
+    .status.ok{color:#87e7b3}
+    .hint{margin-top:22px;color:#80949c;font-size:.9rem}
+    .save-recovery{margin:0 auto 24px;max-width:760px;text-align:left;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);border-radius:14px;padding:16px}
+    .save-recovery[hidden]{display:none}
+    .save-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .save-actions button{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;padding:10px 14px;border-radius:9px;cursor:pointer}
+    @media(max-width:760px){.shell{grid-template-columns:1fr}aside{display:none}main{padding:20px}.providers{grid-template-columns:1fr}.go{width:74px;height:74px}}
   </style>
 </head>
 <body>
+<div class="shell">
+  <aside aria-label="CrossAI sections">
+    <div class="brand">CrossAI</div>
+    <div class="nav-label">Dump</div><div class="nav-line"></div>
+    <div class="nav-label">Decide</div><div class="nav-line"></div>
+    <div class="nav-label">Design</div><div class="nav-line"></div>
+  </aside>
   <main>
-    <h1>Start or continue with AISYNC</h1>
-
-    <section class="route-state" aria-labelledby="continue-heading">
-      <h2 id="continue-heading">Continue a SAVE request</h2>
-      <p class="muted">This section does not create a SAVE. Use it only when a project Workspace already sent you here with a pending SAVE request.</p>
-      <p id="status">Checking for a pending AISYNC request...</p>
-      <div class="actions">
-        <button id="signIn" type="button" disabled>SIGN IN TO CONTINUE</button>
-        <button id="continue" type="button" disabled>CONTINUE SAVE REQUEST</button>
-      </div>
-    </section>
-
-    <section class="route-state" aria-labelledby="new-heading">
-      <h2 id="new-heading">Start a standalone AI conversation</h2>
-      <p class="muted"><strong>Standalone means not linked to a CrossAI project.</strong> This conversation will not appear in the project Dashboard after refresh and does not have the project SAVE/continuity return path.</p>
-      <p class="muted">For a conversation you want CrossAI to remember or move between AIs, start from a project Workspace instead: <a href="https://script.google.com/macros/s/AKfycbwueOtAmw_QKpWGfHHuX-dss4TSpyhnRGLj4Y6LcEW3KR2f4tAROR8ECjlCVP1JuEm07w/exec?view=dashboard">OPEN PROJECT DASHBOARD</a>.</p>
-      <p class="muted">Use this standalone section only for a quick conversation that does not need project persistence.</p>
-
-      <label for="draft">WHAT DO YOU WANT TO DO?</label>
-      <textarea id="draft" placeholder="Write naturally. For example: compare two options, design a system, or just talk through an idea."></textarea>
-
-      <label for="provider">AI PROVIDER</label>
-      <select id="provider">
-        <option value="">Choose an AI</option>
-        <option value="ChatGPT">ChatGPT</option>
-        <option value="Gemini">Gemini</option>
-        <option value="Copilot">Copilot</option>
-      </select>
-
-      <label for="routeOverride">HOW SHOULD THE AI HELP? <span class="muted">(optional)</span></label>
-      <select id="routeOverride">
-        <option value="">Automatic suggestion</option>
-        <option value="DUMP">DUMP — talk it out</option>
-        <option value="DECIDE">DECIDE — compare and choose</option>
-        <option value="DESIGN">DESIGN — structure and build</option>
-      </select>
-
-      <section class="route-state" aria-live="polite">
-        <p>AISYNC suggests: <strong id="suggestedRoute">DUMP</strong></p>
-        <p>Using: <strong id="activeRoute">DUMP</strong></p>
+    <div class="hero">
+      <section id="saveRecovery" class="save-recovery" hidden>
+        <strong>Continue saved CrossAI request</strong>
+        <p id="saveStatus" class="status"></p>
+        <div class="save-actions">
+          <button id="saveSignIn" type="button">SIGN IN</button>
+          <button id="saveContinue" type="button">CONTINUE SAVE</button>
+        </div>
       </section>
 
-      <div class="actions">
-        <button id="prepareHandoff" type="button" disabled>PREPARE FOR AI</button>
-      </div>
-    </section>
+      <h1>CrossAI</h1>
+      <p class="tagline">Dump a thought, compare choices, or build something. Pick an AI and CrossAI handles the rest.</p>
 
-    <section id="handoffPreview" class="handoff-preview" hidden aria-live="polite">
-      <h2>Ready for your AI</h2>
-      <p>AI provider: <strong id="previewProvider"></strong></p>
-      <p>Help mode: <strong id="previewRoute"></strong></p>
-      <p>Your message:</p>
-      <pre id="previewDraft"></pre>
-      <details>
-        <summary>Technical handoff details</summary>
-        <p>Method: <strong id="previewMethod"></strong></p>
-        <p>Public Method Gateway URL: <a id="previewGateway" href=""></a></p>
-        <p>Prepared instructions:</p>
-        <pre id="receiverBootstrap"></pre>
-      </details>
-      <p id="handoffStatus"></p>
-      <div class="actions">
-        <button id="copyHandoff" type="button" disabled>COPY FOR AI</button>
-        <button id="openProvider" type="button" disabled>OPEN AI</button>
+      <textarea id="draft" maxlength="4000" placeholder="Type naturally…"></textarea>
+
+      <div class="providers" role="group" aria-label="Choose AI provider">
+        <button class="provider" type="button" data-provider="ChatGPT" aria-pressed="false">ChatGPT</button>
+        <button class="provider" type="button" data-provider="Gemini" aria-pressed="false">Gemini</button>
+        <button class="provider" type="button" data-provider="Copilot" aria-pressed="false">Copilot</button>
       </div>
-    </section>
+
+      <button id="go" class="go" type="button" aria-label="Go">›</button>
+      <p id="startStatus" class="status" aria-live="polite"></p>
+      <p class="hint">No project setup first. No method names to learn. CrossAI routes the conversation after sign-in.</p>
+    </div>
   </main>
-  <script src="./client.js"></script>
+</div>
+<script src="./client.js"></script>
 </body>
 </html>
