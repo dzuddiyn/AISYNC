@@ -29,7 +29,7 @@ See [`docs/PRODUCT_BRANDING.md`](docs/PRODUCT_BRANDING.md).
 
 ## CrossAI future product direction
 
-The future product direction is LOCKED around CrossAI as a continuity/orchestration layer: ordinary users get a simple **AI CHAT / HELP** entry surface while **DUMP / DECIDE / DESIGN remain internal semantic routes**; Web + Telegram use the same ASC core, with selectable AI intelligence, scoped cross-AI handoff/return, Telegram group context spaces, factual retrieval, explicit idea→decision/project promotion, and user-owned durable file storage direction.
+The future product direction is LOCKED around CrossAI as a continuity/orchestration layer: ordinary users get a simple **AI CHAT / HELP** entry surface while **DUMP / DECIDE / DESIGN remain internal semantic routes**; Web, Telegram and WhatsApp converge through the same ASC core via a generic CrossAI Channel Gateway, with selectable AI intelligence, scoped cross-AI handoff/return, channel-specific context spaces, factual retrieval, explicit idea→decision/project promotion, and user-owned durable storage direction.
 
 Core principles:
 
@@ -40,6 +40,14 @@ Core principles:
 > **CrossAI is a continuity and orchestration platform, not another AI provider.**
 
 See [`docs/CROSSAI_PRODUCT_DIRECTION.md`](docs/CROSSAI_PRODUCT_DIRECTION.md).
+
+---
+
+## CrossAI Channel Gateway
+
+CrossAI channels are interchangeable gateways into the same ASC continuity. **WhatsApp, Telegram and Web should normalize into one channel contract and the same ASC Core; no channel owns semantic memory.** CrossAI must not promise “free unlimited”: channel, AI-provider and runtime quotas/costs are product/runtime concerns and may change as usage scales.
+
+See [`docs/CROSSAI_CHANNEL_GATEWAY.md`](docs/CROSSAI_CHANNEL_GATEWAY.md).
 
 ---
 
