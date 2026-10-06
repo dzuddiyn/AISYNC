@@ -398,6 +398,57 @@ Persistence/promotion should require an appropriate explicit signal such as:
 
 Group context is shared context. It must not be misclassified as one participant's private personal memory.
 
+### Private threaded topics for a single user
+
+LOCKED future direction:
+
+For a single user, **Telegram private threaded topics are preferred over creating a creator+bot group merely to separate personal contexts**, where Telegram capabilities and final implementation permit it.
+
+Example:
+
+```text
+CrossAI Bot — private chat
+
+Topics:
+💬 General
+☕ Coffee Business
+🌱 Projek Kebun
+🏠 Rumah
+🤖 Temaya
+```
+
+Each private topic may map to a distinct CrossAI context space while continuing to use the same ASC authority and continuity rules.
+
+The existing Telegram Group direction remains LOCKED for shared/group use.
+
+Technical nuance remains open: if a creator+bot-only group should allow ordinary-message responses, but a later multi-human group should require explicit `@bot` invocation, that behavior must be implemented deliberately in the ASC/bot layer. Do not assume Telegram Privacy Mode alone will safely or dynamically enforce the desired participant-count behavior.
+
+### Topic-change assistant signal
+
+LOCKED UX direction:
+
+CrossAI may detect a likely topic shift and **suggest** a new idea/context boundary, but the model does not receive authority to split semantic continuity silently.
+
+Example:
+
+> “Nampaknya perbualan ini sudah beralih daripada Coffee Pilot kepada Packaging. Mahu simpan sebagai idea berasingan?”
+
+```text
+[ YES ] [ KEEP TOGETHER ]
+```
+
+The pattern is:
+
+```text
+AI detects
+→ AI suggests
+→ human decides
+→ ASC records
+```
+
+Topic detection is therefore an assistant signal, not a semantic-authority transition.
+
+
 ## 11. Files, images, PDFs, and generated artifacts
 
 LOCKED product boundary:
@@ -541,6 +592,54 @@ user-owned storage (Google Drive direction)
         ↓
 ASC reference + provenance + lineage
 ```
+
+## 15A. Topic / Temporal Retrieval Index — architecture candidate
+
+**Status:** ARCHITECTURE CANDIDATE — NOT SEMANTIC AUTHORITY
+
+CrossAI may later use a derived retrieval layer combining:
+
+- LLM-assisted topic-change detection;
+- temporal indexing / timeline markers;
+- keyword/full-text search;
+- vector embeddings / similarity search;
+- topic summaries or retrieval hints.
+
+Candidate technologies may include PostgreSQL + `pgvector`, Qdrant, or an equivalent vector/search store.
+
+Hard guardrail:
+
+> **Topic / Temporal Retrieval Index is derived retrieval infrastructure, never semantic authority.**
+
+The retrieval index may help locate relevant continuity, ideas, decisions, or project records. It must not silently overwrite, replace, or become the authoritative source for:
+
+- ASC private continuity;
+- GitHub-backed canonical project artifacts;
+- confirmed decisions;
+- factual SAVE/receipt state.
+
+If the derived index is stale, unavailable, rebuilt, or changed, canonical/private authority must remain intact.
+
+## 15B. AMP compatibility — candidate, not authority
+
+**Status:** COMPATIBILITY CANDIDATE
+
+CrossAI may later support an external conversation/memory interchange format such as an AMP-compatible export/import adapter where that format is useful and sufficiently mature.
+
+This does **not** replace ZASSPILL, ASC continuity contracts, or CrossAI authority semantics.
+
+Preferred relationship:
+
+```text
+ZASSPILL / ASC canonical continuity
+              ↓
+       compatibility adapter
+        ├─ Markdown
+        ├─ neutral JSON
+        └─ AMP-compatible format (when useful)
+```
+
+CrossAI should treat AMP-like formats as interoperability surfaces, not as the architecture authority for internal continuity, decisions, lineage, SAVE truth, or privacy policy.
 
 ## 16. Explicitly still open
 
