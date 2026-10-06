@@ -47,7 +47,7 @@ context.doGet({ parameter: { view: 'crossai-start' } });
 context.doGet({ parameter: { view: 'dashboard' } });
 context.doGet({ parameter: { view: 'beta-enroll', invite: 'token' } });
 
-assert.deepEqual(served, ['CrossAiAuth', 'CrossAiStart', 'Dashboard', 'BetaEnroll']);
+assert.deepEqual(served, ['CrossAiAuth', 'CrossAiStartPage', 'Dashboard', 'BetaEnroll']);
 
 const enrollTemplate = {
   values: {},

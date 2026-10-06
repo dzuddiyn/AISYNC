@@ -54,7 +54,7 @@ function doGet(e) {
 
   if (view === 'crossai-start') {
     return HtmlService
-      .createTemplateFromFile('CrossAiStart')
+      .createTemplateFromFile('CrossAiStartPage')
       .evaluate()
       .setTitle('CrossAI — Start')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
