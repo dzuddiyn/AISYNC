@@ -20,22 +20,19 @@ These costs must not be fused into ASC continuity semantics.
 
 ## AI inference layer
 
-AI that answers the user sits after ASC at the AI Router / inference layer:
+REVISED by the Companion/Core separation: general conversational AI normally belongs to CrossAI Companion, while CrossAI Core may use a separate narrow CrossAI Intelligence model/API for semantic screening and governance.
 
 ```text
-WhatsApp / Telegram / Web
+WhatsApp / Telegram / Web Chat
           ↓
-   Channel Gateway
+   CrossAI Companion
           ↓
-        ASC Core
-identity / continuity / retrieval
-          ↓
-       AI Router
-          ↓
- ┌────────┼───────────┐
- ↓        ↓           ↓
-Free AI  BYOK/User   CrossAI Paid
-         Provider       AI
+ conversational AI provider
+          │
+          └──── CrossAI Compatible ───→ CrossAI Core
+                                          ↓
+                                 CrossAI Intelligence
+                               narrow screening/governance
 ```
 
 ASC remains responsible for continuity, routing context, lineage and SAVE truth. The AI provider performs inference.
@@ -234,3 +231,15 @@ Future DESIGN work must decide:
 - billing telemetry;
 - abuse controls;
 - plan limits and fair-use rules.
+
+
+## Companion/Core cost split
+
+LOCKED refinement:
+
+- Companion conversational inference is a separate cost/runtime domain;
+- CrossAI Intelligence semantic screening is a separate, lower-volume cost/runtime domain;
+- Companion quota/failure must not take down Core continuity;
+- Core continuity may remain usable even when Companion AI is unavailable.
+
+See `CROSSAI_COMPANION_ARCHITECTURE.md`.
