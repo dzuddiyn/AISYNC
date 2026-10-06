@@ -727,6 +727,29 @@ SAVED/AGREED direction:
 See [`CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`](CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md).
 
 
+## 20A. Companion account binding — locked
+
+LOCKED direction:
+
+> **CrossAI Web is the account-binding authority for Companion channels. A channel identity is linked to a CrossAI user only after an explicit user-driven binding step.**
+
+Telegram baseline:
+
+```text
+CrossAI Web
+→ show @CrossAI_Companion_bot + short-lived binding code
+→ user opens bot
+→ /start
+→ bot asks for code
+→ user enters code
+→ backend verifies and links telegram_user_id ↔ crossai_user_id
+→ bot confirms registration
+```
+
+WhatsApp should reach the same binding result through the best supported mechanism available at implementation time, potentially QR/deep-link or another explicit verification flow.
+
+The binding credential must not become the user's permanent identity/password. Final expiry, single-use/replay protection, revocation and re-binding rules remain implementation work.
+
 ## 21. Companion / Core separation — locked
 
 CrossAI Companion is an optional conversational product, not the CrossAI Core semantic engine.

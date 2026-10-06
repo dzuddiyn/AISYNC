@@ -102,6 +102,74 @@ authorized CrossAI Ideas/Projects
 
 No user may inherit another user's conversation or CrossAI context.
 
+## 4A. Account binding
+
+LOCKED:
+
+> **CrossAI Web is the account-binding authority for Companion channels. A channel user becomes CrossAI-linked only after an explicit binding step.**
+
+Telegram example:
+
+```text
+CrossAI Web
+
+Connect Telegram @CrossAI_Companion_bot
+Code: CX-7D92-KLP
+```
+
+The user opens the shared Companion bot:
+
+```text
+/start
+
+Bot:
+Masukkan kod user.
+
+User:
+CX-7D92-KLP
+
+Bot:
+Registered.
+```
+
+Backend binding:
+
+```text
+telegram_user_id
+        ↕
+crossai_user_id
+```
+
+After binding:
+
+```text
+Telegram message
+      ↓
+CrossAI Companion
+      ↓
+resolve telegram_user_id
+      ↓
+crossai_user_id
+      ↓
+authorized Ideas / Decisions / Projects scope
+```
+
+The binding code must be treated as a short-lived authorization artifact, not as a permanent identity or password.
+
+The final code lifetime, single-use semantics, replay protection, revocation, re-binding and account-recovery rules remain implementation details, but the architecture must prevent one channel identity from being silently attached to the wrong CrossAI account.
+
+WhatsApp should use the equivalent binding outcome according to the final platform capability. Candidate UX may include a QR/deep-link flow or another explicit verification step:
+
+```text
+CrossAI Web
+→ Connect WhatsApp
+→ QR / platform-supported binding action
+→ WhatsApp identity verified
+→ whatsapp_user_id ↔ crossai_user_id
+```
+
+The exact WhatsApp API/account mechanism remains future DESIGN work.
+
 ## 5. Channel adapters belong to Companion for general chat
 
 LOCKED direction:
