@@ -3,7 +3,7 @@
 **Status:** LOCKED PRODUCT DIRECTION  
 **Date:** 2026-10-06  
 **Owner:** Project Owner  
-**Scope:** Future CrossAI product experience, Telegram client, cross-AI orchestration, continuity, route promotion, and user-owned file storage direction  
+**Scope:** Future CrossAI product experience, multi-channel gateway, cross-AI orchestration, continuity, route promotion, and user-owned durable storage direction  
 **Activation:** Future productization; non-blocking for the current T-020/T-021 critical path
 
 ## 1. Product identity
@@ -211,69 +211,51 @@ The GitHub offer is therefore proactive at DESIGN/project start, while remaining
 
 Lineage should remain traceable from source idea/decision into the resulting project regardless of whether GitHub is enabled.
 
-## 5. CrossAI Telegram = alternate client, not another backend
+## 5. CrossAI Channel Gateway
+
+LOCKED:
+
+> **CrossAI channels are interchangeable gateways into the same ASC continuity. No channel owns semantic memory. WhatsApp, Telegram and Web should converge on one normalized channel contract and the same ASC Core.**
+
+```text
+WhatsApp ─┐
+Telegram ─┼→ Channel Gateway → ASC Core
+Web ──────┘
+```
+
+Each channel adapter is transport infrastructure only. It handles channel-specific message/event parsing, sender/chat/thread identity, attachments, reply targets, delivery state, retry and capability metadata.
+
+A channel adapter must not create its own semantic memory, project database, selection history, SAVE authority or competing continuity master.
+
+WhatsApp is a first-class future target alongside Telegram and Web. The ordinary-user value is low-friction capture: send/forward text, link, image, file or voice note to CrossAI, discuss with AI, save meaningful state, then inspect the same Ideas / Decisions / Projects through CrossAI Web.
+
+CrossAI Web is the browse/organize/inspect surface over the same ASC continuity; it is not a separate backend.
+
+### Cost and scale guardrail
+
+LOCKED:
+
+> **CrossAI must not promise “free unlimited.”**
+
+Messaging channels, AI providers and runtime infrastructure can have quotas, rate limits or monetary cost as usage grows. CrossAI continuity must survive changes in commercial mode, including future free-first quotas, BYOK/user-authorized provider credentials, user-paid provider usage, CrossAI paid plans, paid messaging capacity, or alternative/self-hosted runtime.
+
+Channel cost, AI inference cost and durable-storage cost are separate concerns.
+
+When a channel/runtime is busy or rate-limited, CrossAI must degrade truthfully with explicit pending/failed state and safe retry rather than silently losing work or issuing false SAVE receipts. Exact queue/backpressure mechanics remain future DESIGN work.
+
+See [`CROSSAI_CHANNEL_GATEWAY.md`](CROSSAI_CHANNEL_GATEWAY.md).
+
+## 6. Messaging channels as real AI chat
 
 LOCKED direction:
 
-```text
-CrossAI Web ─────┐
-                 │
-                 ▼
-              ASC Core
-                 ▲
-                 │
-CrossAI Telegram ┘
-```
-
-Telegram and Web must use the same authority, continuity, retrieval, routing, and persistence boundaries.
-
-Telegram must not create a parallel semantic database or a second continuity master.
-
-### /start
-
-LOCKED user-facing menu direction:
+WhatsApp and Telegram may act as full conversational CrossAI clients backed by selectable AI APIs/models.
 
 ```text
-Welcome to CrossAI
-
-[ 💬 AI CHAT ]
-just talk, I am here to hear.
-
-[ ❓ HELP ]
-just ask.
-```
-
-The Telegram start surface deliberately hides `DUMP / DECIDE / DESIGN`.
-
-`💬 AI CHAT` starts a natural conversation. ASC determines the appropriate internal semantic route from the conversation when needed.
-
-`❓ HELP` is the direct support/guide entry. The user can simply ask a question without learning CrossAI/AISYNC/ZASS internals first.
-
-### Browse view
-
-LOCKED direction:
-
-```text
-💭 Ideas       18
-⚖ Decisions     6
-🏗 Projects      4
-❓ Help
-```
-
-There is no separate `💬 New Chat` browse item. New conversation behavior belongs naturally inside AI CHAT.
-
-## 6. Telegram as real AI chat
-
-LOCKED direction:
-
-Telegram may act as a full conversational CrossAI client backed by selectable AI APIs/models.
-
-```text
-Telegram
-   ↓
-ASC continuity + retrieval
-   ↓
-AI Router
+WhatsApp ─┐
+Telegram ─┼→ ASC continuity + retrieval
+          ↓
+       AI Router
    ├─ provider/model A
    ├─ provider/model B
    ├─ provider/model C
@@ -295,7 +277,7 @@ Provider availability, free tiers, quotas, pricing, and supported modalities are
 
 LOCKED direction:
 
-The Telegram bot may act as a CrossAI/ZASS support guide.
+Messaging-channel adapters may expose CrossAI/ZASS support-guide behavior over the same ASC knowledge and continuity.
 
 Example questions:
 - how to SAVE;
@@ -373,7 +355,7 @@ LOCKED direction:
 Handoff should support a return/reconciliation journey.
 
 ```text
-CrossAI / Telegram
+CrossAI / messaging channel
       ↓
 External AI
       ↓
@@ -555,7 +537,7 @@ CrossAI must not silently turn itself into permanent fallback storage simply bec
 
 LOCKED direction:
 
-Telegram/Web users may ask natural-language questions about:
+WhatsApp/Telegram/Web users may ask natural-language questions about:
 - Ideas;
 - Decisions;
 - Projects;
@@ -580,42 +562,39 @@ The LLM is the explanation/reasoning layer, not the source of project status tru
 ## 15. Product architecture summary
 
 ```text
-                       USER
-                         │
-              ┌──────────┴──────────┐
-              ↓                     ↓
-        CrossAI Web           CrossAI Telegram
-              │                     │
-              └──────────┬──────────┘
-                         ↓
-                simple public surface
-                 AI CHAT / HELP
-                         ↓
-                       ASC
-             identity / continuity
-             retrieval / lineage
-             routing / orchestration
-                         │
-              internal semantic router
-          ┌──────────────┼───────────────┐
-          ↓              ↓               ↓
-        DUMP           DECIDE          DESIGN
-      ZASSPILL      ZASSELECTION      ZASSIMPLE
-          │              │               │
-          ↓              ↓               ↓
-        Ideas         Decisions        Projects
-          │              │               │
-          └──────────────┼───────────────┘
-                         ↓
-                      AI Router
-                         │
-             user-selected intelligence
-                         │
-                         ↓
-                       RETURN
-                         │
-                         ↓
-                same CrossAI context
+                         USER
+                          │
+             ┌────────────┼────────────┐
+             ↓            ↓            ↓
+         WhatsApp      Telegram       Web
+             └────────────┼────────────┘
+                          ↓
+                CrossAI Channel Gateway
+                          ↓
+                    AI CHAT / HELP
+                          ↓
+                         ASC
+              identity / continuity
+              retrieval / lineage
+              routing / orchestration
+                          │
+               internal semantic router
+           ┌──────────────┼───────────────┐
+           ↓              ↓               ↓
+         DUMP           DECIDE          DESIGN
+       ZASSPILL      ZASSELECTION      ZASSIMPLE
+           │              │               │
+           ↓              ↓               ↓
+         Ideas         Decisions        Projects
+           └──────────────┼───────────────┘
+                          ↓
+                       AI Router
+                          ↓
+              user-selected intelligence
+                          ↓
+                        RETURN
+                          ↓
+                 same CrossAI context
 ```
 
 File persistence is deliberately orthogonal:
@@ -696,7 +675,7 @@ These are future DESIGN decisions.
 
 This future product direction must not interrupt or falsify the current Production v1 delivery state.
 
-Current T-020/T-021 work remains governed by its existing acceptance contracts. Future Telegram, multi-AI routing, route-specific storage expansion, and per-user Drive storage are separate productization work unless explicitly promoted later.
+Current T-020/T-021 work remains governed by its existing acceptance contracts. Future WhatsApp/Telegram channel adapters, multi-AI routing, route-specific storage expansion, and per-user Drive storage are separate productization work unless explicitly promoted later.
 
 
 ## 18. Multi-user ownership model
@@ -713,3 +692,20 @@ LOCKED future architecture direction:
 - failure/quota/revocation must remain truthful, with no silent fallback to permanent operator-owned storage.
 
 See [`CROSSAI_MULTI_USER_OWNERSHIP.md`](CROSSAI_MULTI_USER_OWNERSHIP.md) for the canonical direction and open implementation questions.
+
+
+## 19. Generic channel gateway
+
+LOCKED future architecture direction:
+
+- WhatsApp, Telegram and Web are channel adapters over the same ASC continuity;
+- channel-specific payloads should normalize into one CrossAI channel contract before semantic processing;
+- no channel owns semantic memory or durable SAVE truth;
+- WhatsApp is a first-class future target for capture/forward/discuss/save workflows;
+- CrossAI Web reflects the same Ideas / Decisions / Projects and serves as the richer browse/organize/inspect surface;
+- “free unlimited” is not a product promise;
+- quotas, rate limits and monetary cost for messaging, AI inference and runtime are runtime/product concerns;
+- busy/rate-limited states must be truthful and retry-safe;
+- continuity architecture must remain stable across free-first, BYOK, user-paid, CrossAI-paid, or alternative runtime models.
+
+See [`CROSSAI_CHANNEL_GATEWAY.md`](CROSSAI_CHANNEL_GATEWAY.md).

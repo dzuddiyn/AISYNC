@@ -784,3 +784,14 @@ See `docs/CROSSAI_PRODUCT_DIRECTION.md`, `docs/CROSSAI_MULTI_USER_OWNERSHIP.md`,
 
 
 PF-090 refinement — LOCKED: **Every DESIGN project starts with a user-owned Google Drive project space. CrossAI should offer GitHub creation or linking when the project begins or when Git-oriented capabilities become useful. GitHub remains optional.** The project-start offer should expose CREATE NEW REPO / LINK EXISTING REPO / NOT NOW. Skipping GitHub must not block project creation or continued DESIGN work; CrossAI may offer GitHub again later when Git-oriented capabilities become useful.
+
+
+PF-091 | CROSSAI CHANNEL GATEWAY + SCALE/COST GUARDRAIL — LOCKED FUTURE ARCHITECTURE DIRECTION
+
+Finding: Project Owner generalized the earlier Telegram adapter direction into one CrossAI Channel Gateway. WhatsApp, Telegram and Web are interchangeable channel adapters over the same ASC Core and continuity authority. Channel payloads should normalize before semantic processing; no channel may own a competing semantic memory, project database, SAVE authority or continuity master. WhatsApp is a first-class future target, especially for low-friction capture/forward/discuss/save followed by richer inspection in CrossAI Web.
+
+Scale/cost guardrail: CrossAI must not promise “free unlimited”. Messaging-channel, AI-provider and runtime quotas/rate limits/costs are separate runtime/product concerns. The continuity architecture must survive future free-first quotas, BYOK/user-authorized provider credentials, user-paid provider use, CrossAI paid plans, paid messaging capacity or alternative/self-hosted runtimes. Busy/rate-limited states must remain truthful, retry-safe and idempotent; no false SAVE receipt or duplicate semantic promotion from transport retry.
+
+This remains future product architecture and does not change current T-020/T-021 acceptance.
+
+See `docs/CROSSAI_CHANNEL_GATEWAY.md` and `docs/CROSSAI_PRODUCT_DIRECTION.md`.
