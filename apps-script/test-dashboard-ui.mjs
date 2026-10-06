@@ -94,6 +94,9 @@ const project = (o) => ({
   assert.match(dump, /data-entry="DESIGN" aria-pressed="false"/);
   assert.match(dump, /data-project-id="P0"/);
   assert.match(dump, /DUMP → ZASSPILL/);
+  assert.match(dump, /Continue a saved project conversation/);
+  assert.match(dump, /data-project-id="AISYNC"/, 'DUMP landing exposes linked project Workspace even when project ui_entry is DESIGN');
+  assert.match(dump, /standalone chats are not linked to a project/i);
   assert.match(dump, /https:\/\/dzuddiyn\.github\.io\/AISYNC\/asc\//);
   assert.doesNotMatch(dump, /confirmAndSync|writeToGitHub|writeToSheets/);
 
@@ -112,7 +115,7 @@ const project = (o) => ({
   assert.match(design, /freshness UNVERIFIED/);
   const emptyDump = sb.renderProjectList({ ok: true, groups: { DUMP: [], DECIDE: [], DESIGN: [] }, unrecognized_ui_entry: [] }, 'DUMP');
   assert.match(emptyDump, /No DUMP projects in ASC DB/);
-  assert.match(emptyDump, /Open ASC Front Door/);
+  assert.match(emptyDump, /Open standalone AI Front Door/);
   const empty = sb.renderProjectList({ ok: true, groups: { DUMP: [], DECIDE: [], DESIGN: [] }, unrecognized_ui_entry: [] }, 'DECIDE');
   assert.match(empty, /No DECIDE projects in ASC DB/);
   const failed = sb.renderProjectList({ ok: false, error: { code: 'SCHEMA_INCOMPATIBLE', message: 'Required headers are missing or duplicated.' }, tab: 'PROJECTS', missing: ['ui_entry'] }, 'DECIDE');
@@ -158,7 +161,7 @@ const project = (o) => ({
   assert.match(workspace, /Help mode/);
   assert.match(workspace, /Memory held by the AI provider is not imported/);
   assert.doesNotMatch(workspace, /private thread|PREPARE HANDOFF|ASC_METHOD_RESULT|PREVIEW RETURN|PREPARE ASC SAVE|ADVANCE THREAD FROM SAVED RESULT/);
-  assert.match(workspace, /Open ASC Front Door/);
+  assert.match(workspace, /Open standalone AI Front Door/);
   assert.match(workspace, /🚀 Current Task/);
   assert.match(workspace, /UI &lt;flow&gt;/);
   assert.match(workspace, /Owner preview renders correctly/);
@@ -198,6 +201,8 @@ const project = (o) => ({
   assert.match(continuation, /COPY FOR AI/);
   assert.match(continuation, /SHOW PREPARED TEXT/);
   assert.match(continuation, /OPEN GEMINI/);
+  assert.match(continuation, /SAVE TO CROSSAI/);
+  assert.match(continuation, /MOVE TO ANOTHER AI/);
   assert.doesNotMatch(continuation, /PRIVATE BOOTSTRAP MUST NOT RENDER/);
   assert.doesNotMatch(continuation, /continuity_reference:/);
 
