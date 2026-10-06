@@ -3,6 +3,15 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const code = fs.readFileSync(new URL('./Code.gs', import.meta.url), 'utf8');
+const betaEnrollHtml = fs.readFileSync(new URL('./BetaEnroll.html', import.meta.url), 'utf8');
+const accessRequiredHtml = fs.readFileSync(new URL('./BetaAccessRequired.html', import.meta.url), 'utf8');
+
+assert.match(betaEnrollHtml, /OPEN CROSSAI/);
+assert.match(betaEnrollHtml, /CrossAI beta access is ready/);
+assert.doesNotMatch(betaEnrollHtml, /Access is limited to:|OPEN AISYNC/);
+assert.match(accessRequiredHtml, /CrossAI Closed Beta/);
+assert.doesNotMatch(accessRequiredHtml, /AISYNC Closed Beta|AISYNC closed beta/);
+
 const served = [];
 const output = {
   setTitle() { return this; },
