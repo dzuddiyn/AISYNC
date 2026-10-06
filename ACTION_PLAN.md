@@ -781,3 +781,6 @@ If GitHub is explicitly enabled for a project, GitHub may become canonical only 
 This is a future product/architecture direction. Current Production v1 closed-beta owner-executed Apps Script + owner-private Drive continuity remains a bounded transitional implementation and does not yet claim per-user Drive OAuth.
 
 See `docs/CROSSAI_PRODUCT_DIRECTION.md`, `docs/CROSSAI_MULTI_USER_OWNERSHIP.md`, and `docs/ASC_ROUTE_STORAGE_MODEL_CANDIDATE.md`.
+
+
+PF-090 refinement — LOCKED: **Every DESIGN project starts with a user-owned Google Drive project space. CrossAI should offer GitHub creation or linking when the project begins or when Git-oriented capabilities become useful. GitHub remains optional.** The project-start offer should expose CREATE NEW REPO / LINK EXISTING REPO / NOT NOW. Skipping GitHub must not block project creation or continued DESIGN work; CrossAI may offer GitHub again later when Git-oriented capabilities become useful.
