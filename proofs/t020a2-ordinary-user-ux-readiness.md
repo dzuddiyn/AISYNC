@@ -1,7 +1,7 @@
 # T-020A2 Ordinary-User UX Readiness Cleanup
 
 Date: 2026-10-06
-Status: LOCAL PASS / LIVE DEPLOYMENT PROOF PENDING
+Status: LIVE PASS
 
 ## Purpose
 
@@ -133,15 +133,76 @@ Regression tests now explicitly require:
 - `Automatic suggestion` and visible DUMP / DECIDE / DESIGN choices;
 - no `ROUTE OVERRIDE` label.
 
+## Canonical merge and live deployment
+
+T-020A2 implementation was merged through PR #58.
+
+Canonical merged main:
+
+`777cc0c491d72cbef56a7b6dd684241738074519`
+
+The merged Apps Script source was staged into immutable version:
+
+`v51 — T020A2-ordinary-user-ux`
+
+Before protected deployment:
+
+- v51 stage matched canonical Apps Script source exactly: 23/23 files;
+- immutable v51 pull-back matched the staged release exactly: 23/23 files;
+- development HEAD was backed up and, after release staging, restored exactly: 23/23 files.
+
+The protected production deployment ID remained unchanged and was manually repointed by the owner from v50 to:
+
+`@51 - T020A2-ordinary-user-ux`
+
+Independent post-action `clasp deployments` verification confirmed the protected deployment is pinned to v51.
+
+## Live surface verification
+
+### Protected Dashboard
+
+The live protected Dashboard on v51 visibly showed:
+
+- `ASC · DUMP / DECIDE / DESIGN · project workspace`;
+- `Open a project, continue your work with an AI, and review SAVE steps before anything is committed.`;
+- `Continue this project`;
+- `Conversation`;
+- `AI provider`;
+- `Help mode`;
+- `PREPARE FOR AI`.
+
+A live accessibility-tree scan found zero occurrences of the old primary UX terms:
+
+- `read-only project view`;
+- `ASC_METHOD_RESULT`;
+- `PREVIEW RETURN`;
+- `PREPARE ASC SAVE`;
+- `ADVANCE THREAD FROM SAVED RESULT`;
+- `START PRIVATE THREAD`;
+- `PREPARE HANDOFF`;
+- `private thread`.
+
+### Public Front Door
+
+The live GitHub Pages Front Door from merged main visibly showed:
+
+- `Continue a SAVE request`;
+- `Start a new AI conversation`;
+- `HOW SHOULD THE AI HELP?`;
+- `PREPARE FOR AI`.
+
+A live accessibility-tree scan found zero occurrences of:
+
+- `ROUTE OVERRIDE`;
+- `USER DRAFT`;
+- `PREPARE HANDOFF`;
+- `COPY HANDOFF`;
+- `OPEN PROVIDER`.
+
+No authority, persistence, security, route, SAVE, or continuity behavior was changed during the live verification.
+
 ## Remaining gate
 
-T-020A2 is LOCAL PASS only until:
+T-020A2 is complete. T-020A still requires **T-020A3 — Canary Readiness Recheck** before any external human journey may count toward T-020.
 
-1. source is merged canonical;
-2. protected Apps Script production is deployed from the merged source;
-3. public Front Door reflects merged source;
-4. both live surfaces are inspected for the expected ordinary-user wording.
-
-After T-020A2 LIVE PASS, T-020A still requires **T-020A3 — Canary Readiness Recheck** before any external human journey may count toward T-020.
-
-Conclusion: **T-020A2 LOCAL PASS / LIVE DEPLOYMENT PROOF PENDING.**
+Conclusion: **T-020A2 LIVE PASS. BETA-UX-001 through BETA-UX-004 are CLOSED.**

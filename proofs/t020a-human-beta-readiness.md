@@ -194,3 +194,14 @@ BETA-AUTH-001 is now **CLOSED** by T-020A1 Beta Access Gate LIVE PASS.
 Canonical live evidence: `proofs/t020a1-beta-access-gate-live.md`.
 
 T-020A itself remains **BLOCKED / NOT READY FOR COUNTED HUMAN BETA** because BETA-UX-001 through BETA-UX-004 still require ordinary-user wording/entry remediation followed by the same canary readiness rerun.
+
+
+## Post-audit update — 2026-10-06 (T-020A2)
+
+BETA-UX-001 through BETA-UX-004 are now **CLOSED** by T-020A2 Ordinary-User UX Readiness Cleanup LIVE PASS.
+
+Canonical live evidence: `proofs/t020a2-ordinary-user-ux-readiness.md`.
+
+Protected Apps Script production is v51 `T020A2-ordinary-user-ux`; the merged public Front Door and protected Dashboard both show the ordinary-user wording and live scans show zero occurrences of the old primary UX terms.
+
+T-020A itself remains **BLOCKED only pending T-020A3 — Canary Readiness Recheck**. No external human journey may count toward T-020 until that canary passes.

@@ -120,7 +120,7 @@ AP-014 | CURRENT / BLOCKED AT READINESS
 Action: Run a closed beta with invited humans. Minimum three distinct non-developer participants; target 3–5. Capture factual end-to-end evidence and failure/recovery observations.
 Dependencies: AP-009 through AP-013 — satisfied.
 Pass / stop condition: at least three participants complete the locked core journey without developer-side data repair or hidden manual patching of canonical/project state.
-Current result: T-020A remains BLOCKED pending final canary readiness rerun. T-020A1 is LIVE PASS and BETA-AUTH-001 is CLOSED. T-020A2 Ordinary-User UX Readiness Cleanup is LOCAL PASS / live deployment proof pending: Dashboard primary language now uses project conversation / AI provider / help mode / PREPARE FOR AI / CHECK AI RESULT / PREPARE SAVE / REVIEW & SAVE / USE SAVED RESULT TO CONTINUE; the Public Front Door visibly separates pending SAVE continuation from new AI conversation; and `ROUTE OVERRIDE` is removed from the primary UI while DUMP / DECIDE / DESIGN remain explicit. Full regression is 33/33 PASS, diff check passes, and old-UX scans return zero. After canonical merge + live Dashboard/Front Door verification, run T-020A3 before counting any external beta journey.
+Current result: T-020A remains BLOCKED only pending final T-020A3 canary readiness rerun. T-020A1 is LIVE PASS and BETA-AUTH-001 is CLOSED. T-020A2 Ordinary-User UX Readiness Cleanup is LIVE PASS: PR #58 merged; protected production is v51 `T020A2-ordinary-user-ux`; live Dashboard and Public Front Door inspection confirm the new ordinary-user wording; and live old-term scans return zero. BETA-UX-001 through BETA-UX-004 are CLOSED. Full regression remains 33/33 PASS. Run T-020A3 before counting any external beta journey.
 Feeds design: YES
 
 AP-015 | QUEUED
@@ -679,7 +679,7 @@ Live closure: canonical implementation is merged; owner temporary-user identity 
 Conclusion: T-020A1 is LIVE PASS. BETA-AUTH-001 is CLOSED. T-020A overall remains BLOCKED only by the ordinary-user UX readiness findings recorded in `proofs/t020a-human-beta-readiness.md`.
 
 
-PF-081 | T-020A2 ORDINARY-USER UX READINESS CLEANUP — LOCAL PASS / LIVE PROOF PENDING
+PF-081 | T-020A2 ORDINARY-USER UX READINESS CLEANUP — LIVE PASS
 
 Finding: after T-020A1 closed the access blocker, the remaining readiness risk was ordinary-user comprehension rather than authority or persistence behavior.
 
@@ -689,8 +689,8 @@ The Public Front Door now separates two intents: Continue a SAVE request versus 
 
 Boundaries are unchanged: routing methods, scoped handoff content, provider-return validation, CONFIRM & SYNC, GitHub registry/App auth, private continuity, Beta Access Gate, replay/idempotency, receipts/HISTORY, DR/telemetry/secret rotation/operator controls are untouched.
 
-Local verification: Dashboard UI test PASS; Front Door preserve/login/replay test PASS; full repository suite 33/33 PASS; git diff check PASS; old Dashboard UX scan 0; old Front Door UX scan 0; required first-use cues missing 0.
+Verification: Dashboard UI test PASS; Front Door preserve/login/replay test PASS; full repository suite 33/33 PASS; git diff check PASS; old Dashboard UX scan 0; old Front Door UX scan 0; required first-use cues missing 0. PR #58 merged to canonical main `777cc0c491d72cbef56a7b6dd684241738074519`. Apps Script immutable v51 matched canonical source 23/23, protected production was independently verified at `@51 - T020A2-ordinary-user-ux`, development HEAD was restored exact 23/23, and live Dashboard/Public Front Door accessibility scans confirmed all required ordinary-user cues with zero old primary UX terms.
 
 Evidence: proofs/t020a2-ordinary-user-ux-readiness.md.
 
-Conclusion: T-020A2 LOCAL PASS. Canonical merge and live Dashboard/Public Front Door verification remain before T-020A2 LIVE PASS. After that, T-020A3 canary readiness recheck remains the final readiness gate.
+Conclusion: T-020A2 LIVE PASS. BETA-UX-001 through BETA-UX-004 are CLOSED. T-020A3 canary readiness recheck remains the final readiness gate.
