@@ -65,7 +65,19 @@ Project
 → user-owned Google Drive project space
 ```
 
-GitHub appears only when useful for:
+LOCKED refinement:
+
+> **Every DESIGN project starts with a user-owned Google Drive project space. CrossAI should offer GitHub creation or linking when the project begins or when Git-oriented capabilities become useful. GitHub remains optional.**
+
+At DESIGN/project start, CrossAI should proactively offer:
+
+```text
+[ CREATE NEW REPO ]
+[ LINK EXISTING REPO ]
+[ NOT NOW ]
+```
+
+If the user chooses NOT NOW, GitHub may be offered again later when useful for:
 
 - version control;
 - coding workflow;
