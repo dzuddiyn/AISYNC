@@ -1,7 +1,7 @@
 # T-020B2R — Linked DUMP / CrossAI SAVE UX Remediation
 
 Date: 2026-10-06  
-Status: LOCAL PASS — LIVE DEPLOY / OWNER RECHECK PENDING
+Status: DEPLOYED — OWNER LIVE RECHECK PENDING
 
 ## Trigger
 
@@ -153,17 +153,71 @@ These checks prove the bounded remediation paths touched here.
 
 A fresh Windows full-suite attempt also exposed an existing generated-runtime newline freshness mismatch in `test-apps-script-binding.mjs`; this remediation does not change the runtime bundle sources. Therefore this proof does **not** claim a fresh 33/33 full-suite result yet.
 
-## Live gate
+## Canonical merge and deployment
 
-T-020B2 remains HOLD until all of the following are factual:
+AISYNC remediation merged through PR #63.
 
-1. AISYNC remediation is merged to canonical `main`;
-2. GitHub Pages serves the refreshed Front Door and ZASSPILL gateway;
-3. protected Apps Script production is deployed from the merged remediation source;
-4. owner preflight proves the linked DUMP journey:
-   Workspace → AI → `SAVE TO CROSSAI` or `MOVE TO ANOTHER AI` → result return → SAVE → verified receipt → reopen → continuity advance;
-5. no hidden repair is used.
+Canonical implementation commit:
 
-Only after that owner recheck may the counted Human Tester #1 session resume.
+`6011aec2b61273b109a3c208cb8d8036eed882ed`
 
-Conclusion: **T-020B2R LOCAL PASS / LIVE DEPLOY PENDING. T-020B2 remains HOLD.**
+The merged Apps Script source was pushed as exactly 23 tracked production files and frozen as:
+
+`v52 — T020B2R-linked-dump-save-ux`
+
+Immutable v52 was pulled back independently. All 23 canonical production files matched after normalizing line endings.
+
+The existing protected production deployment ID was repointed from v51 to:
+
+`@52 — T020B2R-linked-dump-save-ux`
+
+A post-deploy `clasp deployments` read confirmed that protected pointer remains on v52.
+
+The pre-release Apps Script development HEAD was backed up before staging and restored after the immutable v52 release was created. The protected deployment remains pinned to v52 independently of that development HEAD.
+
+## Public live verification
+
+Fresh public reads after the merge confirmed the GitHub Pages Front Door now contains:
+
+- `Start a standalone AI conversation`;
+- `OPEN PROJECT DASHBOARD`;
+- disabled SIGN IN control when no pending SAVE exists.
+
+The public ZASSPILL gateway now contains:
+
+- `Method: ZASSPILL v1.0.0`;
+- `Packet format: Portable Thread Packet v0.1`;
+- no `Method: ZASSPILL v0.1.0` template label.
+
+## Remaining live gate
+
+T-020B2 remains HOLD only for the owner-visible protected journey recheck.
+
+Required owner preflight:
+
+```text
+Protected Dashboard
+→ DUMP
+→ linked AISYNC Workspace
+→ choose conversation + AI + DUMP
+→ PREPARE FOR AI
+→ external AI
+→ SAVE TO CROSSAI
+   or MOVE TO ANOTHER AI
+→ compact ASC_METHOD_RESULT return
+→ CrossAI Workspace
+→ CHECK AI RESULT
+→ PREPARE SAVE
+→ REVIEW & SAVE
+→ pending Front Door request
+→ CONFIRM & SYNC
+→ verified receipt
+→ return / reopen AISYNC
+→ USE SAVED RESULT TO CONTINUE
+```
+
+No hidden repair may be used.
+
+Only after that owner recheck passes may the counted Human Tester #1 session resume.
+
+Conclusion: **T-020B2R DEPLOYED / OWNER LIVE RECHECK PENDING. T-020B2 remains HOLD.**
