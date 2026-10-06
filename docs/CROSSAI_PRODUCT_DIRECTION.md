@@ -709,3 +709,19 @@ LOCKED future architecture direction:
 - continuity architecture must remain stable across free-first, BYOK, user-paid, CrossAI-paid, or alternative runtime models.
 
 See [`CROSSAI_CHANNEL_GATEWAY.md`](CROSSAI_CHANNEL_GATEWAY.md).
+
+
+## 20. Runtime and AI inference cost model — saved idea
+
+SAVED/AGREED direction:
+
+- AI answering happens at the AI Router / inference layer after ASC;
+- channel cost, runtime cost, AI inference cost and durable-storage cost remain separable;
+- free service may use an economical/free-tier AI with quota rather than promise unlimited inference;
+- stronger AI may come from BYOK/user-authorized provider, CrossAI premium inference, or external handoff/return;
+- deterministic actions should avoid unnecessary AI calls;
+- image/PDF storage and image/PDF AI analysis are separate operations and cost domains;
+- Apps Script is acceptable for beta/small deployment but runtime may later migrate to a scalable service without changing ASC continuity;
+- throughput/backpressure must be truthful, retry-safe and idempotent.
+
+See [`CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`](CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md).
