@@ -607,33 +607,45 @@ user-owned storage (Google Drive direction)
 ASC reference + provenance + lineage
 ```
 
-## 15A. Topic / Temporal Retrieval Index — architecture candidate
+## 15A. Pluggable Retrieval Architecture — locked future direction
 
-**Status:** ARCHITECTURE CANDIDATE — NOT SEMANTIC AUTHORITY
+**Status:** LOCKED FUTURE ARCHITECTURE DIRECTION — NON-BLOCKING FOR T-020/T-021
 
-CrossAI may later use a derived retrieval layer combining:
+CrossAI retrieval is no longer framed as a single topic/vector index candidate. The future direction is a layered, pluggable retrieval architecture:
 
-- LLM-assisted topic-change detection;
-- temporal indexing / timeline markers;
-- keyword/full-text search;
-- vector embeddings / similarity search;
-- topic summaries or retrieval hints.
+~~~text
+L0 ZASSPILL v1.0 semantic contract
+        ↓
+L1 ASC Canonical Memory
+        ↓
+L2 pluggable Retrieval Substrate
+   Native ASC / Cognee / Graphiti-Zep / Mem0
+        ↓
+L3 ASC Retrieval Intelligence
+        ↓
+L4 minimum-context assembly
+        ↓
+target AI
+~~~
 
-Candidate technologies may include PostgreSQL + `pgvector`, Qdrant, or an equivalent vector/search store.
+LOCKED guardrails:
 
-Hard guardrail:
+- ZASSPILL v1.0 remains the semantic contract and is not changed by backend selection.
+- ASC Canonical Memory remains authoritative for thread identity, revision/event lineage, tombstones, authorization, and current-state verification.
+- Retrieval substrates are derived, replaceable, rebuildable, and non-authoritative.
+- Native ASC is the control baseline.
+- Evaluation order is Native ASC → Cognee → Graphiti/Zep → Mem0; this is not a production dependency lock.
+- PostgreSQL + pgvector, Qdrant, or equivalent remain valid lower-level storage/index options.
+- Exact-ID, authorization filtering, ambiguity handling, canonical verification, and final retrieval semantics remain ASC responsibilities.
+- A retrieval result, graph edge, similarity score, or provider memory never becomes user-confirmed semantic truth.
 
-> **Topic / Temporal Retrieval Index is derived retrieval infrastructure, never semantic authority.**
+Provider selection requires one common bake-off over the same sanitized/synthetic corpus and query set, covering current facts, superseded traps, temporal queries, relationships, ambiguity, privacy scope, forget/delete, context efficiency, latency, explainability, operational burden, and rebuildability.
 
-The retrieval index may help locate relevant continuity, ideas, decisions, or project records. It must not silently overwrite, replace, or become the authoritative source for:
+Context assembly is separate from retrieval: retrieve enough to locate evidence, then send only the minimum authorized relevant context after canonical verification.
 
-- ASC private continuity;
-- Google Drive-backed durable Ideas, Decisions, Projects, files, and exports by default;
-- GitHub-backed artifacts only where the user explicitly enables GitHub;
-- confirmed decisions;
-- factual SAVE/receipt state.
+Derived index lifecycle is deliberately weaker than canonical memory durability. Vector, graph, full-text, embedding, topic-summary, or provider-specific indexes may be discarded and rebuilt. Canonical DELETE / FORGET_CONTEXT / tombstone authority must suppress stale provider results immediately even if provider cleanup is delayed.
 
-If the derived index is stale, unavailable, rebuilt, or changed, canonical/private authority must remain intact.
+Canonical specification: [CROSSAI_RETRIEVAL_ARCHITECTURE.md](CROSSAI_RETRIEVAL_ARCHITECTURE.md).
 
 ## 15B. AMP compatibility — candidate, not authority
 
