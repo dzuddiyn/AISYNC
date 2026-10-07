@@ -134,22 +134,55 @@ Feeds design: YES
 
 **Status:** LOCKED FUTURE WORK — NOT ACTIVE
 
-After AP-015 / T-021 reaches Production v1 release acceptance and the project is `DELIVERED !!`, the future productization direction is:
+The current delivery path remains:
 
 ```text
-ZASS CR-010 v0.4 + closure
-→ npm bootstrap CLI / ZASS Project Bootstrap Core
-→ AISYNC Create New Project → GitHub repository
-→ seed ZASS files
-→ register project
-→ continue in DESIGN
+T-020 Human Closed Beta
+→ Final ZASS Gate 6 acceptance
+→ Gate 6 PASS / CLOSED
+→ AISYNC visual polish + Guided Journey
+→ focused UX regression
+→ T-021 Production v1 release acceptance
+→ DELIVERED !!
 ```
 
-AISYNC must consume the shared ZASS Project Bootstrap Core rather than duplicate bootstrap semantics. GitHub remains canonical for project artifacts; AISYNC owns create-project UX/integration, registration, and progress/current-state projection.
+After T-021 reaches release acceptance and Production v1 is `DELIVERED !!`, the LOCKED future productization order is:
+
+```text
+ZASS CR-010 v0.4: zass status + zass diff
+→ real-project field test
+→ CLOSE CR-010
+→ npm bootstrap CLI
+→ ZASS Project Bootstrap Core
+→ CrossAI Create Project vNext
+     Google Drive project space by default
+     GitHub optional: CREATE / LINK / NOT NOW
+→ CrossAI Compatible v1
+     SAVE_TO_CROSSAI
+     scoped read
+     handoff / return
+     factual receipts
+→ CrossAI Intelligence v1
+     idea detection
+     classification
+     related-project suggestion
+     duplicate/relationship screening
+→ first real external integration: Temaya → CrossAI
+→ CrossAI Companion MVP
+→ Telegram account binding
+→ WhatsApp Companion
+→ Obsidian / DL integration
+```
+
+AISYNC/CrossAI must consume the shared ZASS Project Bootstrap Core rather than duplicate bootstrap semantics.
+
+The earlier future direction `AISYNC Create New Project → mandatory GitHub repository` is SUPERSEDED. PF-090 remains authoritative: each DESIGN project begins with a user-owned Google Drive project space; CrossAI proactively offers GitHub creation/linking, but GitHub remains optional.
+
+Temaya integration intentionally precedes CrossAI Companion so `CrossAI Compatible` and `SAVE_TO_CROSSAI` can be proven with a real existing external assistant before building another generic chatbot.
+
+This section does **not** add a current AP/T task and must not interrupt T-020 or AP-015/T-021.
 
 See [`docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md`](docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md).
-
-This section does **not** add a current AP/T task and must not interrupt T-020 or AP-015.
 
 ## UI data requirements
 
