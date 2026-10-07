@@ -781,9 +781,24 @@ PF-086 | TELEGRAM PRIVATE THREADED CONTEXT SPACES — LOCKED FUTURE DIRECTION
 
 Finding: For a single user, Telegram private threaded topics are preferred over creating a creator+bot group merely to separate personal contexts, where Telegram capabilities/final implementation permit it. Each topic may map to a scoped CrossAI context space under the same ASC authority. Existing Telegram Group behavior remains locked for shared/group use. Technical nuance remains open: creator+bot-only ordinary-message response versus multi-human `@bot`-only response must be implemented deliberately in the bot/ASC layer and must not assume Telegram Privacy Mode alone can dynamically enforce participant-count behavior.
 
-PF-087 | TOPIC / TEMPORAL RETRIEVAL INDEX — ARCHITECTURE CANDIDATE
+PF-087 | PLUGGABLE TOPIC / TEMPORAL RETRIEVAL ARCHITECTURE — LOCKED FUTURE ARCHITECTURE DIRECTION
 
-Finding: Future CrossAI retrieval may combine LLM topic-change detection, temporal markers/indexing, full-text search, embeddings/vector similarity, and topic summaries. Candidate technologies include PostgreSQL + pgvector, Qdrant, or equivalent. Hard guardrail: this is derived retrieval infrastructure only and must never become semantic authority over ASC private continuity, GitHub canonical project artifacts, confirmed decisions, or factual SAVE/receipt state. Topic-change detection may produce assistant signals such as asking whether to save a shifted subject as a separate idea; the human decides before ASC records a new semantic boundary.
+Finding: Future CrossAI retrieval is now locked as a layered, pluggable architecture rather than a single vector-index choice. ZASSPILL v1.0 remains the semantic memory contract; ASC Canonical Memory remains authoritative for thread identity, revisions, semantic events, lineage, tombstones, authorization, and current-state verification. Retrieval infrastructure is derived, rebuildable, replaceable, and non-authoritative.
+
+Locked layers:
+- Layer 0 — ZASSPILL v1.0 semantic contract;
+- Layer 1 — ASC Canonical Memory;
+- Layer 2 — pluggable Retrieval Substrate;
+- Layer 3 — ASC Retrieval Intelligence;
+- Layer 4 — minimum-context assembly for the target AI.
+
+Layer 2 candidates are Native ASC, Cognee, Graphiti/Zep, and Mem0; PostgreSQL + pgvector, Qdrant, or equivalent remain valid lower-level implementation options. Native ASC is the control baseline. Evaluation order is Native ASC → Cognee → Graphiti/Zep → Mem0. This is an evaluation order, not a dependency lock.
+
+Future retrieval may combine exact-ID lookup, authorized metadata filtering, full-text/BM25, embeddings/vector similarity, temporal reasoning, graph relationships, reranking, topic summaries, and ambiguity detection. No similarity score, graph edge, provider memory, or retrieval result may become semantic authority. Topic-change detection may produce an assistant signal, but the human still decides before ASC records a new semantic boundary.
+
+Canonical future architecture: `docs/CROSSAI_RETRIEVAL_ARCHITECTURE.md`.
+
+This remains NON-BLOCKING for current T-020/T-021 acceptance and does not modify frozen ZASSPILL v1.0.
 
 PF-088 | AMP INTERCHANGE COMPATIBILITY — CANDIDATE
 
@@ -842,6 +857,35 @@ This is SAVED/AGREED architecture direction, not yet promoted to an implementati
 
 See `docs/CROSSAI_RUNTIME_INFERENCE_COST_MODEL.md`.
 
+
+
+PF-093 | RETRIEVAL PROVIDER BAKE-OFF — LOCKED FUTURE DIRECTION
+
+Finding: CrossAI must not select Cognee, Graphiti/Zep, Mem0, pgvector/Qdrant, or another retrieval provider from demo appeal alone. Provider selection requires a shared sanitized/synthetic corpus and common query set against the Native ASC baseline.
+
+Minimum proof covers current-fact retrieval, superseded traps, temporal queries, relationship queries, ambiguous-thread handling, exact identity, privacy scope, forget/delete behavior, context efficiency, latency, explainability, operational burden, and rebuildability. Evaluation must separate provider retrieval quality from ASC canonical verification and downstream LLM answer quality.
+
+No production-default provider is selected until this common bake-off passes. See `docs/CROSSAI_RETRIEVAL_ARCHITECTURE.md`.
+
+
+PF-094 | MINIMUM-CONTEXT ASSEMBLY — LOCKED FUTURE DIRECTION
+
+Finding: Retrieval and prompt/context assembly are separate responsibilities. ASC may retrieve broadly enough to find useful evidence, but the target AI should receive only minimum authorized relevant context after canonical verification.
+
+The context assembler must prefer current authoritative continuity, preserve provenance, obey authorization/portability boundaries, exclude tombstoned/forgotten content, avoid full-profile/full-history dumping, enforce a configurable context budget, and surface unresolved ambiguity rather than letting the target AI guess between competing memories.
+
+See `docs/CROSSAI_RETRIEVAL_ARCHITECTURE.md`.
+
+
+PF-095 | DERIVED INDEX LIFECYCLE — LOCKED FUTURE DIRECTION
+
+Finding: Canonical memory and retrieval indexes have deliberately different durability requirements. Loss of ASC Canonical Memory is critical; loss of a derived vector/graph/full-text/topic index is recoverable.
+
+Derived indexes must be disposable, rebuildable, replaceable, freshness-aware, and non-authoritative. Canonical DELETE / FORGET_CONTEXT / tombstone authority must block retrieval immediately even if external provider cleanup is delayed or fails; provider-specific data is purged or rebuilt afterward.
+
+This direction preserves vendor portability and prevents Cognee, Graphiti/Zep, Mem0, pgvector/Qdrant, or any future retrieval substrate from becoming a shadow semantic master.
+
+See `docs/CROSSAI_RETRIEVAL_ARCHITECTURE.md`.
 
 PF-093 | CROSSAI COMPANION + CROSSAI COMPATIBLE + CORE INTELLIGENCE — LOCKED FUTURE ARCHITECTURE DIRECTION
 
