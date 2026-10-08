@@ -39,6 +39,129 @@ LOCKED product boundary:
 
 CrossAI may route work to capable AI providers. It does not need to rebuild every reasoning, vision, image, document, search, or generation capability itself.
 
+## 2A. Core product thesis — thinking over context management
+
+**Status:** LOCKED PRODUCT THESIS
+
+CrossAI exists so the user can spend attention on the quality of thinking rather than on manually managing AI context.
+
+LOCKED thesis:
+
+> **Humans should be immersed in the depth of thinking, not in the mess of global context management across AI chat apps.**
+
+The ordinary user should be able to begin with a natural request such as:
+
+> **“Saya nak fikir marketing Kerani AI. Hasilkan gerak kerja matang dan bijak, bukan ulang kerja.”**
+
+The user may then dump whatever they already have:
+- raw ideas;
+- prior decisions;
+- theories;
+- observations;
+- constraints;
+- partial plans;
+- files or references;
+- things already tried;
+- uncertainties and questions.
+
+CrossAI's job is to turn that material into progressively better understanding without forcing the user to manually manage method files, chat threads, versions, or context transfer.
+
+The intended reasoning flow is **bidirectional**, not a rigid wizard:
+
+```text
+ZASSPILL
+    ↕
+ZASSELECTION
+    ↕
+ZASSIMPLE
+    ↕
+FULL ZASS
+```
+
+Interpretation:
+
+- **ZASSPILL** captures and preserves useful semantic continuity;
+- **ZASSELECTION** helps compare and choose when alternatives emerge;
+- **ZASSIMPLE** shapes coherent plans/designs from the current understanding;
+- **Full ZASS** is an escalation path when the work requires deeper evidence, architecture, risk, dependency, privacy/security, investment, or execution governance;
+- new evidence or understanding may legitimately move work back toward DUMP, DECIDE, or DESIGN rather than forcing a one-way lifecycle.
+
+LOCKED experience principle:
+
+> **The user should not need to ask: “Which file do I open?”, “Which method am I in?”, “Where is the old context?”, or “Which version is latest?”**
+
+Those are system responsibilities.
+
+CrossAI should manage, within explicit authority boundaries:
+
+```text
+context
+history
+latest state
+method state
+decision lineage
+authority
+receipts
+handoff
+retrieval
+```
+
+The human should remain responsible for:
+
+```text
+intent
+ideas
+judgement
+values
+taste
+trade-offs
+final decisions
+```
+
+This leads to a stronger product goal than simple memory preservation:
+
+> **ZASS should not only preserve understanding; through disciplined routing, comparison, design and challenge, it should help the user produce better understanding. CrossAI should make that process feel natural rather than procedural.**
+
+CrossAI therefore must not make ordinary users feel that they are “operating ZASS”. The desirable experience is simply:
+
+```text
+think
+↕
+choose
+↕
+design
+↕
+challenge / deepen when needed
+↕
+act
+```
+
+while the underlying ZASS methods, continuity, lineage, receipts, and authority controls remain available beneath the surface.
+
+### Product-strength implication
+
+The primary differentiation is not “many AI providers in one interface”.
+
+The stronger product proposition is:
+
+> **CrossAI is a reasoning workspace that preserves continuity and moves human thinking from ambiguity → understanding → decision → design → execution without forcing the human to manually carry global context between AI systems.**
+
+Provider choice remains valuable, but it serves this larger continuity-and-reasoning thesis.
+
+### Governance guardrail
+
+Automatic routing, escalation, retrieval, and context assembly do **not** give CrossAI authority to invent decisions, silently promote state, or rewrite user-confirmed truth.
+
+The governing pattern remains:
+
+```text
+AI interprets
+→ CrossAI organizes and routes
+→ ZASS structures/challenges
+→ human decides
+→ ASC records authoritative continuity
+```
+
 ## 3. Human-facing surfaces vs internal method routing
 
 LOCKED UX principle:
