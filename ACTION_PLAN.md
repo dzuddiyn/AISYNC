@@ -184,6 +184,8 @@ This section does **not** add a current AP/T task and must not interrupt T-020 o
 
 See [`docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md`](docs/AISYNC_CREATE_PROJECT_FUTURE_DIRECTION.md).
 
+Additional locked future-work lineage: [`docs/AISYNC_INTERACTION_CONTINUITY_FUTURE_WORK.md`](docs/AISYNC_INTERACTION_CONTINUITY_FUTURE_WORK.md) owns the former ZASS CR-016 runtime/continuity direction. It is **NOT ACTIVE** and does not change T-020/T-021 scope.
+
 ## UI data requirements
 
 Source: D-012
