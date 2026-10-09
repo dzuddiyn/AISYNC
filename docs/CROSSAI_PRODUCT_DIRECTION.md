@@ -898,3 +898,28 @@ CrossAI Companion is an optional conversational product, not the CrossAI Core se
 - Temaya, Kerani AI and future assistants may integrate without using Companion.
 
 See [`CROSSAI_COMPANION_ARCHITECTURE.md`](CROSSAI_COMPANION_ARCHITECTURE.md).
+
+## 22. CrossAI Intelligence + agent compatibility future-work candidates
+
+**Status:** AGREED FUTURE WORK — NOT YET IMPLEMENTATION LOCK
+
+CrossAI future product development should treat these as explicit candidates, without interrupting the current Production v1 critical path:
+
+- a modular **Intent Resolution Pipeline** rather than a monolithic intent authority;
+- conversation-scoped **Relationship / Interaction Mode** with user acceptance before activation;
+- CrossAI Intelligence-derived **Unresolved Inbox / Needs Attention** and optional **CrossAI Digest**;
+- **external AI agent / bot compatibility** through CrossAI Compatible, without requiring CrossAI to build a universal agent runtime;
+- the candidate product principle of **governed intent-to-lifecycle orchestration**.
+
+Existing architecture remains authoritative:
+
+- `CROSSAI_RETRIEVAL_ARCHITECTURE.md` already owns future retrieval substrates such as Native ASC, Cognee, Graphiti/Zep and Mem0;
+- those substrates remain derived/rebuildable helpers under ASC Retrieval Intelligence;
+- continuity/context assembly remains Core/ASC-owned;
+- domain methods continue to own method-specific action semantics;
+- general model/provider routing for Companion remains a Companion-side responsibility, not Core semantic authority.
+
+Canonical future-work review artifact:
+
+[`CROSSAI_INTELLIGENCE_AGENT_FUTURE_WORK.md`](CROSSAI_INTELLIGENCE_AGENT_FUTURE_WORK.md)
+

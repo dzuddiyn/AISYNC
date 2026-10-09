@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.36
+**Project record version:** 0.6.37
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT
@@ -118,7 +118,36 @@ Resolution: AISYNC is now defined as shared infrastructure that can be used by D
 
 ## AGREED CANDIDATES
 
-None currently open from this checkpoint.
+AC-001 | AGREED — Intent Resolution Pipeline  
+Candidate: Evolve CrossAI intent handling as a staged pipeline rather than a monolithic Intent Engine with unilateral authority. Explicit intent should route deterministically where possible; inferred signals may be screened/normalized/related by CrossAI Intelligence; Core owns route/state; user confirmation remains required where governance demands it.  
+Why agreed: Preserves modularity, testability, and the locked principle `AI interprets. ASC governs. User decides.`  
+Open question: Exact stage contracts, confidence/ambiguity behavior, and future intent vocabulary remain future DESIGN.
+
+AC-002 | AGREED — Relationship / Interaction Mode — REQUIRED FUTURE WORK  
+Candidate: Support conversation-scoped interaction modes such as friend, professor/personal SV, study partner, engineer reviewer, project manager, or concise Malay helper. CrossAI may suggest a mode from context, but activation requires explicit or contextually unambiguous user acceptance.  
+Why agreed: Field use showed that technically correct continuity can still feel flat when the assistant does not recognize the interaction relationship the user needs.  
+Open question: Persistence duration, cross-conversation inheritance, reset/change UX, sensitive inference limits, and retrieval representation remain future DESIGN.
+
+AC-003 | AGREED — Intelligence-managed Unresolved Inbox + CrossAI Digest  
+Candidate: Let CrossAI Intelligence derive an Inbox/Needs Attention view and optional daily/weekly Digest from authorized canonical state and retrieval evidence.  
+Why agreed: Makes unresolved ideas, decisions, projects, pending actions and failed/unknown operations visible without creating another semantic authority.  
+Open question: Ranking, cadence, notification surfaces, stale-state rules, and lifecycle categories remain future DESIGN.
+
+AC-004 | AGREED — External AI Agent / Bot Compatibility — REQUIRED FUTURE WORK  
+Candidate: CrossAI should integrate external open-source/provider/custom agents through an Agent Compatibility Adapter → CrossAI Compatible boundary rather than requiring CrossAI to build a universal agent runtime.  
+Why agreed: Preserves CrossAI as user-owned continuity/orchestration while taking advantage of rapidly evolving external agent ecosystems.  
+Open question: First proof agent, permission/tool contract, return/reconciliation mechanics, and protocol adapters such as MCP/A2A/provider APIs remain future DESIGN; no protocol is locked.
+
+AC-005 | AGREED — Governed intent-to-lifecycle orchestration differentiator  
+Candidate: “CrossAI's differentiator is not merely persistent chat. It is governed intent-to-lifecycle orchestration: helping a user's input become the right thing—conversation, idea, decision, design/project candidate, or other future object—without surrendering user control.”  
+Why agreed: Captures the product advantage while remaining consistent with explicit promotion and Core authority.  
+Open question: Promote to a LOCKED product principle only after owner review.
+
+Reference: `docs/CROSSAI_INTELLIGENCE_AGENT_FUTURE_WORK.md`.
+
+Existing architecture note: `docs/CROSSAI_RETRIEVAL_ARCHITECTURE.md` already owns the future pluggable retrieval substrate direction using Native ASC baseline, Cognee, Graphiti/Zep and Mem0. These remain derived retrieval helpers under ASC Retrieval Intelligence, not semantic authority.
+
+Non-candidate clarification: the desired “Continuity Packet” behavior is already covered by native CrossAI continuity + Context Assembly; do not create a second continuity authority. CrossAI user actions may be exposed by the product, while the applicable domain method continues to own their semantics.
 
 ---
 
@@ -554,6 +583,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.37 | 2026-10-08 | Recorded AC-001–AC-005 future-work candidates: modular Intent Resolution Pipeline, required conversation-scoped Relationship/Interaction Mode, Intelligence-managed Unresolved Inbox + Digest, required external AI agent/bot compatibility, and governed intent-to-lifecycle product differentiator. Linked existing Cognee/Graphiti-Zep/Mem0 retrieval architecture; no D-xxx lock or Production v1 task promotion. |
 | 0.6.36 | 2026-10-04 | T-016 PASS: Production v1 deterministic GitHub write boundary, GitHub App auth, concurrency/idempotency/unknown-write handling, controlled live SAVE, canonical merge, protected Apps Script version 17 deployment, and final NO_CHANGE verification all passed; T-017 private continuity + retrieval promoted. |
 | 0.6.35 | 2026-10-03 | T-015 PASS: canonical project/thread/index state, private Drive continuity authority, optimistic concurrency/idempotency/tombstone live proof, factual stale-index detection, merged Drive-write/freshness hotfix, and protected Apps Script deployment version 10 verified; T-016 Production Write Path promoted. |
 | 0.6.34 | 2026-10-03 | LOCKED D-032/D-033/D-034 before T-015: private thread continuity authority uses a dedicated ASC Private Continuity Store; frozen native ZASSPILL continuity writes are not forced into the eight-field ASC Write Contract; transport request identity is separated from semantic idempotency identity. |
