@@ -171,7 +171,11 @@ ZASS CR-010 v0.4: zass status + zass diff
 → CrossAI Companion MVP
 → Telegram account binding
 → WhatsApp Companion
-→ Obsidian / DL integration
+→ CrossAI Core ↔ Dzuddiyn Library adapter
+     searchable projection/reference
+     scoped live read from Core
+     explicit mutation via CrossAI Compatible/Core governance
+→ optional Obsidian / Notion / other DL human surfaces
 ```
 
 AISYNC/CrossAI must consume the shared ZASS Project Bootstrap Core rather than duplicate bootstrap semantics.
@@ -179,6 +183,8 @@ AISYNC/CrossAI must consume the shared ZASS Project Bootstrap Core rather than d
 The earlier future direction `AISYNC Create New Project → mandatory GitHub repository` is SUPERSEDED. PF-090 remains authoritative: each DESIGN project begins with a user-owned Google Drive project space; CrossAI proactively offers GitHub creation/linking, but GitHub remains optional.
 
 Temaya integration intentionally precedes CrossAI Companion so `CrossAI Compatible` and `SAVE_TO_CROSSAI` can be proven with a real existing external assistant before building another generic chatbot.
+
+D-035 refines the later DL integration direction: CrossAI↔DL must use a stable Core projection/live-read contract. Obsidian/Notion are optional DL human surfaces only and must not become mandatory middleware. This future integration remains non-blocking and does not alter existing CrossAI storage authority.
 
 This section does **not** add a current AP/T task and must not interrupt T-020 or AP-015/T-021.
 
