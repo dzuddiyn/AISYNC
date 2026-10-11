@@ -383,6 +383,20 @@ Verification:
 - empty `Destination` rejected
 Result: PASS — locked eight-field semantic contract is representable and mechanically distinguishable from invalid payloads without GitHub/Sheets-specific write logic.
 
+## Future reconciliation note — D-035
+
+**Status:** NOT EXECUTABLE / NON-BLOCKING
+
+D-035 records the future CrossAI Core ↔ Dzuddiyn Library projection/live-read boundary. No current T-020/T-021 task is added or reordered.
+
+Future task slicing may begin only after:
+- Production v1 critical path is no longer being silently displaced;
+- the relevant CrossAI Compatible/scoped-read contract is stable enough;
+- DL practical access exists;
+- projection privacy/staleness/delete/retry requirements are defined.
+
+Do not implement CrossAI↔DL through database scraping, Apps Script internals, Companion manual copy, or Obsidian/Notion middleware.
+
 ## Queue
 
 T-021 | QUEUED — PRODUCTION v1 RELEASE
