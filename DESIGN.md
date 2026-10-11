@@ -1,10 +1,10 @@
 # AISYNC — ZASSIMPLE DESIGN
 
-**Version:** 1.0.12
+**Version:** 1.0.13
 **Status:** CONFIRMED  
 **Design Progress:** 4/4 — purpose / main flow / main components / relevant LOCKED decisions  
 **Method:** ZASSIMPLE v0.3.0  
-**Authority:** Derived from LOCKED owner decisions D-002 through D-034 and recorded Action Plan findings.
+**Authority:** Derived from LOCKED owner decisions D-002 through D-035 and recorded Action Plan findings.
 
 > Confirmed by the Project Owner on 2026-10-01 using the exact phrase `YA, CONFIRM ARCHITECTURE`.
 >
@@ -486,6 +486,52 @@ Consequences:
 - WRITE_OUTCOME_UNKNOWN recovery preserves the same semantic request ID;
 - transport replay handling must not be used as a substitute for semantic idempotency.
 
+### D-035 — CrossAI Core ↔ Dzuddiyn Library projection / live-read boundary
+
+D-035 adds a **future, non-blocking external integration boundary** without changing Production v1 storage authority.
+
+```text
+CrossAI Core
+canonical semantic/governance authority
+        │
+        ├─ stable authorized read/event contract
+        ▼
+DL CrossAI Adapter
+        │
+        ▼
+Dzuddiyn Library
+searchable derived projection/reference
+```
+
+When authoritative detail is required:
+
+```text
+DL search → crossai_id → scoped live read → CrossAI Core
+```
+
+Mutation remains explicit and governed:
+
+```text
+DL / Temaya context
+→ explicit CrossAI action
+→ CrossAI Compatible
+→ CrossAI Core governance
+→ SAVE / mutation
+→ factual receipt
+```
+
+Architecture consequences:
+- DL projection is derived/searchable state, not a second CrossAI master;
+- no internal AISYNC/CrossAI database scraping or Apps Script-internal coupling may become the public integration contract;
+- Companion is not the synchronization middleware;
+- Obsidian/Notion may be optional DL human surfaces only;
+- D-032 private continuity authority remains unchanged;
+- Google Drive/GitHub authority directions remain unchanged;
+- no new central SQL/content warehouse is implied;
+- delete/archive/revoke/privacy, staleness, retry and dedup behavior must be proven before production sync.
+
+Canonical detail: `docs/CROSSAI_DL_INTEGRATION_BOUNDARY.md`.
+
 ## Open production implementation details
 
 These are the current production parameters to resolve through the locked delivery track:
@@ -496,7 +542,8 @@ These are the current production parameters to resolve through the locked delive
 - controlled/private continuity protection and retrieval mechanics;
 - degraded/offline, restore, migration, telemetry, deployment, rollback, and operator procedures;
 - closed-beta onboarding/allowlist and acceptance evidence;
-- integration adapter order after GitHub and broader multi-user/public product scope remain later work.
+- integration adapter order after GitHub and broader multi-user/public product scope remain later work;
+- D-035 Core↔DL projection/live-read implementation remains future/non-blocking until the relevant stable Compatible/read contract and DL practical access are ready.
 
 ## Lineage
 
@@ -523,6 +570,7 @@ Core decisions:
 - D-032 — private continuity authority: dedicated ASC Private Continuity Store; GitHub project repos and ASC DB are not the semantic thread master
 - D-033 — frozen native ZASSPILL continuity contract remains separate from the eight-field ASC Write Contract v0.1
 - D-034 — transport request identity is distinct from ZASSPILL semantic idempotency identity
+- D-035 — CrossAI Core↔DL uses a stable projection/live-read boundary; DL is derived reference state, not a second CrossAI master
 
 Action Plan lineage:
 - AP-001 through AP-015
