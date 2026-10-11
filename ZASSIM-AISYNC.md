@@ -1,7 +1,7 @@
 # AISYNC — ZASSIMPLE Working Record
 
 **Project:** AISYNC  
-**Project record version:** 0.6.36
+**Project record version:** 0.6.37
 **Method:** ZASSIMPLE v0.3.0  
 **Method source:** `ZASSIMPLE/ZASSIMPLE_MY.md`  
 **Lifecycle stage:** DO IT
@@ -64,7 +64,7 @@ Implementation thoughts discovered during DECIDE or DESIGN should feed hidden ac
 | Google Account owner-only login | PASS | Reuses Google stack | Multi-user roles deferred | Login flow locked | D-017 LOCKED |
 | ZASS Core shared by CLI / GitHub CI; ASC consumes results | PASS | Prevents validator drift and keeps local-first independence | ASC depends on factual commit-linked CI availability; absence must remain NOT_FOUND, not PASS | T-012 deployed/live-read/owner-visible proof PASS | D-018 LOCKED |
 
-Current direction: DESIGN v1.0.12 remains CONFIRMED. T-001 through T-016 and T-013A/B are PASS. D-031 locks the Production v1 delivery gate. D-032 through D-034 lock private continuity authority, native ZASSPILL continuity-contract separation, and transport-vs-semantic request identity. T-017 is CURRENT, followed by T-018 through T-021.
+Current direction: DESIGN v1.0.12 remains CONFIRMED. T-001 through T-019 and T-013A/B are PASS; T-020 is CURRENT. D-031 locks the Production v1 delivery gate. D-032 through D-034 lock private continuity authority, native ZASSPILL continuity-contract separation, and transport-vs-semantic request identity. D-035 locks the non-blocking future CrossAI Core↔Dzuddiyn Library projection/live-read integration boundary without changing current storage authority or T-020/T-021 scope.
 
 ---
 
@@ -554,6 +554,7 @@ Remaining items are implementation details or later-phase concerns; the core v0.
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6.37 | 2026-10-11 | LOCKED D-035: CrossAI Core↔Dzuddiyn Library integration uses a stable authorized projection/live-read boundary; DL remains a derived searchable reference store, never a second CrossAI master; DL→CrossAI mutation remains explicit through CrossAI Compatible/Core governance and factual receipts; no DB/App Script scraping or Obsidian/Notion middleware; existing storage authority and T-020/T-021 scope unchanged. |
 | 0.6.36 | 2026-10-04 | T-016 PASS: Production v1 deterministic GitHub write boundary, GitHub App auth, concurrency/idempotency/unknown-write handling, controlled live SAVE, canonical merge, protected Apps Script version 17 deployment, and final NO_CHANGE verification all passed; T-017 private continuity + retrieval promoted. |
 | 0.6.35 | 2026-10-03 | T-015 PASS: canonical project/thread/index state, private Drive continuity authority, optimistic concurrency/idempotency/tombstone live proof, factual stale-index detection, merged Drive-write/freshness hotfix, and protected Apps Script deployment version 10 verified; T-016 Production Write Path promoted. |
 | 0.6.34 | 2026-10-03 | LOCKED D-032/D-033/D-034 before T-015: private thread continuity authority uses a dedicated ASC Private Continuity Store; frozen native ZASSPILL continuity writes are not forced into the eight-field ASC Write Contract; transport request identity is separated from semantic idempotency identity. |
@@ -1242,6 +1243,42 @@ ZASSPILL req_<ULID>
 ```
 
 D-029 transport replay protection remains valid. Semantic retries preserve the same ZASSPILL request ID where the frozen idempotency/WRITE_OUTCOME_UNKNOWN contract requires it. The transport replay key must not substitute for semantic idempotency.
+
+## D-035 — CROSSAI CORE ↔ DZUDDIYN LIBRARY PROJECTION / LIVE-READ BOUNDARY
+
+Date: 2026-10-11
+Status: **LOCKED**
+Source: Project Owner direction reconciled from Temaya D-058 at commit `3dc06dcd21cf5d7395c057b109af8438ad83aa84`.
+
+Decision:
+
+```text
+CrossAI Core
+= canonical semantic/governance authority
+        ↓ stable authorized read/event contract
+DL CrossAI Adapter
+        ↓
+Dzuddiyn Library
+= searchable derived projection/reference
+```
+
+Rules:
+
+- CrossAI Core remains authoritative for CrossAI Idea/Decision/Project state and private continuity according to existing contracts;
+- Dzuddiyn Library may hold minimized searchable projection/reference metadata keyed by stable CrossAI identity, but it must not become a second editable CrossAI master;
+- authoritative detail is obtained through a scoped live read from CrossAI Core;
+- DL may provide authorized scoped context to CrossAI, but DL does not directly mutate canonical CrossAI state;
+- mutation from DL/Temaya context must use an explicit CrossAI action → CrossAI Compatible → CrossAI Core governance → factual SAVE/mutation receipt;
+- the external integration contract must not depend on scraping internal AISYNC/CrossAI database tables, Apps Script internals, or one physical storage technology;
+- Obsidian/Notion/other tools may be optional DL human surfaces but are not required middleware for CrossAI↔DL;
+- projection failure/staleness must never alter CrossAI canonical truth;
+- retry/dedup/staleness/delete/archive/revocation/privacy semantics must be proven before production sync;
+- existing durable-storage authority remains unchanged: this decision does not mandate a new central SQL/content warehouse;
+- this direction is NON-BLOCKING for T-020/T-021 and does not create a current Production v1 task.
+
+Canonical direction document: `docs/CROSSAI_DL_INTEGRATION_BOUNDARY.md`.
+
+Reason: preserve a stable cross-project integration contract while allowing CrossAI runtime/storage implementation to evolve and keeping DL useful for discovery without duplicating CrossAI authority.
 
 ## D-031 — PRODUCTION v1 DELIVERY GATE
 
